@@ -1,9 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 
-import { GiSpeaker } from "react-icons/gi";
-import { FaMicrophone } from "react-icons/fa";
-import { BsFillSendFill } from "react-icons/bs";
-import { LuRefreshCcw } from "react-icons/lu";
+import QuickActions from "../components/QuickActions";
+import CommandHelp from "../components/CommandHelp";
+import ChatArea from "../components/ChatArea";
+import Header from "../components/Header";
+import CommandStatusBar from "../components/CommandStatusBar";
+import SendButtons from "../components/SendButtons";
+import HashTag from "../components/HashTag";
 
 interface CommandState {
     isActive: boolean;
@@ -73,6 +76,7 @@ const EmailForm = () => {
                     return prev - 1;
                 });
             }, 1000);
+            setHashTag("");
         }
 
         return () => {
@@ -167,6 +171,13 @@ const EmailForm = () => {
         }
     };
 
+    const totalSteps =
+        commandState.command &&
+        commands[commandState.command as keyof typeof commands]
+            ? commands[commandState.command as keyof typeof commands].steps
+                  .length
+            : 0;
+
     // Handle regular message submission
     const handleRegularMessage = () => {
         if (!message.trim()) return;
@@ -226,150 +237,19 @@ const EmailForm = () => {
             {/* Main Chat Container */}
             <div className="flex-1 flex flex-col max-w-4xl mx-auto bg-white shadow-lg overflow-hidden">
                 {/* Header */}
-                <div className="bg-gray-700 text-white p-4 flex items-center justify-between select-none">
-                    <div>
-                        <h1 className="text-lg font-semibold">
-                            Chat & Email Assistant
-                        </h1>
-                        <div className="flex items-center space-x-1 ml-1">
-                            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                            <span className="text-xs">Online</span>
-                        </div>
-                    </div>
-                    <button className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-600 transition-colors cursor-pointer">
-                        <LuRefreshCcw size={20} />
-                    </button>
-                </div>
+                <Header />
 
                 {/* Chat Messages Area */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                    {/* Sample Chat Messages */}
-                    <div className="flex justify-start">
-                        <div className="bg-gray-200 rounded-sm p-3 max-w-xs">
-                            <p className="text-gray-800">
-                                Hello! I can help you with chat conversations
-                                and generating emails. What would you like to do
-                                today?
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex justify-end">
-                        <div className="bg-gray-700 text-white rounded-sm p-3 max-w-xs">
-                            <p>
-                                I need to write a professional email to my
-                                client about project updates. His email is{" "}
-                                <i className="text-gray-200 font-bold">
-                                    abc@example.com
-                                </i>
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex justify-start">
-                        <div className="bg-gray-200 rounded-sm p-3 max-w-md">
-                            <p className="text-gray-800 select-none">
-                                I'll help you create that email. Here's a
-                                professional template: SEND To{" "}
-                                <i className="text-gray-800 font-bold">
-                                    abc@example.com
-                                </i>
-                            </p>
-
-                            {/* Email Preview Box */}
-                            <div className="mt-3 p-4 bg-white border border-gray-300 rounded-lg">
-                                <div className="text-sm text-gray-600 mb-2">
-                                    Generated Email:
-                                </div>
-                                <div className="space-y-2">
-                                    <div>
-                                        <strong>Subject:</strong> Project Update
-                                        - [Project Name]
-                                    </div>
-                                    <div className="border-t pt-2">
-                                        <p>Dear [Client Name],</p>
-                                        <p className="mt-2">
-                                            I hope this email finds you well. I
-                                            wanted to provide you with an update
-                                            on the current status of your
-                                            project.
-                                        </p>
-                                        <p className="mt-2">
-                                            Best regards,
-                                            <br />
-                                            Harshit Sharma
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Action Buttons */}
-                            <div className="flex flex-wrap gap-2 mt-3">
-                                <button className="border border-gray-300 px-3 py-1 rounded text-sm hover:bg-green-700 cursor-pointer text-gray-700 hover:text-white">
-                                    Send Email
-                                </button>
-                                <button className="border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-700 cursor-pointer text-gray-700 hover:text-white">
-                                    Save as Draft
-                                </button>
-                                <button className="border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-700 cursor-pointer text-gray-700 hover:text-white">
-                                    Edit
-                                </button>
-                                <button className="border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-700 cursor-pointer text-gray-700 hover:text-white">
-                                    Regenerate
-                                </button>
-                                <button className="border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-700 cursor-pointer text-gray-700 hover:text-white">
-                                    <GiSpeaker size={18} />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <ChatArea />
 
                 {/* Command Status Bar */}
                 {commandState.isActive && (
-                    <div className="bg-blue-50 border-t border-blue-200 p-3">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                                <span className="text-blue-600 font-medium select-none">
-                                    {commandState.command}
-                                </span>
-
-                                {commandState.command === "/clear" ? (
-                                    <div className="flex items-center space-x-2">
-                                        <span className="text-xs text-red-500 select-none">
-                                            Clearing in {clearCountdown}s
-                                        </span>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <span className="text-sm text-blue-500 select-none">
-                                            Step {commandState.step + 1} of{" "}
-                                            {
-                                                commands[
-                                                    commandState.command as keyof typeof commands
-                                                ].steps.length
-                                            }
-                                        </span>
-                                        {commandState.data.receiverEmail && (
-                                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                                                To:{" "}
-                                                {
-                                                    commandState.data
-                                                        .receiverEmail
-                                                }
-                                            </span>
-                                        )}
-                                    </>
-                                )}
-                            </div>
-                            <button
-                                onClick={cancelCommand}
-                                className="text-blue-500 hover:text-blue-700 text-sm cursor-pointer"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
+                    <CommandStatusBar
+                        commandState={commandState}
+                        clearCountdown={clearCountdown}
+                        totalSteps={totalSteps}
+                        onCancel={cancelCommand}
+                    />
                 )}
 
                 {/* Input Section */}
@@ -382,33 +262,19 @@ const EmailForm = () => {
                                 value={message}
                                 onChange={handleInputChange}
                                 onKeyDown={handleKeyDown}
-                                className="w-full resize-none focus:outline-none"
+                                className="w-full resize-none focus:outline-none scrollbar-hide"
+                                style={{
+                                    scrollbarWidth: "none",
+                                    msOverflowStyle: "none",
+                                }}
                                 rows={2}
                                 placeholder={getPlaceholder()}
                             />
                             <div className="flex justify-between mt-1 -mb-1">
-                                <div className="select-none">
-                                    <span className="text-xs text-gray-600 font-bold">
-                                        Tag:{" "}
-                                    </span>
-                                    {hashTag ? (
-                                        <>
-                                            <span className="text-xs text-blue-400 bg-blue-50 px-1 rounded-full">
-                                                {hashTag}
-                                            </span>
-                                            <button
-                                                onClick={() => setHashTag("")}
-                                                className="text-xs text-red-400 bg-red-50 hover:bg-red-100 px-1 rounded-full cursor-pointer ml-1"
-                                            >
-                                                Remove
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <span className="text-xs text-blue-400 bg-blue-50 px-1 rounded-full">
-                                            None
-                                        </span>
-                                    )}
-                                </div>
+                                <HashTag
+                                    hashTag={hashTag}
+                                    setHashTag={setHashTag}
+                                />
 
                                 <span className="text-xs text-gray-500 select-none">
                                     {commandState.isActive &&
@@ -421,70 +287,23 @@ const EmailForm = () => {
                             </div>
                         </div>
 
-                        {/* Send Button */}
-                        <div className="flex flex-col space-y-3 items-center mb-0.5">
-                            <button
-                                onClick={handleSubmit}
-                                className="bg-gray-700 text-white p-3 hover:bg-gray-800 transition-colors cursor-pointer"
-                            >
-                                <BsFillSendFill size={20} />
-                            </button>
-                            <button className="bg-gray-700 text-white p-3 hover:bg-gray-800 transition-colors cursor-pointer">
-                                <FaMicrophone size={20} />
-                            </button>
-                        </div>
+                        {/* Send Buttons */}
+                        <SendButtons handleSubmit={handleSubmit} />
                     </div>
 
                     {/* Quick Action Buttons - Hide during command mode */}
                     {!commandState.isActive && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                            <button
-                                onClick={() => setMessage("/")}
-                                className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-300 cursor-pointer"
-                            >
-                                /commands
-                            </button>
-                            <button
-                                onClick={() => setHashTag("#Confident")}
-                                className={`bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-300 cursor-pointer ${hashTag === "#Confident" ? "hidden" : ""}`}
-                            >
-                                Confident
-                            </button>
-                            <button
-                                onClick={() => setHashTag("#Formal")}
-                                className={`bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-300 cursor-pointer ${hashTag === "#Formal" ? "hidden" : ""}`}
-                            >
-                                Formal
-                            </button>
-                            <button
-                                onClick={() => setHashTag("#Casual")}
-                                className={`bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-300 cursor-pointer ${hashTag === "#Casual" ? "hidden" : ""}`}
-                            >
-                                Casual
-                            </button>
-                        </div>
+                        <QuickActions
+                            setMessage={setMessage}
+                            setHashTag={setHashTag}
+                            hashTag={hashTag}
+                        />
                     )}
 
                     {/* Command Help */}
                     {!commandState.isActive &&
                         (message === "/" || message.includes("#")) && (
-                            <div className="mt-2 p-2 bg-gray-200 text-sm select-none">
-                                <div className="font-medium text-gray-700 mb-1">
-                                    Available Commands:
-                                </div>
-                                <div className="text-gray-600">
-                                    /email - Generate and send an email
-                                    <br />
-                                    /clear - Clear chat history
-                                </div>
-                                <div className="mt-2 text-xs text-gray-500">
-                                    #Confident - Use confident tone
-                                    <br />
-                                    #Formal - Use formal tone
-                                    <br />
-                                    #Casual - Use casual tone
-                                </div>
-                            </div>
+                            <CommandHelp />
                         )}
                 </div>
             </div>
