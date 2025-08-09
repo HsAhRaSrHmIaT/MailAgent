@@ -1,8 +1,19 @@
+import { useEffect, useRef } from "react";
+
 import EmailPreviewBox from "../templates/EmailPreviewBox";
+import { ChatLoader, EmailGenerateLoader } from "./Loader";
 
 const ChatArea = () => {
+    const chatAreaRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (chatAreaRef.current) {
+            chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight;
+        }
+    }, []);
+
     return (
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={chatAreaRef}>
             {/* Sample Chat Messages */}
             <div className="flex justify-start">
                 <div className="bg-gray-200 rounded-sm p-3 max-w-xs">
@@ -12,6 +23,9 @@ const ChatArea = () => {
                     </p>
                 </div>
             </div>
+
+            <ChatLoader />
+            <EmailGenerateLoader />
 
             <div className="flex justify-end">
                 <div className="bg-gray-700 text-white rounded-sm p-3 max-w-xs">

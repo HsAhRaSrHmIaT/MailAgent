@@ -32,7 +32,7 @@ const EmailForm = () => {
     const [clearCountdown, setClearCountdown] = useState(0);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const emailLength = 50;
-    const maxMessageLength = 500;
+    const maxMessageLength = 300;
 
     // Command definitions
     const commands = {
@@ -45,6 +45,18 @@ const EmailForm = () => {
         },
         "/clear": {
             description: "Clear chat history",
+            steps: [],
+        },
+        "#confident": {
+            description: "Use confident tone",
+            steps: [],
+        },
+        "#formal": {
+            description: "Use formal tone",
+            steps: [],
+        },
+        "#casual": {
+            description: "Use casual tone",
             steps: [],
         },
     };
@@ -130,7 +142,21 @@ const EmailForm = () => {
                     }
                 }
             }
+
+            else if (value.includes("#") && !commandState.isActive) {
+                const hashtagMatch = value.match(/#(formal|casual|confident)/);
+                if (hashtagMatch) {
+                    const tag = `#${hashtagMatch[1]}`;
+                    if (commands[tag as keyof typeof commands]) {
+                        setHashTag(tag);
+                        // Remove the hashtag from the message
+                        const cleanMessage = value.replace(/#(formal|casual|confident)/, '').trim();
+                        setMessage(cleanMessage);
+                    }
+                }
+            }
         }
+        
     };
 
     // Handle command step submission
@@ -302,9 +328,7 @@ const EmailForm = () => {
 
                     {/* Command Help */}
                     {!commandState.isActive &&
-                        (message === "/" || message.includes("#")) && (
-                            <CommandHelp />
-                        )}
+                        (message === "/" || message.includes("#")) && <CommandHelp />}
                 </div>
             </div>
         </div>

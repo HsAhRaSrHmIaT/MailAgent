@@ -18,28 +18,28 @@ const QuickActions = ({
                 /commands
             </button>
             <button
-                onClick={() => setHashTag("#Confident")}
+                onClick={() => setHashTag("#confident")}
                 className={`bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-300 cursor-pointer ${
-                    hashTag === "#Confident" ? "hidden" : ""
+                    hashTag === "#confident" ? "hidden" : ""
                 }`}
             >
-                Confident
+                confident
             </button>
             <button
-                onClick={() => setHashTag("#Formal")}
+                onClick={() => setHashTag("#formal")}
                 className={`bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-300 cursor-pointer ${
-                    hashTag === "#Formal" ? "hidden" : ""
+                    hashTag === "#formal" ? "hidden" : ""
                 }`}
             >
-                Formal
+                formal
             </button>
             <button
-                onClick={() => setHashTag("#Casual")}
+                onClick={() => setHashTag("#casual")}
                 className={`bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-300 cursor-pointer ${
-                    hashTag === "#Casual" ? "hidden" : ""
+                    hashTag === "#casual" ? "hidden" : ""
                 }`}
             >
-                Casual
+                casual
             </button>
         </div>
     );

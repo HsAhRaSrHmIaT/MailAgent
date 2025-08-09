@@ -11,11 +11,11 @@ const CommandHelp = () => {
                 /clear - Clear chat history
             </div>
             <div className="mt-2 text-xs text-gray-500">
-                #Confident - Use confident tone
+                #confident - Use confident tone
                 <br />
-                #Formal - Use formal tone
+                #formal - Use formal tone
                 <br />
-                #Casual - Use casual tone
+                #casual - Use casual tone
             </div>
         </div>
     );

@@ -1,4 +1,6 @@
-import { GiSpeaker } from "react-icons/gi";
+import { ButtonLoader } from "../components/Loader";
+
+// import { GiSpeaker } from "react-icons/gi";
 
 const EmailPreviewBox = () => {
     return (
@@ -43,8 +45,9 @@ const EmailPreviewBox = () => {
                 <button className="border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-700 cursor-pointer text-gray-700 hover:text-white">
                     Regenerate
                 </button>
-                <button className="border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-700 cursor-pointer text-gray-700 hover:text-white">
-                    <GiSpeaker size={18} />
+                <button className="border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-700 text-gray-700 hover:text-white cursor-pointer disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:text-gray-400" disabled={true}>
+                    {/* <GiSpeaker size={18} /> */}
+                    <ButtonLoader />
                 </button>
             </div>
         </>
