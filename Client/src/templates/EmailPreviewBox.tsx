@@ -1,10 +1,16 @@
-import { ButtonLoader } from "../components/Loader";
+import { CircleLoader } from "../components/Loader";
 
 // import { GiSpeaker } from "react-icons/gi";
 
 const EmailPreviewBox = () => {
     return (
         <>
+            <p className="text-gray-800 select-none">
+                I'll help you create that email. Here's a professional template:
+                SEND To{" "}
+                <i className="text-gray-800 font-bold">abc@example.com</i>{" "}
+            </p>
+            
             {/* Email Preview Box */}
             <div className="mt-3 p-4 bg-white border border-gray-300 rounded-lg">
                 <div className="text-sm text-gray-600 mb-2">
@@ -45,9 +51,12 @@ const EmailPreviewBox = () => {
                 <button className="border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-700 cursor-pointer text-gray-700 hover:text-white">
                     Regenerate
                 </button>
-                <button className="border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-700 text-gray-700 hover:text-white cursor-pointer disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:text-gray-400" disabled={true}>
+                <button
+                    className="border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-700 text-gray-700 hover:text-white cursor-pointer disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:text-gray-400"
+                    disabled={true}
+                >
                     {/* <GiSpeaker size={18} /> */}
-                    <ButtonLoader />
+                    <CircleLoader />
                 </button>
             </div>
         </>

@@ -8,6 +8,14 @@ import CommandStatusBar from "../components/CommandStatusBar";
 import SendButtons from "../components/SendButtons";
 import HashTag from "../components/HashTag";
 
+interface Message {
+    id: string;
+    content: string;
+    sender: "user" | "assistant";
+    timestamp: Date;
+    hashTag?: string;
+}
+
 interface CommandState {
     isActive: boolean;
     command: string;
@@ -21,7 +29,12 @@ interface CommandState {
 
 const EmailForm = () => {
     const [message, setMessage] = useState("");
+    const [messages, setMessages] = useState<Message[]>([]);
     const [hashTag, setHashTag] = useState("");
+    const [isLoading, setIsLoading] = useState(true);
+    const [isAIThinking, setIsAIThinking] = useState(false);
+    const [isEmailGenerating, setIsEmailGenerating] = useState(false);
+    const [emailValidationError, setEmailValidationError] = useState(false);
     const [commandState, setCommandState] = useState<CommandState>({
         isActive: false,
         command: "",
@@ -33,6 +46,29 @@ const EmailForm = () => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const emailLength = 50;
     const maxMessageLength = 300;
+
+    const addMessage = (
+        content: string,
+        sender: "user" | "assistant",
+        hashTag?: string
+    ) => {
+        const newMessage: Message = {
+            id: Date.now().toString(),
+            content,
+            sender,
+            timestamp: new Date(),
+            hashTag,
+        };
+        setMessages((prev) => [...prev, newMessage]);
+    };
+
+    //Email pattern matching
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    // Email validation function
+    const isValidEmail = (email: string): boolean => {
+        return emailPattern.test(email.trim());
+    };
 
     // Command definitions
     const commands = {
@@ -61,6 +97,18 @@ const EmailForm = () => {
         },
     };
 
+    useEffect(() => {
+        // Initialize loading state
+        setIsLoading(true);
+
+        // Simulate API call
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 2000);
+
+        return () => clearTimeout(timer);
+    }, []);
+
     // Countdown effect for clear command
     useEffect(() => {
         let interval: number;
@@ -75,7 +123,7 @@ const EmailForm = () => {
                         // Execute clear action when countdown reaches 0
                         console.log("Chat history cleared!");
                         // TODO: Add actual chat clearing logic here
-
+                        setMessages([]);
                         // Reset command state
                         setCommandState({
                             isActive: false,
@@ -99,6 +147,10 @@ const EmailForm = () => {
     // Handle input change and command detection
     const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.target.value;
+
+        if (emailValidationError) {
+            setEmailValidationError(false);
+        }
 
         // Determine character limit based on current context
         let charLimit;
@@ -141,22 +193,21 @@ const EmailForm = () => {
                         setMessage("");
                     }
                 }
-            }
-
-            else if (value.includes("#") && !commandState.isActive) {
+            } else if (value.includes("#") && !commandState.isActive) {
                 const hashtagMatch = value.match(/#(formal|casual|confident)/);
                 if (hashtagMatch) {
                     const tag = `#${hashtagMatch[1]}`;
                     if (commands[tag as keyof typeof commands]) {
                         setHashTag(tag);
                         // Remove the hashtag from the message
-                        const cleanMessage = value.replace(/#(formal|casual|confident)/, '').trim();
+                        const cleanMessage = value
+                            .replace(/#(formal|casual|confident)/, "")
+                            .trim();
                         setMessage(cleanMessage);
                     }
                 }
             }
         }
-        
     };
 
     // Handle command step submission
@@ -166,6 +217,17 @@ const EmailForm = () => {
         const currentStep = currentCommand.steps[commandState.step];
 
         if (!message.trim()) return;
+
+        if (commandState.command === "/email" && commandState.step === 0
+        ) {
+            if (!isValidEmail(message.trim())) {
+                // Show error message for invalid email
+                setEmailValidationError(true);
+                return;
+            }
+        }
+
+        setEmailValidationError(false);
 
         const newData = {
             ...commandState.data,
@@ -182,9 +244,25 @@ const EmailForm = () => {
             setMessage("");
         } else {
             // Command complete - here you would handle the email generation
-            console.log("Email command data:", newData);
+            // console.log("Email command data:", newData);
 
-            // Reset command state
+            // TODO: Trigger email generation with newData.receiverEmail and newData.prompt
+            setIsEmailGenerating(true);
+            addMessage(
+                `${newData.prompt}\nGenerating email for: ${newData.receiverEmail}`,
+                "user"
+            );
+
+            try {
+                setTimeout(() => {
+                    addMessage("Email generated successfully!", "assistant");
+                    setIsEmailGenerating(false);
+                }, 1000);
+            } catch (error) {
+                console.error("Error generating email:", error);
+                setIsEmailGenerating(false);
+            }
+
             setCommandState({
                 isActive: false,
                 command: "",
@@ -192,8 +270,6 @@ const EmailForm = () => {
                 data: {},
             });
             setMessage("");
-
-            // TODO: Trigger email generation with newData.receiverEmail and newData.prompt
         }
     };
 
@@ -205,8 +281,25 @@ const EmailForm = () => {
             : 0;
 
     // Handle regular message submission
-    const handleRegularMessage = () => {
+    const handleRegularMessage = async () => {
         if (!message.trim()) return;
+
+        addMessage(message, "user", hashTag);
+
+        // const userMessage = message.trim();
+        // const userHashTag = hashTag;
+        setMessage("");
+        setIsAIThinking(true);
+
+        try {
+            setTimeout(() => {
+                addMessage("This is a simulated response", "assistant");
+                setIsAIThinking(false);
+            }, 1000);
+        } catch (error) {
+            console.error("Error handling regular message:", error);
+            setIsAIThinking(false);
+        }
 
         console.log("Regular message:", message);
         // TODO: Handle regular chat message
@@ -235,6 +328,7 @@ const EmailForm = () => {
     // Cancel command
     const cancelCommand = () => {
         setClearCountdown(0); // Reset countdown
+        setEmailValidationError(false);
         setCommandState({
             isActive: false,
             command: "",
@@ -263,10 +357,15 @@ const EmailForm = () => {
             {/* Main Chat Container */}
             <div className="flex-1 flex flex-col max-w-4xl mx-auto bg-white shadow-lg overflow-hidden">
                 {/* Header */}
-                <Header />
+                <Header setMessages={setMessages} />
 
                 {/* Chat Messages Area */}
-                <ChatArea />
+                <ChatArea
+                    messages={messages}
+                    isLoading={isLoading}
+                    isAIThinking={isAIThinking}
+                    isEmailGenerating={isEmailGenerating}
+                />
 
                 {/* Command Status Bar */}
                 {commandState.isActive && (
@@ -275,6 +374,9 @@ const EmailForm = () => {
                         clearCountdown={clearCountdown}
                         totalSteps={totalSteps}
                         onCancel={cancelCommand}
+                        currentMessage={message}
+                        isValidEmail={isValidEmail}
+                        showValidationError={emailValidationError}
                     />
                 )}
 
@@ -314,7 +416,14 @@ const EmailForm = () => {
                         </div>
 
                         {/* Send Buttons */}
-                        <SendButtons handleSubmit={handleSubmit} />
+                        <SendButtons
+                            onSubmit={handleSubmit}
+                            disabled={
+                                !message.trim() ||
+                                (commandState.isActive &&
+                                    commandState.command === "/clear")
+                            }
+                        />
                     </div>
 
                     {/* Quick Action Buttons - Hide during command mode */}
@@ -328,7 +437,9 @@ const EmailForm = () => {
 
                     {/* Command Help */}
                     {!commandState.isActive &&
-                        (message === "/" || message.includes("#")) && <CommandHelp />}
+                        (message === "/" || message.includes("#")) && (
+                            <CommandHelp />
+                        )}
                 </div>
             </div>
         </div>

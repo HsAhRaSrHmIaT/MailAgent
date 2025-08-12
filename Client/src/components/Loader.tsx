@@ -1,26 +1,33 @@
 interface LoaderProps {
-    variant?: "chat" | "email" | "button";
+    variant?: "chat" | "email" | "circle";
+    size?: "sm" | "md" | "lg";
 }
 
-const Loader = ({ variant = "chat" }: LoaderProps) => {
+const sizeClasses = {
+    sm: "w-4 h-4",
+    md: "w-6 h-6",
+    lg: "w-12 h-12",
+};
+
+const Loader = ({ variant = "chat", size = "sm" }: LoaderProps) => {
     const containerClasses = {
-        chat: "flex justify-center space-x-2 my-4 bg-gray-200 p-2 rounded w-20 h-10 items-center",
-        email: "flex justify-center space-x-1 my-2 bg-gray-200 items-center p-2 rounded h-72 sm:w-80 sm:h-72",
-        button: "flex justify-center space-x-1",
+        chat: "flex justify-center space-x-1 p-2 rounded items-center",
+        email: "flex justify-center space-x-1 my-4 bg-gray-200 items-center p-2 rounded h-72 sm:w-80 sm:h-72",
+        circle: "flex justify-center space-x-1",
     };
 
     const renderChatLoader = () => (
         <>
             <div
-                className="w-3 h-3 bg-gray-500 rounded-full animate-bounce"
+                className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"
                 style={{ animationDelay: "0ms" }}
             />
             <div
-                className="w-3 h-3 bg-gray-500 rounded-full animate-bounce"
+                className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"
                 style={{ animationDelay: "150ms" }}
             />
             <div
-                className="w-3 h-3 bg-gray-500 rounded-full animate-bounce"
+                className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"
                 style={{ animationDelay: "300ms" }}
             />
         </>
@@ -37,8 +44,8 @@ const Loader = ({ variant = "chat" }: LoaderProps) => {
         </div>
     );
 
-    const renderButtonLoader = () => (
-        <div className="w-4 h-4 border-3 border-gray-300 border-t-gray-500 rounded-full animate-spin" />
+    const renderCircleLoader = () => (
+        <div className={`${sizeClasses[size]} border-3 border-gray-300 border-t-gray-500 rounded-full animate-spin`} />
     );
 
     const renderLoader = () => {
@@ -47,8 +54,8 @@ const Loader = ({ variant = "chat" }: LoaderProps) => {
                 return renderChatLoader();
             case "email":
                 return renderEmailLoader();
-            case "button":
-                return renderButtonLoader();
+            case "circle":
+                return renderCircleLoader();
             default:
                 return renderChatLoader();
         }
@@ -60,6 +67,6 @@ const Loader = ({ variant = "chat" }: LoaderProps) => {
 // Named exports for convenience
 export const ChatLoader = () => <Loader variant="chat" />;
 export const EmailGenerateLoader = () => <Loader variant="email" />;
-export const ButtonLoader = () => <Loader variant="button" />;
+export const CircleLoader = (props?: Partial<LoaderProps>) => <Loader variant="circle" {...props} />;
 
 export default Loader;

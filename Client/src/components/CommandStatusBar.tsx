@@ -9,6 +9,9 @@ interface CommandStatusBarProps {
     clearCountdown: number;
     totalSteps: number;
     onCancel: () => void;
+    currentMessage?: string;
+    isValidEmail?: (email: string) => boolean;
+    showValidationError?: boolean;
 }
 
 const CommandStatusBar = ({
@@ -16,12 +19,17 @@ const CommandStatusBar = ({
     clearCountdown,
     totalSteps,
     onCancel,
+    currentMessage = "",
+    isValidEmail,
+    showValidationError = false
 }: CommandStatusBarProps) => {
+    const isInvalidEmail = showValidationError && commandState.command === "/email" && commandState.step === 0 && currentMessage.trim() && isValidEmail && !isValidEmail(currentMessage.trim());
+
     return (
-        <div className="bg-blue-50 border-t border-blue-200 p-3">
+        <div className={`${isInvalidEmail ? "bg-red-50 border-red-200" : "bg-blue-50 border-blue-200"} border-t p-3`}>
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                    <span className="text-blue-600 font-medium select-none">
+                    <span className={`font-medium select-none ${isInvalidEmail ? "text-red-600" : "text-blue-600"}`}>
                         {commandState.command}
                     </span>
 
@@ -33,7 +41,7 @@ const CommandStatusBar = ({
                         </div>
                     ) : (
                         <>
-                            <span className="text-sm text-blue-500 select-none">
+                            <span className={`text-sm ${isInvalidEmail ? "text-red-600" : "text-blue-600"} select-none`}>
                                 Step {commandState.step + 1} of {totalSteps}
                             </span>
                             {commandState.data.receiverEmail && (
@@ -44,9 +52,16 @@ const CommandStatusBar = ({
                         </>
                     )}
                 </div>
+                {isInvalidEmail && (
+                    <div className="flex items-center space-x-2">
+                        <span className="text-sm text-red-600 font-medium">
+                            Please enter a valid email address
+                        </span>
+                    </div>
+                )}
                 <button
                     onClick={onCancel}
-                    className="text-blue-500 hover:text-blue-700 text-sm cursor-pointer"
+                    className={`${isInvalidEmail ? "text-red-500 hover:text-red-700" : "text-blue-500 hover:text-blue-700"} text-sm cursor-pointer`}
                 >
                     Cancel
                 </button>
