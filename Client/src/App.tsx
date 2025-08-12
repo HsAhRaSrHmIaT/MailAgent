@@ -5,6 +5,7 @@ import GetDB from "./pages/GetDB";
 
 function App() {
     return (
+
         <Router>
             <Routes>
                 <Route path="/" element={<EmailForm />} />

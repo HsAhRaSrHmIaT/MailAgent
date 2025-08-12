@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 import QuickActions from "../components/QuickActions";
 import CommandHelp from "../components/CommandHelp";
@@ -8,12 +8,22 @@ import CommandStatusBar from "../components/CommandStatusBar";
 import SendButtons from "../components/SendButtons";
 import HashTag from "../components/HashTag";
 
+import { apiService } from "../services/apiService";
+
 interface Message {
     id: string;
     content: string;
     sender: "user" | "assistant";
     timestamp: Date;
-    hashTag?: string;
+    hashtag?: string;
+    type?: "text" | "email";
+    emailData?: EmailData;
+}
+
+interface EmailData {
+    body: string;
+    subject: string;
+    to: string;
 }
 
 interface CommandState {
@@ -50,27 +60,28 @@ const EmailForm = () => {
     const addMessage = (
         content: string,
         sender: "user" | "assistant",
-        hashTag?: string
+        hashtag?: string,
+        type: "text" | "email" = "text",
+        emailData?: EmailData
     ) => {
         const newMessage: Message = {
             id: Date.now().toString(),
             content,
             sender,
             timestamp: new Date(),
-            hashTag,
+            hashtag,
+            type,
+            emailData,
         };
         setMessages((prev) => [...prev, newMessage]);
     };
 
-    //Email pattern matching
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    // Email validation function
     const isValidEmail = (email: string): boolean => {
         return emailPattern.test(email.trim());
     };
 
-    // Command definitions
     const commands = {
         "/email": {
             description: "Generate and send an email",
@@ -101,7 +112,6 @@ const EmailForm = () => {
         // Initialize loading state
         setIsLoading(true);
 
-        // Simulate API call
         const timer = setTimeout(() => {
             setIsLoading(false);
         }, 2000);
@@ -111,7 +121,7 @@ const EmailForm = () => {
 
     // Countdown effect for clear command
     useEffect(() => {
-        let interval: number;
+        let interval: NodeJS.Timeout;
         if (
             commandState.isActive &&
             commandState.command === "/clear" &&
@@ -218,10 +228,8 @@ const EmailForm = () => {
 
         if (!message.trim()) return;
 
-        if (commandState.command === "/email" && commandState.step === 0
-        ) {
+        if (commandState.command === "/email" && commandState.step === 0) {
             if (!isValidEmail(message.trim())) {
-                // Show error message for invalid email
                 setEmailValidationError(true);
                 return;
             }
@@ -243,21 +251,59 @@ const EmailForm = () => {
             });
             setMessage("");
         } else {
-            // Command complete - here you would handle the email generation
-            // console.log("Email command data:", newData);
-
-            // TODO: Trigger email generation with newData.receiverEmail and newData.prompt
-            setIsEmailGenerating(true);
+            // setIsEmailGenerating(true);
+            setIsAIThinking(true);
             addMessage(
-                `${newData.prompt}\nGenerating email for: ${newData.receiverEmail}`,
+                `${newData.prompt}\nGenerating email for: **_${newData.receiverEmail}_**`,
                 "user"
             );
 
             try {
                 setTimeout(() => {
-                    addMessage("Email generated successfully!", "assistant");
-                    setIsEmailGenerating(false);
+                    addMessage("Generating Email...", "assistant");
+                    setIsAIThinking(false);
                 }, 1000);
+
+                setTimeout(async () => {
+                    setIsEmailGenerating(true);
+                    try {
+                        const response = await apiService.generateEmail({
+                            receiverEmail: newData.receiverEmail!,
+                            prompt: newData.prompt!,
+                            tone: hashTag.replace("#", "") || undefined,
+                        });
+                        if (response.success && response.email) {
+                            addMessage("", "assistant", undefined, "email", {
+                                to: response.email.to,
+                                subject: response.email.subject,
+                                body: response.email.body,
+                            });
+                        } else {
+                            addMessage(
+                                `❌Failed to generate email: ${
+                                    response.error || "Unknown error"
+                                }`,
+                                "assistant"
+                            );
+                        }
+                    } catch (error) {
+                        console.error("Error generating email:", error);
+                        addMessage(
+                            "❌Something went wrong. Please try again later",
+                            "assistant"
+                        );
+                    } finally {
+                        setIsEmailGenerating(false);
+                    }
+                }, 3000);
+
+                setCommandState({
+                    ...commandState,
+                    step: 0,
+                    data: {},
+                });
+                setMessage("");
+                setHashTag("");
             } catch (error) {
                 console.error("Error generating email:", error);
                 setIsEmailGenerating(false);
@@ -284,20 +330,36 @@ const EmailForm = () => {
     const handleRegularMessage = async () => {
         if (!message.trim()) return;
 
-        addMessage(message, "user", hashTag);
+        const userMessage = message.trim();
+        const tone = hashTag.replace("#", "") || undefined;
 
-        // const userMessage = message.trim();
-        // const userHashTag = hashTag;
+        addMessage(userMessage, "user", hashTag);
         setMessage("");
         setIsAIThinking(true);
 
         try {
-            setTimeout(() => {
-                addMessage("This is a simulated response", "assistant");
-                setIsAIThinking(false);
-            }, 1000);
+            const response = await apiService.sendChatMessage({
+                message: userMessage,
+                tone,
+            });
+
+            if (response.success && response.message) {
+                addMessage(response.message, "assistant");
+            } else {
+                addMessage(
+                    `❌Failed to get response: ${
+                        response.error || "Unknown error"
+                    }`,
+                    "assistant"
+                );
+            }
         } catch (error) {
             console.error("Error handling regular message:", error);
+            addMessage(
+                "❌Something went wrong. Please try again later",
+                "assistant"
+            );
+        } finally {
             setIsAIThinking(false);
         }
 

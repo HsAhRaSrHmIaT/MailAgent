@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-// import EmailPreviewBox from "../templates/EmailPreviewBox";
+import EmailPreviewBox from "../templates/EmailPreviewBox";
 import { CircleLoader, ChatLoader, EmailGenerateLoader } from "./Loader";
 
 interface Message {
@@ -8,7 +8,15 @@ interface Message {
     content: string;
     sender: "user" | "assistant";
     timestamp: Date;
-    hashTag?: string;
+    hashtag?: string;
+    type?: "text" | "email";
+    emailData?: EmailData;
+}
+
+interface EmailData {
+    to: string;
+    subject: string;
+    body: string;
 }
 
 interface ChatAreaProps {
@@ -26,77 +34,27 @@ const ChatArea = ({
 }: ChatAreaProps) => {
     const chatAreaRef = useRef<HTMLDivElement>(null);
 
-    // const messages = [
-    //     {
-    //         id: "1",
-    //         content: "Hello, how can I assist you today?",
-    //         sender: "assistant",
-    //         timestamp: new Date(),
-    //     },
-    //     {
-    //         id: "2",
-    //         content: "I'm looking for information on your services.",
-    //         sender: "user",
-    //         timestamp: new Date(),
-    //         hashTag: "#services",
-    //     },
-    //     {
-    //         id: "3",
-    //         content: "Sure, I can help with that!",
-    //         sender: "assistant",
-    //         timestamp: new Date(),
-    //     },
-    //     {
-    //         id: "4",
-    //         content: "What services do you offer?",
-    //         sender: "assistant",
-    //         timestamp: new Date(),
-    //     },
-    //     {
-    //         id: "5",
-    //         content: "Can you provide more details?",
-    //         sender: "user",
-    //         timestamp: new Date(),
-    //     },
-    //     {
-    //         id: "6",
-    //         content: "What are your pricing plans?",
-    //         sender: "user",
-    //         timestamp: new Date(),
-    //     },
-    //     {
-    //         id: "7",
-    //         content: "In Tailwind CSS, the boldness of dotted borders—meaning how thick or prominent the dots appear—is controlled by the border-width utility. Tailwind doesn’t offer a separate utility to change the size of the dots directly, but increasing the border width will make the dots appear bolder",
-    //         sender: "user",
-    //         timestamp: new Date(),
-    //     },
-    //     {
-    //         id: "8",
-    //         content: "Can you help me with a project proposal?",
-    //         sender: "user",
-    //         timestamp: new Date(),
-    //     },
-    //     {
-    //         id: "9",
-    //         content:
-    //             "What is the turnaround time for a project? So I need to know the estimated delivery date. This is important for our planning.",
-    //         sender: "user",
-    //         timestamp: new Date(),
-    //         hashTag: "#project"
-    //     },
-    //     {
-    //         id: "10",
-    //         content: "Can you provide a timeline for the project?",
-    //         sender: "assistant",
-    //         timestamp: new Date(),
-    //     },
-    // ];
+    const parseMessageContent = (content: string) => {
+        const parts = content.split(/(\*\*_.*?_\*\*)/g);
+
+        return parts.map((part, index) => {
+            if (part.match(/\*\*_.*?_\*\*/)) {
+                const text = part.replace(/\*\*_|_\*\*/g, "");
+                return (
+                    <span key={index} className="font-bold italic">
+                        {text}
+                    </span>
+                );
+            }
+            return part;
+        });
+    };
 
     useEffect(() => {
         if (chatAreaRef.current) {
             chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight;
         }
-    }, [messages, isAIThinking]);
+    }, [messages, isAIThinking, isEmailGenerating]);
 
     return (
         <div className="flex flex-col h-screen bg-white overflow-hidden">
@@ -115,22 +73,32 @@ const ChatArea = ({
                             } p-4`}
                         >
                             <div className="flex flex-col">
-                                <div
-                                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-sm ${
-                                        message.sender === "user"
-                                            ? "bg-gray-700 text-white"
-                                            : "bg-gray-200 text-gray-800"
-                                    }`}
-                                >
-                                    <p className="text-sm whitespace-pre-wrap">
-                                        {message.content}
-                                    </p>
-                                    {message.hashTag && (
-                                        <span className="text-xs opacity-75 block mt-3 border-t-2 border-dashed border-gray-200 -mx-4 px-2 text-center -mb-1">
-                                            {message.hashTag}
-                                        </span>
-                                    )}
-                                </div>
+                                {message.type === "email" ? (
+                                    <div className="max-w-xs lg:max-w-md">
+                                        <EmailPreviewBox
+                                            emailData={message.emailData || null}
+                                        />
+                                    </div>
+                                ) : (
+                                    <div
+                                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-sm ${
+                                            message.sender === "user"
+                                                ? "bg-gray-700 text-white"
+                                                : "bg-gray-200 text-gray-800"
+                                        }`}
+                                    >
+                                        <p className="text-sm whitespace-pre-wrap">
+                                            {parseMessageContent(
+                                                message.content
+                                            )}
+                                        </p>
+                                        {message.hashtag && (
+                                            <span className="text-xs opacity-75 block mt-3 border-t-2 border-dashed border-gray-200 -mx-4 px-2 text-center -mb-1">
+                                                {message.hashtag}
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
                                 {message.timestamp && (
                                     <span className="text-xs text-gray-500 text-end select-none">
                                         {message.timestamp.toLocaleTimeString()}
@@ -149,9 +117,7 @@ const ChatArea = ({
                     )}
                     {isEmailGenerating && (
                         <div className="flex justify-start p-4">
-                            <div className="bg-gray-200 text-gray-800 max-w-xs lg:max-w-md px-1 py-1 rounded-sm">
-                                <EmailGenerateLoader />
-                            </div>
+                            <EmailGenerateLoader />
                         </div>
                     )}
                 </div>
