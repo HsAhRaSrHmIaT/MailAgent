@@ -57,7 +57,7 @@ const ChatArea = ({
     }, [messages, isAIThinking, isEmailGenerating]);
 
     return (
-        <div className="flex flex-col h-screen bg-white overflow-hidden">
+        <div className="flex flex-col h-screen bg-white dark:bg-gray-800 overflow-hidden">
             {messages?.length !== 0 ? (
                 <div
                     className="flex-1 flex flex-col overflow-y-auto"
@@ -76,15 +76,17 @@ const ChatArea = ({
                                 {message.type === "email" ? (
                                     <div className="max-w-xs lg:max-w-md">
                                         <EmailPreviewBox
-                                            emailData={message.emailData || null}
+                                            emailData={
+                                                message.emailData || null
+                                            }
                                         />
                                     </div>
                                 ) : (
                                     <div
-                                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-sm ${
+                                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-sm shadow-sm ${
                                             message.sender === "user"
-                                                ? "bg-gray-700 text-white"
-                                                : "bg-gray-200 text-gray-800"
+                                                ? "bg-gray-700 dark:bg-gray-900 text-white dark:shadow-gray-900/30"
+                                                : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 dark:shadow-gray-900/30"
                                         }`}
                                     >
                                         <p className="text-sm whitespace-pre-wrap">
@@ -93,7 +95,7 @@ const ChatArea = ({
                                             )}
                                         </p>
                                         {message.hashtag && (
-                                            <span className="text-xs opacity-75 block mt-3 border-t-2 border-dashed border-gray-200 -mx-4 px-2 text-center -mb-1">
+                                            <span className="text-xs opacity-75 block mt-3 border-t-2 border-dashed border-gray-200 dark:border-gray-600 -mx-4 px-2 text-center -mb-1">
                                                 {message.hashtag}
                                             </span>
                                         )}
@@ -110,7 +112,7 @@ const ChatArea = ({
 
                     {isAIThinking && (
                         <div className="flex justify-start p-4">
-                            <div className="bg-gray-200 text-gray-800 max-w-xs lg:max-w-md px-1 py-1 rounded-sm">
+                            <div className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 max-w-xs lg:max-w-md px-1 py-1 rounded-sm shadow-sm dark:shadow-gray-900/30">
                                 <ChatLoader />
                             </div>
                         </div>
@@ -129,10 +131,10 @@ const ChatArea = ({
                     </div>
                 </div>
             ) : (
-                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center select-none">
+                <div className="dark:bg-gray-800 dark:text-gray-100 flex-1 flex flex-col items-center justify-center p-8 text-center select-none">
                     <div className="max-w-md space-y-4">
                         <div className="mb-6">
-                            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                            <h1 className="text-4xl font-bold mb-2">
                                 Chat & Email Assistant
                             </h1>
                             <p className="text-lg text-gray-600">
@@ -142,8 +144,8 @@ const ChatArea = ({
                         </div>
 
                         <div className="grid grid-cols-1 gap-4 mt-8">
-                            <div className="bg-gray-50 border border-gray-200 rounded-sm p-4 transition-colors">
-                                <h3 className="font-semibold text-blue-900 mb-1">
+                            <div className="dark:bg-gray-900 bg-gray-50 border dark:border-gray-600 border-gray-200 rounded-sm p-4 transition-colors shadow-sm dark:shadow-gray-900/20">
+                                <h3 className="font-semibold dark:text-blue-300 text-blue-900 mb-1">
                                     Start a Conversation
                                 </h3>
                                 <p className="text-sm text-gray-400">

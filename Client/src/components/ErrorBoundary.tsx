@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { Component } from "react";
 import type { ErrorInfo, ReactNode } from "react";
 
 interface Props {
@@ -39,8 +39,8 @@ class ErrorBoundary extends Component<Props, State> {
     public render() {
         if (this.state.hasError) {
             return (
-                <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
+                <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl dark:shadow-gray-900/50 p-8 max-w-md w-full">
                         {/* Error Icon */}
                         <div className="flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mx-auto mb-6">
                             <svg

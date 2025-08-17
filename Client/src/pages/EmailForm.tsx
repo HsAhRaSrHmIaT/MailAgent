@@ -9,6 +9,10 @@ import SendButtons from "../components/SendButtons";
 import HashTag from "../components/HashTag";
 
 import { apiService } from "../services/apiService";
+import ToggleTheme from "../components/ToggleTheme";
+
+import { IoSettingsOutline } from "react-icons/io5";
+import { Link } from "react-router-dom";
 
 interface Message {
     id: string;
@@ -417,7 +421,7 @@ const EmailForm = () => {
     return (
         <div className="flex h-[calc(100vh-2rem)] m-4">
             {/* Main Chat Container */}
-            <div className="flex-1 flex flex-col max-w-4xl mx-auto bg-white shadow-lg overflow-hidden">
+            <div className="flex-1 flex flex-col max-w-4xl mx-auto bg-white dark:bg-gray-800 dark:border dark:border-gray-700 shadow-lg dark:shadow-gray-900/50 overflow-hidden">
                 {/* Header */}
                 <Header setMessages={setMessages} />
 
@@ -443,10 +447,10 @@ const EmailForm = () => {
                 )}
 
                 {/* Input Section */}
-                <div className="border-t bg-gray-50 p-4">
+                <div className="border-t dark:border-white dark:bg-gray-900 bg-gray-50 p-4">
                     <div className="flex items-end space-x-3">
                         {/* Message Input */}
-                        <div className="flex-1 border border-gray-300 p-3 bg-white focus-within:border-gray-700 overflow-hidden">
+                        <div className="flex-1 border dark:border-gray-500 border-gray-300 p-3 dark:bg-gray-900 bg-white dark:focus-within:border-white focus-within:border-gray-700 overflow-hidden dark:text-gray-100">
                             <textarea
                                 ref={textareaRef}
                                 value={message}
@@ -503,6 +507,17 @@ const EmailForm = () => {
                             <CommandHelp />
                         )}
                 </div>
+            </div>
+            <div className="flex justify-between items-center space-x-4 h-16">
+                <ToggleTheme />
+                <Link to="/settings">
+                    <div className="hover:rotate-180 transition-transform duration-200">
+                        <IoSettingsOutline
+                            size={24}
+                            className="text-gray-600 dark:text-gray-400"
+                        />
+                    </div>
+                </Link>
             </div>
         </div>
     );

@@ -48,18 +48,22 @@ const Header = ({ setMessages }: HeaderProps) => {
     }, []);
 
     return (
-        <div className="bg-gray-700 text-white p-4 flex items-center justify-between select-none">
+        <div className="bg-gray-700 dark:bg-gray-900 text-white p-4 flex items-center justify-between select-none shadow-sm dark:shadow-gray-900/50">
             <div>
                 <h1 className="text-lg font-semibold">
                     Chat & Email Assistant
                 </h1>
                 <div className="flex items-center space-x-1 ml-1">
-                    <div className={`w-2 h-2 rounded-full ${status === "Online" ? "bg-green-400" : "bg-gray-400"}`}></div>
+                    <div
+                        className={`w-2 h-2 rounded-full ${
+                            status === "Online" ? "bg-green-400" : "bg-gray-400"
+                        }`}
+                    ></div>
                     <span className="text-xs">{status}</span>
                 </div>
             </div>
             <button
-                className="bg-gray-700 text-white p-2 rounded-full hover:bg-gray-600 transition-all duration-300 cursor-pointer hover:-rotate-180"
+                className="bg-gray-700 dark:bg-gray-800 text-white p-2 rounded-full hover:bg-gray-600 dark:hover:bg-gray-700 transition-all duration-300 cursor-pointer hover:-rotate-180 shadow-sm dark:shadow-gray-900/30"
                 onClick={handleRefresh}
             >
                 <LuRefreshCcw size={20} />
