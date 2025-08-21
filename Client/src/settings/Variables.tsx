@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Save } from "lucide-react";
+import { Save, Edit2, Eye, EyeOff, Lightbulb } from "lucide-react";
+// import { GoLightBulb } from "react-icons/go";
 
 interface Variable {
     key: string;
@@ -7,151 +8,346 @@ interface Variable {
 }
 
 const Variables = () => {
-    const [variables, setVariables] = useState<Variable[]>([
-        { key: "", value: "" },
-        { key: "", value: "" },
-        { key: "", value: "" },
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [showValues, setShowValues] = useState<{ [key: number]: boolean }>(
+        {}
+    );
+
+    // Mock saved data
+    const [savedVariables, setSavedVariables] = useState<Variable[]>([
+        { key: "GEMINI_API_KEY", value: "pass@localhost:5432/mydb" },
+        { key: "MURF_API_KEY", value: "sk-1234567890abcdef" },
+        { key: "ASSEMBLYAI_API_KEY", value: "super-secret-jwt-key-123" },
     ]);
 
+    const [editingVariables, setEditingVariables] = useState<Variable[]>([]);
+
+    const startEditing = () => {
+        setEditingVariables([...savedVariables]);
+        setIsEditing(true);
+    };
+
     // const addVariable = () => {
-    //     setVariables([...variables, { key: "", value: "" }]);
+    //     setEditingVariables([...editingVariables, { key: "", value: "" }]);
     // };
 
     // const removeVariable = (index: number): void => {
-    //     setVariables(variables.filter((_, i) => i !== index));
+    //     setEditingVariables(editingVariables.filter((_, i) => i !== index));
     // };
 
     const updateVariable = (
         index: number,
-        field: string,
+        field: keyof Variable,
         value: string
     ): void => {
-        const updated = variables.map((variable, i) =>
+        const updated = editingVariables.map((variable, i) =>
             i === index ? { ...variable, [field]: value } : variable
         );
-        setVariables(updated);
+        setEditingVariables(updated);
     };
 
     const handleSave = () => {
-        console.log(
-            "Saving variables:",
-            variables.filter((v) => v.key || v.value)
+        setIsSaving(true);
+        // Simulate saving process
+        setTimeout(() => {
+            const validVariables = editingVariables.filter(
+                (v) => v.key.trim() && v.value.trim()
+            );
+            setSavedVariables(validVariables);
+            setIsEditing(false);
+            setIsSaving(false);
+            console.log("Environment variables saved", validVariables);
+        }, 1500);
+    };
+
+    const handleCancel = () => {
+        setIsEditing(false);
+        setEditingVariables([]);
+    };
+
+    const toggleValueVisibility = (index: number) => {
+        setShowValues((prev) => ({
+            ...prev,
+            [index]: !prev[index],
+        }));
+    };
+
+    const maskValue = (value: string) => {
+        if (value.length <= 8) return "•".repeat(value.length);
+        return (
+            value.substring(0, 4) +
+            "•".repeat(Math.max(4, value.length - 8)) +
+            value.substring(value.length - 4)
         );
     };
 
     return (
         <div className="min-h-screen">
-            <div className="">
+            <div className="max-w-6xl mx-auto p-6 select-none">
                 {/* Header */}
-                <div className="m-6 ml-8">
-                    <div className="inline-flex gap-3 mb-4">
+                <div className="mb-8">
+                    <div className="flex items-center gap-4 mb-4">
                         <div className="p-3 bg-blue-500/20 rounded-xl">
-                            <span className="w-8 h-8 text-blue-400">.env</span>
+                            <span className="text-sm text-blue-400 font-mono font-bold">
+                                .env
+                            </span>
                         </div>
-                        <h1 className="text-4xl font-bold dark:text-white mb-3">
-                            Environment Variables
-                        </h1>
+                        <div>
+                            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+                                Environment Variables
+                            </h1>
+                            <p className="text-gray-600 dark:text-slate-400 text-lg mt-1">
+                                Configure your application's environment
+                                variables securely and efficiently
+                            </p>
+                        </div>
                     </div>
-                    <p className="text-slate-400 text-lg max-w-2xl">
-                        Configure your application's environment variables
-                        securely and efficiently
-                    </p>
                 </div>
 
-                {/* Main Container */}
-                <div className="flex max-w-6xl mx-auto gap-4">
-                    <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 shadow-2xl w-3/4">
-                        <div className="p-6">
-                            {/* Variables List */}
-                            <div className="space-y-3 mb-6">
-                                {variables.map((variable, index) => (
-                                    <div
-                                        key={index}
-                                        className="group bg-slate-900/50 rounded-xl border border-slate-700/50 p-6 hover:border-slate-600/50 transition-all duration-200"
-                                    >
-                                        <div className="flex gap-4 items-end">
-                                            <div className="flex-1">
-                                                <label className="block text-sm font-medium text-slate-300 mb-2">
-                                                    Variable Key
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={variable.key}
-                                                    onChange={(e) =>
-                                                        updateVariable(
-                                                            index,
-                                                            "key",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    placeholder="API_KEY"
-                                                    className="w-full px-4 py-3 bg-slate-800/70 border border-slate-600/50 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-colors"
-                                                />
-                                            </div>
-                                            <div className="flex-1">
-                                                <label className="block text-sm font-medium text-slate-300 mb-2">
-                                                    Variable Value
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={variable.value}
-                                                    onChange={(e) =>
-                                                        updateVariable(
-                                                            index,
-                                                            "value",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    placeholder="your-secret-value"
-                                                    className="w-full px-4 py-3 bg-slate-800/70 border border-slate-600/50 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-colors"
-                                                />
-                                            </div>
-                                        </div>
+                <div className="flex gap-6">
+                    {/* Main Content */}
+                    <div className="flex-1">
+                        {isEditing ? (
+                            <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-lg">
+                                <div className="p-6">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                                            Edit Environment Variables
+                                        </h2>
                                     </div>
-                                ))}
-                            </div>
 
-                            {/* Action Buttons */}
-                            <div className="flex flex-col sm:flex-row gap-4 justify-end items-center pt-6 border-t border-slate-700/50">
-                                <div className="flex gap-3">
-                                    <button
-                                        type="button"
-                                        className="px-6 py-3 text-slate-300 hover:text-white hover:bg-slate-700/30 rounded-lg transition-colors"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={handleSave}
-                                        className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
-                                    >
-                                        <Save className="w-5 h-5" />
-                                        Save Variables
-                                    </button>
+                                    {/* Variables List */}
+                                    <div className="space-y-3 mb-6">
+                                        {editingVariables.map(
+                                            (variable, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="bg-gray-50 dark:bg-slate-900/50 rounded-lg border border-gray-200 dark:border-slate-700 p-4 hover:border-gray-300 dark:hover:border-slate-600 transition-colors"
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="flex-1">
+                                                            <div className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                                                                Key
+                                                            </div>
+                                                            <input
+                                                                type="text"
+                                                                value={
+                                                                    variable.key
+                                                                }
+                                                                onChange={(e) =>
+                                                                    updateVariable(
+                                                                        index,
+                                                                        "key",
+                                                                        e.target
+                                                                            .value
+                                                                    )
+                                                                }
+                                                                placeholder="API_KEY"
+                                                                className="w-full font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-slate-800 px-3 py-2 rounded border border-gray-300 dark:border-slate-600 focus:outline-none focus:ring-1 
+                                                            focus:ring-blue-500
+                                                            focus:border-blue-500 dark:focus:ring-gray-200 dark:focus:border-gray-200 transition-colors"
+                                                            />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <div className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                                                                Value
+                                                            </div>
+                                                            <input
+                                                                type="text"
+                                                                value={
+                                                                    variable.value
+                                                                }
+                                                                onChange={(e) =>
+                                                                    updateVariable(
+                                                                        index,
+                                                                        "value",
+                                                                        e.target
+                                                                            .value
+                                                                    )
+                                                                }
+                                                                placeholder="your-secret-value"
+                                                                className="w-full font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-slate-800 px-3 py-2 rounded border border-gray-300 dark:border-slate-600 focus:outline-none focus:ring-1 
+                                                            focus:ring-blue-500
+                                                            focus:border-blue-500 dark:focus:ring-gray-200 dark:focus:border-gray-200 transition-colors"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )
+                                        )}
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-slate-700">
+                                        <button
+                                            onClick={handleCancel}
+                                            className="px-6 py-3 text-gray-700 dark:text-slate-300 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-sm transition-colors cursor-pointer"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={handleSave}
+                                            className="inline-flex items-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-sm transition-colors shadow-lg cursor-pointer"
+                                        >
+                                            {isSaving ? (
+                                                <span className="animate-spin">
+                                                    <div className="w-5 h-5 border-2 border-white-500 border-t-transparent rounded-full animate-spin"></div>
+                                                </span>
+                                            ) : (
+                                                <Save className="w-5 h-5" />
+                                            )}
+                                            <span>
+                                                {isSaving
+                                                    ? "Saving..."
+                                                    : "Save Variables"}
+                                            </span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        ) : (
+                            <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-lg">
+                                <div className="p-6">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                                            Saved Environment Variables (
+                                            {savedVariables.length})
+                                        </h2>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        {savedVariables.map(
+                                            (variable, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="bg-gray-50 dark:bg-slate-900/50 rounded-lg border border-gray-200 dark:border-slate-700 p-4 hover:border-gray-300 dark:hover:border-slate-600 transition-colors"
+                                                >
+                                                    <div className="flex justify-between items-center">
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-4">
+                                                                <div className="flex-1">
+                                                                    <div className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                                                                        Key
+                                                                    </div>
+                                                                    <div className="font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-slate-800 px-3 py-2 rounded border">
+                                                                        {
+                                                                            variable.key
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex-1">
+                                                                    <div className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                                                                        Value
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <div className="font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-slate-800 px-3 py-2 rounded border flex-1">
+                                                                            {showValues[
+                                                                                index
+                                                                            ]
+                                                                                ? variable.value
+                                                                                : maskValue(
+                                                                                      variable.value
+                                                                                  )}
+                                                                        </div>
+                                                                        <button
+                                                                            onClick={() =>
+                                                                                toggleValueVisibility(
+                                                                                    index
+                                                                                )
+                                                                            }
+                                                                            className="p-2 text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded transition-colors cursor-pointer"
+                                                                        >
+                                                                            {showValues[
+                                                                                index
+                                                                            ] ? (
+                                                                                <EyeOff className="w-4 h-4" />
+                                                                            ) : (
+                                                                                <Eye className="w-4 h-4" />
+                                                                            )}
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )
+                                        )}
+                                    </div>
+                                    <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-slate-700 mt-6">
+                                        <button
+                                            onClick={startEditing}
+                                            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-sm transition-colors cursor-pointer"
+                                        >
+                                            <Edit2 className="w-4 h-4" />
+                                            Edit Variables
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Info Section */}
-                    <div className="w-1/4 p-6 bg-slate-800/30 rounded-xl border border-slate-700/30">
-                        <h3 className="text-lg font-semibold text-white mb-3">
-                            💡 Tips
-                        </h3>
-                        <ul className="space-y-2 text-slate-400">
-                            <li>
-                                • Use uppercase with underscores for environment
-                                variable names (e.g., API_KEY, DATABASE_URL)
-                            </li>
-                            <li>
-                                • Keep sensitive values secure and never commit
-                                them to version control
-                            </li>
-                            <li>
-                                • Remove unused variables to keep your
-                                environment clean
-                            </li>
-                        </ul>
+                    <div className="flex w-80">
+                        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-lg p-6 sticky top-6">
+                            <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                <Lightbulb className="w-6 h-6" />
+                                Best Practices
+                            </h3>
+                            <div className="space-y-3 text-gray-600 dark:text-slate-400">
+                                <div className="flex items-start gap-2">
+                                    <span className="text-blue-500 mt-0.5">
+                                        •
+                                    </span>
+                                    <span>
+                                        Use uppercase with underscores for
+                                        variable names (e.g., API_KEY,
+                                        DATABASE_URL)
+                                    </span>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                    <span className="text-blue-500 mt-0.5">
+                                        •
+                                    </span>
+                                    <span>
+                                        Keep sensitive values secure and never
+                                        commit them to version control
+                                    </span>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                    <span className="text-blue-500 mt-0.5">
+                                        •
+                                    </span>
+                                    <span>
+                                        Remove unused variables to keep your
+                                        environment clean
+                                    </span>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                    <span className="text-blue-500 mt-0.5">
+                                        •
+                                    </span>
+                                    <span>
+                                        Use descriptive names that clearly
+                                        indicate the variable's purpose
+                                    </span>
+                                </div>
+                            </div>
+
+                            {!isEditing && savedVariables.length > 0 && (
+                                <div className="mt-6 pt-4 border-t border-gray-200 dark:border-slate-700">
+                                    <div className="text-sm text-gray-500 dark:text-slate-400">
+                                        <strong className="text-gray-700 dark:text-slate-300">
+                                            Security:
+                                        </strong>{" "}
+                                        Values are masked by default. Click the
+                                        eye icon to reveal them.
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
