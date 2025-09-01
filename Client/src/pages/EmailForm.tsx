@@ -7,9 +7,10 @@ import Header from "../components/Header";
 import CommandStatusBar from "../components/CommandStatusBar";
 import SendButtons from "../components/SendButtons";
 import HashTag from "../components/HashTag";
+import ToggleTheme from "../components/ToggleTheme";
 
 import { apiService } from "../services/apiService";
-import ToggleTheme from "../components/ToggleTheme";
+import { useTheme } from "../contexts/ThemeContext";
 
 import { IoSettingsOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
@@ -60,6 +61,7 @@ const EmailForm = () => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const emailLength = 50;
     const maxMessageLength = 300;
+    const { currentColors } = useTheme();
 
     const addMessage = (
         content: string,
@@ -421,7 +423,7 @@ const EmailForm = () => {
     return (
         <div className="flex h-[calc(100vh-2rem)] m-4">
             {/* Main Chat Container */}
-            <div className="flex-1 flex flex-col max-w-4xl mx-auto bg-white dark:bg-gray-800 dark:border dark:border-gray-700 shadow-lg dark:shadow-gray-900/50 overflow-hidden">
+            <div className={`flex-1 flex flex-col max-w-4xl mx-auto border shadow-lg dark:shadow-gray-900/50 overflow-hidden`} style={{ borderColor: currentColors.border }}>
                 {/* Header */}
                 <Header setMessages={setMessages} />
 
@@ -514,7 +516,7 @@ const EmailForm = () => {
                     <div className="hover:rotate-180 transition-transform duration-200">
                         <IoSettingsOutline
                             size={24}
-                            className="text-gray-600 dark:text-gray-400"
+                            style={{ color: currentColors.text }}
                         />
                     </div>
                 </Link>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { LuRefreshCcw } from "react-icons/lu";
 import { apiService } from "../services/apiService";
+import { useTheme } from "../contexts/ThemeContext";
 
 interface Message {
     id: string;
@@ -21,6 +22,7 @@ interface HeaderProps {
 }
 
 const Header = ({ setMessages }: HeaderProps) => {
+    const { currentColors } = useTheme();
     const [status, setStatus] = useState("Online");
     const handleRefresh = () => {
         // Logic to refresh messages or reset state
@@ -48,23 +50,54 @@ const Header = ({ setMessages }: HeaderProps) => {
     }, []);
 
     return (
-        <div className="bg-gray-700 dark:bg-gray-900 text-white p-4 flex items-center justify-between select-none shadow-sm dark:shadow-gray-900/50">
+        <div
+            className="p-4 flex items-center justify-between select-none shadow-sm"
+            style={{
+                backgroundColor: currentColors.surface,
+                color: currentColors.text,
+                boxShadow: `0 1px 3px 0 ${currentColors.border}20`,
+            }}
+        >
             <div>
-                <h1 className="text-lg font-semibold">
+                <h1
+                    className="text-lg font-semibold"
+                    style={{ color: currentColors.text }}
+                >
                     Chat & Email Assistant
                 </h1>
                 <div className="flex items-center space-x-1 ml-1">
                     <div
-                        className={`w-2 h-2 rounded-full ${
-                            status === "Online" ? "bg-green-400" : "bg-gray-400"
-                        }`}
+                        className={`w-2 h-2 rounded-full`}
+                        style={{
+                            backgroundColor:
+                                status === "Online"
+                                    ? "#10B981"
+                                    : currentColors.border,
+                        }}
                     ></div>
-                    <span className="text-xs">{status}</span>
+                    <span
+                        className="text-xs"
+                        style={{ color: currentColors.textSecondary }}
+                    >
+                        {status}
+                    </span>
                 </div>
             </div>
             <button
-                className="bg-gray-700 dark:bg-gray-800 text-white p-2 rounded-full hover:bg-gray-600 dark:hover:bg-gray-700 transition-all duration-300 cursor-pointer hover:-rotate-180 shadow-sm dark:shadow-gray-900/30"
+                className="p-2 rounded-full transition-all duration-300 cursor-pointer hover:-rotate-180"
+                style={{
+                    backgroundColor: currentColors.bg,
+                    color: currentColors.text,
+                    border: `1px solid ${currentColors.border}`,
+                }}
                 onClick={handleRefresh}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor =
+                        currentColors.border;
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = currentColors.bg;
+                }}
             >
                 <LuRefreshCcw size={20} />
             </button>

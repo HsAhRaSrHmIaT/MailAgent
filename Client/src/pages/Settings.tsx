@@ -1,7 +1,8 @@
-import { useReducer } from "react";
+import { useReducer, useState } from "react";
 import { Link } from "react-router-dom";
 
 import Variables from "../settings/Variables";
+import { useTheme } from "../contexts/ThemeContext";
 
 import { FiHome } from "react-icons/fi";
 import { IoColorPaletteOutline, IoNotificationsOutline } from "react-icons/io5";
@@ -36,32 +37,52 @@ const reducer = (state: State, action: Action): State => {
 };
 
 const initialState: State = {
-    activeTab: "account",
+    activeTab: "theme",
 };
 
 const Settings = () => {
     const [state, dispatch] = useReducer(reducer, initialState);
+    const { currentColors } = useTheme();
+    const [hoveredTab, setHoveredTab] = useState<string | null>(null);
+
+    const getTabBg = (tabKey: string) => {
+        if (state.activeTab === tabKey || hoveredTab === tabKey) {
+            return currentColors.textSecondary + "30";
+        }
+        return "";
+    };
 
     return (
         <div className="flex h-screen">
-            <div className="w-1/4 p-4 bg-gray-200 dark:bg-gray-900 select-none flex flex-col">
+            <div
+                className={`w-1/4 p-4 select-none flex flex-col`}
+                style={{ backgroundColor: currentColors.bg }}
+            >
                 <div className="text-4xl font-semibold dark:text-white p-4 italic">
                     @Settings
                 </div>
                 {/* Left Side Panel */}
                 <ul className="space-y-3 dark:text-white text-gray-600 p-2 mt-4 flex-1 flex flex-col">
                     <Link to="/">
-                        <li className="flex items-center gap-2 text-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-700 p-2 rounded cursor-pointer">
+                        <li
+                            className="flex items-center gap-2 text-lg font-semibold p-2 rounded cursor-pointer"
+                            style={{
+                                backgroundColor: getTabBg("home"),
+                            }}
+                            onMouseEnter={() => setHoveredTab("home")}
+                            onMouseLeave={() => setHoveredTab(null)}
+                        >
                             <FiHome size={24} />
                             Home
                         </li>
                     </Link>
                     <li
-                        className={`flex items-center gap-2 text-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-700 p-2 rounded cursor-pointer ${
-                            state.activeTab === "account"
-                                ? "bg-gray-300 dark:bg-gray-700"
-                                : ""
-                        }`}
+                        className="flex items-center gap-2 text-lg font-semibold p-2 rounded cursor-pointer"
+                        style={{
+                            backgroundColor: getTabBg("account"),
+                        }}
+                        onMouseEnter={() => setHoveredTab("account")}
+                        onMouseLeave={() => setHoveredTab(null)}
                         onClick={() =>
                             dispatch({
                                 type: "SET_ACTIVE_TAB",
@@ -73,11 +94,12 @@ const Settings = () => {
                         Account
                     </li>
                     <li
-                        className={`flex items-center gap-2 text-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-700 p-2 rounded cursor-pointer ${
-                            state.activeTab === "notifications"
-                                ? "bg-gray-300 dark:bg-gray-700"
-                                : ""
-                        }`}
+                        className={`flex items-center gap-2 text-lg font-semibold p-2 rounded cursor-pointer`}
+                        style={{
+                            backgroundColor: getTabBg("notifications"),
+                        }}
+                        onMouseEnter={() => setHoveredTab("notifications")}
+                        onMouseLeave={() => setHoveredTab(null)}
                         onClick={() =>
                             dispatch({
                                 type: "SET_ACTIVE_TAB",
@@ -89,11 +111,12 @@ const Settings = () => {
                         Email Notifications
                     </li>
                     <li
-                        className={`flex items-center gap-2 text-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-700 p-2 rounded cursor-pointer ${
-                            state.activeTab === "config"
-                                ? "bg-gray-300 dark:bg-gray-700"
-                                : ""
-                        }`}
+                        className={`flex items-center gap-2 text-lg font-semibold p-2 rounded cursor-pointer`}
+                        style={{
+                            backgroundColor: getTabBg("config"),
+                        }}
+                        onMouseEnter={() => setHoveredTab("config")}
+                        onMouseLeave={() => setHoveredTab(null)}
                         onClick={() =>
                             dispatch({
                                 type: "SET_ACTIVE_TAB",
@@ -105,11 +128,12 @@ const Settings = () => {
                         Configuration
                     </li>
                     <li
-                        className={`flex items-center gap-2 text-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-700 p-2 rounded cursor-pointer ${
-                            state.activeTab === "env"
-                                ? "bg-gray-300 dark:bg-gray-700"
-                                : ""
-                        }`}
+                        className={`flex items-center gap-2 text-lg font-semibold p-2 rounded cursor-pointer`}
+                        style={{
+                            backgroundColor: getTabBg("env"),
+                        }}
+                        onMouseEnter={() => setHoveredTab("env")}
+                        onMouseLeave={() => setHoveredTab(null)}
                         onClick={() =>
                             dispatch({ type: "SET_ACTIVE_TAB", payload: "env" })
                         }
@@ -120,11 +144,12 @@ const Settings = () => {
                         Environment Variables
                     </li>
                     <li
-                        className={`flex items-center gap-2 text-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-700 p-2 rounded cursor-pointer ${
-                            state.activeTab === "theme"
-                                ? "bg-gray-300 dark:bg-gray-700"
-                                : ""
-                        }`}
+                        className={`flex items-center gap-2 text-lg font-semibold p-2 rounded cursor-pointer`}
+                        style={{
+                            backgroundColor: getTabBg("theme"),
+                        }}
+                        onMouseEnter={() => setHoveredTab("theme")}
+                        onMouseLeave={() => setHoveredTab(null)}
                         onClick={() =>
                             dispatch({
                                 type: "SET_ACTIVE_TAB",
@@ -141,7 +166,12 @@ const Settings = () => {
                         </span>
                     </div>
                     <li
-                        className={`flex items-center gap-2 text-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-700 p-2 rounded cursor-pointer`}
+                        className={`flex items-center gap-2 text-lg font-semibold p-2 rounded cursor-pointer`}
+                        style={{
+                            backgroundColor: getTabBg("logs"),
+                        }}
+                        onMouseEnter={() => setHoveredTab("logs")}
+                        onMouseLeave={() => setHoveredTab(null)}
                         onClick={() =>
                             dispatch({
                                 type: "SET_ACTIVE_TAB",
@@ -153,11 +183,12 @@ const Settings = () => {
                         View Logs
                     </li>
                     <li
-                        className={`flex items-center gap-2 text-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-700 p-2 rounded cursor-pointer ${
-                            state.activeTab === "export"
-                                ? "bg-gray-300 dark:bg-gray-700"
-                                : ""
-                        }`}
+                        className={`flex items-center gap-2 text-lg font-semibold p-2 rounded cursor-pointer`}
+                        style={{
+                            backgroundColor: getTabBg("export"),
+                        }}
+                        onMouseEnter={() => setHoveredTab("export")}
+                        onMouseLeave={() => setHoveredTab(null)}
                         onClick={() =>
                             dispatch({
                                 type: "SET_ACTIVE_TAB",
@@ -169,13 +200,25 @@ const Settings = () => {
                         Export Data
                     </li>
                     <div className="flex-1"></div>
-                    <li className="flex items-center gap-2 text-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-700 hover:text-red-400 p-2 rounded cursor-pointer">
+                    <li className="flex items-center gap-2 text-lg font-semibold hover:text-red-400 p-2 rounded cursor-pointer"
+                        style={{
+                            backgroundColor: getTabBg("logout"),
+                        }}
+                        onMouseEnter={() => setHoveredTab("logout")}
+                        onMouseLeave={() => setHoveredTab(null)}
+                    >
                         <MdLogout size={24} />
                         Logout
                     </li>
                 </ul>
             </div>
-            <div className="w-3/4 p-4 bg-gray-200 border border-gray-300 dark:border-none dark:bg-gray-900 m-4 rounded w-full">
+            <div
+                className={`w-3/4 p-4 m-4 rounded w-full`}
+                style={{
+                    backgroundColor: currentColors.bg,
+                    border: `1px solid ${currentColors.border}`,
+                }}
+            >
                 {/* Main Area */}
                 {(() => {
                     switch (state.activeTab) {
@@ -194,7 +237,7 @@ const Settings = () => {
                         case "export":
                             return <ExportData />;
                         default:
-                            return <Account />;
+                            return <Themes />;
                     }
                 })()}
             </div>
