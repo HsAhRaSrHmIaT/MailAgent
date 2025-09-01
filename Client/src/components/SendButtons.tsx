@@ -1,11 +1,6 @@
 import { BsFillSendFill } from "react-icons/bs";
 import { FaMicrophone } from "react-icons/fa";
-
-interface SendButtonsProps {
-    onSubmit: () => void;
-    disabled?: boolean;
-    isLoading?: boolean;
-}
+import type { SendButtonsProps } from "../types";
 
 const SendButtons = ({ onSubmit, disabled = false }: SendButtonsProps) => {
     return (

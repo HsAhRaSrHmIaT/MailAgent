@@ -1,22 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import type {
-    ThemeMode,
-    PaletteKey,
-    ColorScheme,
-    ColorPalette,
-} from "./themeTypes";
+import type { ThemeMode, PaletteKey } from "./themeTypes";
 import { colorPalettes } from "./themeTypes";
-
-interface ThemeContextType {
-    theme: ThemeMode;
-    colorPalette: PaletteKey;
-    currentColors: ColorScheme;
-    currentPalette: ColorPalette;
-    setTheme: (theme: ThemeMode) => void;
-    setColorPalette: (palette: PaletteKey) => void;
-    toggleTheme: () => void;
-    resetToDefault: () => void;
-}
+import type { ThemeContextType } from "../types";
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 

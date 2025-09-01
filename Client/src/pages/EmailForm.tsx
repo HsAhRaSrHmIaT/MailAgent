@@ -14,33 +14,7 @@ import { useTheme } from "../contexts/ThemeContext";
 
 import { IoSettingsOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
-
-interface Message {
-    id: string;
-    content: string;
-    sender: "user" | "assistant";
-    timestamp: Date;
-    hashtag?: string;
-    type?: "text" | "email";
-    emailData?: EmailData;
-}
-
-interface EmailData {
-    body: string;
-    subject: string;
-    to: string;
-}
-
-interface CommandState {
-    isActive: boolean;
-    command: string;
-    step: number;
-    data: {
-        receiverEmail?: string;
-        prompt?: string;
-    };
-    clearAll?: boolean;
-}
+import type { Message, CommandState, EmailData } from "../types";
 
 const EmailForm = () => {
     const [message, setMessage] = useState("");
@@ -423,7 +397,10 @@ const EmailForm = () => {
     return (
         <div className="flex h-[calc(100vh-2rem)] m-4">
             {/* Main Chat Container */}
-            <div className={`flex-1 flex flex-col max-w-4xl mx-auto border shadow-lg dark:shadow-gray-900/50 overflow-hidden`} style={{ borderColor: currentColors.border }}>
+            <div
+                className={`flex-1 flex flex-col max-w-4xl mx-auto border shadow-lg dark:shadow-gray-900/50 overflow-hidden`}
+                style={{ borderColor: currentColors.border }}
+            >
                 {/* Header */}
                 <Header setMessages={setMessages} />
 

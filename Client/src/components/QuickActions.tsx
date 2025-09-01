@@ -1,8 +1,4 @@
-interface QuickActionsProps {
-    setMessage: (message: string) => void;
-    setHashTag: (hashTag: string) => void;
-    hashTag: string;
-}
+import type { QuickActionsProps } from "../types";
 
 const QuickActions = ({
     setMessage,

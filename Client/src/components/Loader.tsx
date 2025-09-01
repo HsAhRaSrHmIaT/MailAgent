@@ -1,7 +1,4 @@
-interface LoaderProps {
-    variant?: "chat" | "email" | "circle";
-    size?: "sm" | "md" | "lg";
-}
+import type { LoaderProps } from "../types";
 
 const sizeClasses = {
     sm: "w-4 h-4",
@@ -45,7 +42,9 @@ const Loader = ({ variant = "chat", size = "sm" }: LoaderProps) => {
     );
 
     const renderCircleLoader = () => (
-        <div className={`${sizeClasses[size]} border-3 border-gray-300 border-t-gray-500 rounded-full animate-spin`} />
+        <div
+            className={`${sizeClasses[size]} border-3 border-gray-300 border-t-gray-500 rounded-full animate-spin`}
+        />
     );
 
     const renderLoader = () => {
@@ -67,6 +66,8 @@ const Loader = ({ variant = "chat", size = "sm" }: LoaderProps) => {
 // Named exports for convenience
 export const ChatLoader = () => <Loader variant="chat" />;
 export const EmailGenerateLoader = () => <Loader variant="email" />;
-export const CircleLoader = (props?: Partial<LoaderProps>) => <Loader variant="circle" {...props} />;
+export const CircleLoader = (props?: Partial<LoaderProps>) => (
+    <Loader variant="circle" {...props} />
+);
 
 export default Loader;

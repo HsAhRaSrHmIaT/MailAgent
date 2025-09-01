@@ -1,12 +1,11 @@
-interface HashTagProps {
-    hashTag: string;
-    setHashTag: React.Dispatch<React.SetStateAction<string>>;
-}
+import type { HashTagProps } from "../types";
 
 const HashTag = ({ hashTag, setHashTag }: HashTagProps) => {
     return (
         <div className="select-none">
-            <span className="text-xs text-gray-600 font-bold dark:text-white">Tag: </span>
+            <span className="text-xs text-gray-600 font-bold dark:text-white">
+                Tag:{" "}
+            </span>
             {hashTag ? (
                 <>
                     <span className="text-xs text-blue-400 bg-blue-50 px-1 rounded-full">

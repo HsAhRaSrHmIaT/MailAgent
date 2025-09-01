@@ -1,30 +1,9 @@
 import { useEffect, useRef } from "react";
 
 import EmailPreviewBox from "../templates/EmailPreviewBox";
+
 import { CircleLoader, ChatLoader, EmailGenerateLoader } from "./Loader";
-
-interface Message {
-    id: string;
-    content: string;
-    sender: "user" | "assistant";
-    timestamp: Date;
-    hashtag?: string;
-    type?: "text" | "email";
-    emailData?: EmailData;
-}
-
-interface EmailData {
-    to: string;
-    subject: string;
-    body: string;
-}
-
-interface ChatAreaProps {
-    messages: Message[];
-    isLoading?: boolean;
-    isAIThinking?: boolean;
-    isEmailGenerating?: boolean;
-}
+import type { ChatAreaProps } from "../types";
 
 const ChatArea = ({
     messages,

@@ -2,24 +2,7 @@ import { useEffect, useState } from "react";
 import { LuRefreshCcw } from "react-icons/lu";
 import { apiService } from "../services/apiService";
 import { useTheme } from "../contexts/ThemeContext";
-
-interface Message {
-    id: string;
-    content: string;
-    sender: "user" | "assistant";
-    timestamp: Date;
-    hashtag?: string;
-    type?: "text" | "email";
-    emailData?: {
-        to: string;
-        subject: string;
-        body: string;
-    };
-}
-
-interface HeaderProps {
-    setMessages: (messages: Message[]) => void;
-}
+import type { HeaderProps } from "../types";
 
 const Header = ({ setMessages }: HeaderProps) => {
     const { currentColors } = useTheme();

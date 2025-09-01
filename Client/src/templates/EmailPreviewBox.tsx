@@ -4,16 +4,7 @@ import { apiService } from "../services/apiService";
 
 import { GiSpeaker } from "react-icons/gi";
 import { GoCopy, GoCheck } from "react-icons/go";
-
-interface EmailData {
-    to: string;
-    subject: string;
-    body: string;
-}
-
-interface EmailPreviewBoxProps {
-    emailData: EmailData | null;
-}
+import type { EmailPreviewBoxProps } from "../types";
 
 const EmailPreviewBox = ({ emailData }: EmailPreviewBoxProps) => {
     const [sent, setSent] = useState(false);

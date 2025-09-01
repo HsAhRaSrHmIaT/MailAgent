@@ -1,18 +1,4 @@
-interface CommandStatusBarProps {
-    commandState: {
-        command: string;
-        step: number;
-        data: {
-            receiverEmail?: string;
-        };
-    };
-    clearCountdown: number;
-    totalSteps: number;
-    onCancel: () => void;
-    currentMessage?: string;
-    isValidEmail?: (email: string) => boolean;
-    showValidationError?: boolean;
-}
+import type { CommandStatusBarProps } from "../types";
 
 const CommandStatusBar = ({
     commandState,
