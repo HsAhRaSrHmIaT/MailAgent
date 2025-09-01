@@ -1,4 +1,5 @@
 import type { CommandStatusBarProps } from "../types";
+import { useTheme } from "../contexts/ThemeContext";
 
 const CommandStatusBar = ({
     commandState,
@@ -17,45 +18,62 @@ const CommandStatusBar = ({
         isValidEmail &&
         !isValidEmail(currentMessage.trim());
 
+    const { currentColors, currentPalette } = useTheme();
+
     return (
         <div
-            className={`${
-                isInvalidEmail
-                    ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
-                    : "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
-            } border-t p-3 shadow-sm dark:shadow-gray-900/30`}
+            className="border-t p-3 shadow-sm"
+            style={{
+                backgroundColor: isInvalidEmail
+                    ? "#fff0f0"
+                    : currentColors.surface,
+                borderColor: isInvalidEmail ? "#ffcccc" : currentColors.border,
+                boxShadow: `0 1px 4px 0 ${currentColors.border}22`,
+            }}
         >
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                     <span
-                        className={`font-medium select-none ${
-                            isInvalidEmail
-                                ? "text-red-600 dark:text-red-400"
-                                : "text-blue-600 dark:text-blue-400"
-                        }`}
+                        className="font-medium select-none"
+                        style={{
+                            color: isInvalidEmail
+                                ? "#d32f2f"
+                                : currentPalette.primary,
+                        }}
                     >
                         {commandState.command}
                     </span>
 
                     {commandState.command === "/clear" ? (
                         <div className="flex items-center space-x-2">
-                            <span className="text-xs text-red-500 dark:text-red-400 select-none">
+                            <span
+                                className="text-xs select-none"
+                                style={{ color: "#d32f2f" }}
+                            >
                                 Clearing in {clearCountdown}s
                             </span>
                         </div>
                     ) : (
                         <>
                             <span
-                                className={`text-sm ${
-                                    isInvalidEmail
-                                        ? "text-red-600 dark:text-red-400"
-                                        : "text-blue-600 dark:text-blue-400"
-                                } select-none`}
+                                className="text-sm select-none"
+                                style={{
+                                    color: isInvalidEmail
+                                        ? "#d32f2f"
+                                        : currentPalette.primary,
+                                }}
                             >
                                 Step {commandState.step + 1} of {totalSteps}
                             </span>
                             {commandState.data.receiverEmail && (
-                                <span className="text-xs bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 px-2 py-1 rounded shadow-sm dark:shadow-gray-900/30">
+                                <span
+                                    className="text-xs px-2 py-1 rounded shadow-sm"
+                                    style={{
+                                        backgroundColor:
+                                            currentPalette.primary + "22",
+                                        color: currentPalette.primary,
+                                    }}
+                                >
                                     To: {commandState.data.receiverEmail}
                                 </span>
                             )}
@@ -64,18 +82,22 @@ const CommandStatusBar = ({
                 </div>
                 {isInvalidEmail && (
                     <div className="flex items-center space-x-2">
-                        <span className="text-sm text-red-600 dark:text-red-400 font-medium">
+                        <span
+                            className="text-sm font-medium"
+                            style={{ color: "#d32f2f" }}
+                        >
                             Please enter a valid email address
                         </span>
                     </div>
                 )}
                 <button
                     onClick={onCancel}
-                    className={`${
-                        isInvalidEmail
-                            ? "text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
-                            : "text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-                    } text-sm cursor-pointer`}
+                    className="text-sm cursor-pointer"
+                    style={{
+                        color: isInvalidEmail
+                            ? "#d32f2f"
+                            : currentPalette.primary,
+                    }}
                 >
                     Cancel
                 </button>

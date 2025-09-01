@@ -426,10 +426,21 @@ const EmailForm = () => {
                 )}
 
                 {/* Input Section */}
-                <div className="border-t dark:border-white dark:bg-gray-900 bg-gray-50 p-4">
+                <div
+                    className="border-t p-4"
+                    style={{
+                        borderColor: currentColors.border,
+                    }}
+                >
                     <div className="flex items-end space-x-3">
                         {/* Message Input */}
-                        <div className="flex-1 border dark:border-gray-500 border-gray-300 p-3 dark:bg-gray-900 bg-white dark:focus-within:border-white focus-within:border-gray-700 overflow-hidden dark:text-gray-100">
+                        <div
+                            className="flex-1 border p-3 overflow-hidden"
+                            style={{
+                                borderColor: currentColors.border,
+                                color: currentColors.text,
+                            }}
+                        >
                             <textarea
                                 ref={textareaRef}
                                 value={message}
@@ -439,6 +450,7 @@ const EmailForm = () => {
                                 style={{
                                     scrollbarWidth: "none",
                                     msOverflowStyle: "none",
+                                    color: currentColors.text,
                                 }}
                                 rows={2}
                                 placeholder={getPlaceholder()}
@@ -449,7 +461,7 @@ const EmailForm = () => {
                                     setHashTag={setHashTag}
                                 />
 
-                                <span className="text-xs text-gray-500 select-none">
+                                <span className="text-xs select-none">
                                     {commandState.isActive &&
                                     commandState.command === "/email" &&
                                     commandState.step === 0
