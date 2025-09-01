@@ -23,7 +23,7 @@ const Logs = () => {
                         </div>
                     </div>
                 </div>
-                <div className="h-142 border border-gray-200 dark:border-slate-700 rounded-xl p-6 flex items-center justify-center">
+                <div className="h-142 border border-gray-400 dark:border-slate-700 rounded-xl p-6 flex items-center justify-center">
                     <p className="text-gray-600 dark:text-slate-600">
                         No logs available
                     </p>

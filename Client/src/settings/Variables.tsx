@@ -76,7 +76,6 @@ const Variables = () => {
     const maskValue = (value: string) => {
         if (value.length <= 8) return "•".repeat(value.length);
         return (
-            value.substring(0, 4) +
             "•".repeat(Math.max(4, value.length - 8)) +
             value.substring(value.length - 4)
         );
@@ -88,7 +87,7 @@ const Variables = () => {
                 {/* Header */}
                 <div className="mb-8">
                     <div className="flex items-center gap-4 mb-4">
-                        <div className="p-3 bg-blue-500/20 rounded-xl">
+                        <div className="p-3 px-2.5 bg-blue-500/20 rounded-xl">
                             <span className="text-sm text-blue-400 font-mono font-bold">
                                 .env
                             </span>
