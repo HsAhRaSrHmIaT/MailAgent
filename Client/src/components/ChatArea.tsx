@@ -188,7 +188,7 @@ const ChatArea = ({
                             >
                                 <h3
                                     className="font-semibold mb-1"
-                                    style={{ color: currentPalette.primary }}
+                                    style={{ color: currentColors.text }}
                                 >
                                     Start a Conversation
                                 </h3>

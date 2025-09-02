@@ -398,8 +398,10 @@ const EmailForm = () => {
         <div className="flex h-[calc(100vh-2rem)] m-4">
             {/* Main Chat Container */}
             <div
-                className={`flex-1 flex flex-col max-w-4xl mx-auto border shadow-lg dark:shadow-gray-900/50 overflow-hidden`}
-                style={{ borderColor: currentColors.border }}
+                className={`flex-1 flex flex-col max-w-4xl mx-auto border shadow-lg rounded dark:shadow-gray-900/50 overflow-hidden`}
+                style={{
+                    borderColor: currentColors.border,
+                }}
             >
                 {/* Header */}
                 <Header setMessages={setMessages} />
@@ -435,10 +437,17 @@ const EmailForm = () => {
                     <div className="flex items-end space-x-3">
                         {/* Message Input */}
                         <div
-                            className="flex-1 border p-3 overflow-hidden"
+                            className="flex-1 border p-3 overflow-hidden rounded"
                             style={{
                                 borderColor: currentColors.border,
                                 color: currentColors.text,
+                            }}
+                            tabIndex={-1}
+                            onFocus={e => {
+                                e.currentTarget.style.borderColor = currentColors.text || "#2563eb";
+                            }}
+                            onBlur={e => {
+                                e.currentTarget.style.borderColor = currentColors.border;
                             }}
                         >
                             <textarea

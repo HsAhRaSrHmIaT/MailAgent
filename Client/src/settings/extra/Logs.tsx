@@ -18,7 +18,7 @@ const Logs = () => {
                         >
                             <span
                                 className="text-md font-mono font-bold"
-                                style={{ color: currentPalette.primary }}
+                                style={{ color: currentColors.text }}
                             >
                                 <LuLogs size={24} />
                             </span>

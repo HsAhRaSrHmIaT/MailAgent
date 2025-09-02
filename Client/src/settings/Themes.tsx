@@ -61,7 +61,7 @@ const Themes: React.FC = () => {
                         >
                             <IoColorPaletteOutline
                                 size={24}
-                                style={{ color: currentPalette.primary }}
+                                style={{ color: currentColors.text }}
                             />
                         </div>
                         <div>
@@ -178,9 +178,9 @@ const Themes: React.FC = () => {
                         style={{ backgroundColor: currentColors.surface }}
                     >
                         {/* Preview Area */}
-                        <div className="w-full flex items-center justify-center mb-4">
-                            <div
-                                className="rounded-lg border w-64 h-40 flex flex-col items-center justify-center p-4 transition-all duration-300"
+                        <div className="w-full flex items-center justify-center mb-4 gap-4">
+                            {/* <div
+                                className="rounded-lg border w-72 h-40 flex flex-col items-center justify-center p-4 transition-all duration-300"
                                 style={{
                                     borderColor: currentColors.border,
                                     backgroundColor: currentColors.bg,
@@ -213,6 +213,17 @@ const Themes: React.FC = () => {
                                         ? "Dark Mode"
                                         : "Light Mode"}
                                 </p>
+                            </div> */}
+                            <div
+                                className="rounded-lg border h-64 flex flex-col items-center justify-center transition-all duration-300"
+                                style={{
+                                    borderColor: currentColors.border,
+                                    backgroundColor: currentColors.bg,
+                                }}
+                            >
+                               {/* img src - /public/themes/blue.png or dark-blue.png */}
+                               {/* Not working for ultradark and dark-ultradark */}
+                                <img src={`/public/themes/${theme === "dark" ? "dark-" : ""}${currentPalette.name.toLowerCase()}.png`} alt={`${currentPalette.name} Theme`} className="w-full h-full object-cover rounded-lg" />
                             </div>
                         </div>
 

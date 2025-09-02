@@ -3,6 +3,7 @@ export type ThemeMode = "light" | "dark";
 export type PaletteKey =
     | "default"
     | "pink"
+    | "purple"
     | "red"
     | "orange"
     | "green"
@@ -58,11 +59,29 @@ export const colorPalettes: ColorPalettes = {
             textSecondary: "#BE185D", // pink-700
         },
         dark: {
-            bg: "#1F1B1F",
+            bg: "#251525ff",
             surface: "#2D1B2E",
             border: "#EC4899",
             text: "#FFFFFF",
             textSecondary: "#F9A8D4",
+        },
+    },
+    purple: {
+        name: "Purple",
+        primary: "#8B5CF6", // purple-500
+        light: {
+            bg: "#F5F3FF", // purple-50
+            surface: "#EDE9FE", // purple-100
+            border: "#C4B5FD", // purple-300
+            text: "#4C1D95", // purple-900
+            textSecondary: "#7C3AED", // purple-700
+        },
+        dark: {
+            bg: "#1F1B2F",
+            surface: "#2D1B3E",
+            border: "#8B5CF6",
+            text: "#FFFFFF",
+            textSecondary: "#C4B5FD",
         },
     },
     red: {
@@ -157,7 +176,7 @@ export const colorPalettes: ColorPalettes = {
     },
     ultraDark: {
         name: "Ultra Dark",
-        primary: "#FFFFFF",
+        primary: "#111111",
         light: {
             bg: "#F8F9FA",
             surface: "#E9ECEF",
