@@ -111,4 +111,8 @@ export interface HashTagProps {
 
 export interface EmailPreviewBoxProps {
     emailData: EmailData | null;
+} // import { GoLightBulb } from "react-icons/go";
+export interface Variable {
+    key: string;
+    value: string;
 }

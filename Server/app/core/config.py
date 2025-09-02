@@ -8,9 +8,9 @@ class Settings(BaseSettings):
 
     # API Keys
     google_api_key: Optional[str] = os.getenv("GOOGLE_API_KEY")
-    murf_api_key: Optional[str] = os.getenv("MURF_API_KEY")
-    murf_api_url: Optional[str] = os.getenv("MURF_API_URL")
-    assemblyai_api_key: Optional[str] = os.getenv("ASSEMBLYAI_API_KEY")
+    # murf_api_key: Optional[str] = os.getenv("MURF_API_KEY")
+    # murf_api_url: Optional[str] = os.getenv("MURF_API_URL")
+    # assemblyai_api_key: Optional[str] = os.getenv("ASSEMBLYAI_API_KEY")
     sender_email: Optional[str] = os.getenv("SENDER_EMAIL")
     email_password: Optional[str] = os.getenv("EMAIL_PASSWORD")
 
@@ -30,10 +30,10 @@ class Settings(BaseSettings):
 
     # AI Model and Email Settings
     default_llm_model: str = os.getenv("DEFAULT_LLM_MODEL", "gemini-2.5-flash")
-    default_voice_id: str = os.getenv("DEFAULT_VOICE_ID", "en-IN-alia")
-    default_language: str = os.getenv("DEFAULT_LANGUAGE", "en-IN")
-    max_prompt_length: int = 10000
-    max_response_tokens: int = 1000
+    # default_voice_id: str = os.getenv("DEFAULT_VOICE_ID", "en-IN-alia")
+    # default_language: str = os.getenv("DEFAULT_LANGUAGE", "en-IN")
+    # max_prompt_length: int = 10000
+    # max_response_tokens: int = 1000
 
     class Config:
         env_file = ".env"

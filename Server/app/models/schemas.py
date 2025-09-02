@@ -3,14 +3,14 @@ from typing import Optional, List
 from enum import Enum
 
 
-class VoiceID(str, Enum):
-    EN_IN_AROHI = "en-IN-Arohi"
-    EN_IN_ALIA = "en-IN-Alia"
+# class VoiceID(str, Enum):
+#     EN_IN_AROHI = "en-IN-Arohi"
+#     EN_IN_ALIA = "en-IN-Alia"
 
 
-class Language(str, Enum):
-    EN_IN = "en-IN"
-    ES_US = "es-US"
+# class Language(str, Enum):
+#     EN_IN = "en-IN"
+#     ES_US = "es-US"
 
 
 class LLMResponse(BaseModel):

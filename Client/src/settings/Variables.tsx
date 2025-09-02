@@ -1,11 +1,7 @@
 import { useState } from "react";
-import { Save, Edit2, Eye, EyeOff, Lightbulb } from "lucide-react";
-// import { GoLightBulb } from "react-icons/go";
+import type { Variable } from "../types";
 
-interface Variable {
-    key: string;
-    value: string;
-}
+import { Save, Edit2, Eye, EyeOff, Lightbulb } from "lucide-react";
 
 const Variables = () => {
     const [isEditing, setIsEditing] = useState(false);
@@ -20,7 +16,6 @@ const Variables = () => {
         { key: "MURF_API_KEY", value: "sk-1234567890abcdef" },
         { key: "ASSEMBLYAI_API_KEY", value: "super-secret-jwt-key-123" },
     ]);
-
     const [editingVariables, setEditingVariables] = useState<Variable[]>([]);
 
     const startEditing = () => {

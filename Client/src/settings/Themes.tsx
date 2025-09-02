@@ -46,9 +46,7 @@ const Themes: React.FC = () => {
     // };
 
     return (
-        <div
-            className="min-h-screen transition-colors duration-300"
-        >
+        <div className="min-h-screen transition-colors duration-300">
             <div className="max-w-6xl mx-auto p-6 select-none">
                 {/* Header */}
                 <div className="mb-8">
@@ -83,7 +81,7 @@ const Themes: React.FC = () => {
                 </div>
 
                 <div
-                    className="border rounded-xl p-6 flex flex-col gap-4"
+                    className="border rounded-xl p-4 flex flex-col gap-4"
                     style={{
                         borderColor: currentColors.border,
                         minHeight: "500px",
@@ -161,7 +159,7 @@ const Themes: React.FC = () => {
                             className="text-md font-semibold mt-4"
                             style={{ color: currentColors.text }}
                         >
-                            Color Palette
+                            Color Palette ({currentPalette.name} Theme)
                         </h1>
                         <button
                             className="flex text-sm mt-4 cursor-pointer transition-colors duration-200 hover:underline"
@@ -221,9 +219,14 @@ const Themes: React.FC = () => {
                                     backgroundColor: currentColors.bg,
                                 }}
                             >
-                               {/* img src - /public/themes/blue.png or dark-blue.png */}
-                               {/* Not working for ultradark and dark-ultradark */}
-                                <img src={`/public/themes/${theme === "dark" ? "dark-" : ""}${currentPalette.name.toLowerCase()}.png`} alt={`${currentPalette.name} Theme`} className="w-full h-full object-cover rounded-lg" />
+                                {/* img src - /public/themes/blue.png or dark-blue.png */}
+                                <img
+                                    src={`/public/themes/${
+                                        theme === "dark" ? "dark-" : ""
+                                    }${currentPalette.name.toLowerCase()}.png`}
+                                    alt={`${currentPalette.name} Theme`}
+                                    className="w-full h-full object-cover rounded-lg"
+                                />
                             </div>
                         </div>
 
