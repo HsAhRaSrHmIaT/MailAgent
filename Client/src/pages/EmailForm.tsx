@@ -7,35 +7,14 @@ import Header from "../components/Header";
 import CommandStatusBar from "../components/CommandStatusBar";
 import SendButtons from "../components/SendButtons";
 import HashTag from "../components/HashTag";
+import ToggleTheme from "../components/ToggleTheme";
 
 import { apiService } from "../services/apiService";
+import { useTheme } from "../contexts/ThemeContext";
 
-interface Message {
-    id: string;
-    content: string;
-    sender: "user" | "assistant";
-    timestamp: Date;
-    hashtag?: string;
-    type?: "text" | "email";
-    emailData?: EmailData;
-}
-
-interface EmailData {
-    body: string;
-    subject: string;
-    to: string;
-}
-
-interface CommandState {
-    isActive: boolean;
-    command: string;
-    step: number;
-    data: {
-        receiverEmail?: string;
-        prompt?: string;
-    };
-    clearAll?: boolean;
-}
+import { IoSettingsOutline } from "react-icons/io5";
+import { Link } from "react-router-dom";
+import type { Message, CommandState, EmailData } from "../types";
 
 const EmailForm = () => {
     const [message, setMessage] = useState("");
@@ -56,6 +35,7 @@ const EmailForm = () => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const emailLength = 50;
     const maxMessageLength = 300;
+    const { currentColors } = useTheme();
 
     const addMessage = (
         content: string,
@@ -417,7 +397,12 @@ const EmailForm = () => {
     return (
         <div className="flex h-[calc(100vh-2rem)] m-4">
             {/* Main Chat Container */}
-            <div className="flex-1 flex flex-col max-w-4xl mx-auto bg-white shadow-lg overflow-hidden">
+            <div
+                className={`flex-1 flex flex-col max-w-4xl mx-auto border shadow-lg rounded dark:shadow-gray-900/50 overflow-hidden`}
+                style={{
+                    borderColor: currentColors.border,
+                }}
+            >
                 {/* Header */}
                 <Header setMessages={setMessages} />
 
@@ -443,10 +428,28 @@ const EmailForm = () => {
                 )}
 
                 {/* Input Section */}
-                <div className="border-t bg-gray-50 p-4">
+                <div
+                    className="border-t p-4"
+                    style={{
+                        borderColor: currentColors.border,
+                    }}
+                >
                     <div className="flex items-end space-x-3">
                         {/* Message Input */}
-                        <div className="flex-1 border border-gray-300 p-3 bg-white focus-within:border-gray-700 overflow-hidden">
+                        <div
+                            className="flex-1 border p-3 overflow-hidden rounded"
+                            style={{
+                                borderColor: currentColors.border,
+                                color: currentColors.text,
+                            }}
+                            tabIndex={-1}
+                            onFocus={e => {
+                                e.currentTarget.style.borderColor = currentColors.text || "#2563eb";
+                            }}
+                            onBlur={e => {
+                                e.currentTarget.style.borderColor = currentColors.border;
+                            }}
+                        >
                             <textarea
                                 ref={textareaRef}
                                 value={message}
@@ -456,6 +459,7 @@ const EmailForm = () => {
                                 style={{
                                     scrollbarWidth: "none",
                                     msOverflowStyle: "none",
+                                    color: currentColors.text,
                                 }}
                                 rows={2}
                                 placeholder={getPlaceholder()}
@@ -466,7 +470,7 @@ const EmailForm = () => {
                                     setHashTag={setHashTag}
                                 />
 
-                                <span className="text-xs text-gray-500 select-none">
+                                <span className="text-xs select-none">
                                     {commandState.isActive &&
                                     commandState.command === "/email" &&
                                     commandState.step === 0
@@ -503,6 +507,17 @@ const EmailForm = () => {
                             <CommandHelp />
                         )}
                 </div>
+            </div>
+            <div className="flex justify-between items-center space-x-4 h-16">
+                <ToggleTheme />
+                <Link to="/settings">
+                    <div className="hover:rotate-180 transition-transform duration-200">
+                        <IoSettingsOutline
+                            size={24}
+                            style={{ color: currentColors.text }}
+                        />
+                    </div>
+                </Link>
             </div>
         </div>
     );

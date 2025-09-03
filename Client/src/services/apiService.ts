@@ -1,5 +1,3 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
-
 export interface ChatRequest {
     message: string;
     tone?: string;
@@ -40,68 +38,149 @@ export interface SendEmailResponse {
 }
 
 class ApiService {
-    private async makeRequest<T>(
-        endpoint: string,
-        options: RequestInit = {}
-    ): Promise<T> {
-        try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-                headers: {
-                    "Content-Type": "application/json",
-                    ...options.headers,
-                },
-                ...options,
-            });
+    private ws: WebSocket | null = null;
+    private wsUrl = import.meta.env.VITE_WS_URL || "ws://localhost:8000/api";
+    private wsReady: Promise<void> | null = null;
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+    // private async makeRequest<T>(
+    //     endpoint: string,
+    //     options: RequestInit = {}
+    // ): Promise<T> {
+    //     try {
+    //         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    //             headers: {
+    //                 "Content-Type": "application/json",
+    //                 ...options.headers,
+    //             },
+    //             ...options,
+    //         });
+    //         if (!response.ok) {
+    //             throw new Error(`HTTP error! status: ${response.status}`);
+    //         }
+    //         return await response.json();
+    //     } catch (err) {
+    //         console.error("API request failed: ", err);
+    //         throw err;
+    //     }
+    // }
 
-            return await response.json();
-        } catch (err) {
-            console.error("API request failed: ", err);
-            throw err;
+    // async getStatus(): Promise<{ status: string }> {
+    //     return this.makeRequest<{ status: string }>("/", {
+    //         method: "GET",
+    //     });
+    // }
+
+    // WebSocket logic for chat messages only
+    private ensureWebSocket(): Promise<void> {
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            return Promise.resolve();
         }
+        if (this.wsReady) {
+            return this.wsReady;
+        }
+        this.ws = new WebSocket(this.wsUrl);
+        this.wsReady = new Promise((resolve, reject) => {
+            this.ws!.onopen = () => resolve();
+            this.ws!.onerror = (err) => reject(err);
+        });
+        return this.wsReady;
     }
 
-    async getStatus(): Promise<{ status: string }> {
-        return this.makeRequest<{ status: string }>("/", {
-            method: "GET",
-        });
+    public connectWebSocket(): void {
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+            this.ws = new WebSocket(this.wsUrl);
+            this.wsReady = new Promise((resolve, reject) => {
+                this.ws!.onopen = () => resolve();
+                this.ws!.onerror = (err) => reject(err);
+            });
+        }
     }
 
     async sendChatMessage(data: ChatRequest): Promise<ChatResponse> {
-        return this.makeRequest<ChatResponse>("/chat", {
-            method: "POST",
-            body: JSON.stringify(data),
+        await this.ensureWebSocket();
+        return new Promise<ChatResponse>((resolve, reject) => {
+            if (!this.ws) return reject(new Error("WebSocket not initialized. Cannot send message!"));
+            this.ws.onmessage = (event) => {
+                try {
+                    const response = JSON.parse(event.data);
+                    resolve({
+                        message: response.content || response.message,
+                        success: true,
+                        error: undefined,
+                    });
+                } catch (err) {
+                    reject(err);
+                }
+            };
+            this.ws.onerror = (err) => {
+                reject(err);
+            };
+            this.ws.send(
+                JSON.stringify({
+                    role: "user",
+                    type: "chat",
+                    content: data.message,
+                    ...(data.tone ? { tone: data.tone } : {}),
+                })
+            );
         });
     }
+
+    // async generateEmail(data: EmailRequest): Promise<EmailResponse> {
+    //     const requestBody = {
+    //         receiver_email: data.receiverEmail,
+    //         prompt: data.prompt,
+    //         tone: data.tone || "",
+    //     };
+    //     console.log("About to send:", requestBody);
+    //     return this.makeRequest<EmailResponse>("/generate-email", {
+    //         method: "POST",
+    //         body: JSON.stringify(requestBody),
+    //     });
+    // }
 
     async generateEmail(data: EmailRequest): Promise<EmailResponse> {
-        const requestBody = {
-            receiver_email: data.receiverEmail,
-            prompt: data.prompt,
-            tone: data.tone || "",
-        }
-
-        console.log('About to send:', requestBody);
-        return this.makeRequest<EmailResponse>("/generate-email", {
-            method: "POST",
-            body: JSON.stringify(requestBody),
+        await this.ensureWebSocket();
+        return new Promise<EmailResponse>((resolve, reject) => {
+            if (!this.ws) return reject(new Error("Websocket not initialized. Cannot generate email!"));
+            this.ws.onmessage = (event) => {
+                try {
+                    const response = JSON.parse(event.data);
+                    resolve(response);
+                    console.log("Received response:", response);
+                } catch (err) {
+                    reject(err);
+                }
+            }
+            this.ws.onerror = (err) => {
+                reject(err);
+            }
+            this.ws.send(
+                JSON.stringify({
+                    role: "user",
+                    type: "email",
+                    receiverEmail: data.receiverEmail,
+                    prompt: data.prompt,
+                    ...(data.tone ? { tone: data.tone } : {}),
+                })
+            )
         });
     }
 
-    async sendEmail(data: SendEmail): Promise<SendEmailResponse> {
-        const requestBody = {
-            receiver_email: data.receiverEmail,
-            email_message: data.emailMessage,
-            subject: data.subject,
-        }
+    // async sendEmail(data: SendEmail): Promise<SendEmailResponse> {
+    //     const requestBody = {
+    //         receiver_email: data.receiverEmail,
+    //         email_message: data.emailMessage,
+    //         subject: data.subject,
+    //     };
+    //     return this.makeRequest<SendEmailResponse>("/send-email", {
+    //         method: "POST",
+    //         body: JSON.stringify(requestBody),
+    //     });
+    // }
 
-        return this.makeRequest<SendEmailResponse>("/send-email", {
-            method: "POST",
-            body: JSON.stringify(requestBody),
-        });
+    isWebSocketConnected(): boolean {
+        return this.ws !== null && this.ws.readyState === WebSocket.OPEN;
     }
 }
 

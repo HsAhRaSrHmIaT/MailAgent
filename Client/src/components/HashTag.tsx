@@ -1,15 +1,17 @@
-interface HashTagProps {
-    hashTag: string;
-    setHashTag: React.Dispatch<React.SetStateAction<string>>;
-}
+import type { HashTagProps } from "../types";
+import { useTheme } from "../contexts/ThemeContext";
 
 const HashTag = ({ hashTag, setHashTag }: HashTagProps) => {
+    const { currentColors } = useTheme();
+
     return (
         <div className="select-none">
-            <span className="text-xs text-gray-600 font-bold">Tag: </span>
+            <span className="text-xs font-bold">
+                Tag:{" "}
+            </span>
             {hashTag ? (
                 <>
-                    <span className="text-xs text-blue-400 bg-blue-50 px-1 rounded-full">
+                    <span className="text-xs rounded-full px-1" style={{ color: currentColors.text, backgroundColor: currentColors.textSecondary + "33" }}>
                         {hashTag}
                     </span>
                     <button
@@ -20,7 +22,7 @@ const HashTag = ({ hashTag, setHashTag }: HashTagProps) => {
                     </button>
                 </>
             ) : (
-                <span className="text-xs text-blue-400 bg-blue-50 px-1 rounded-full">
+                <span className="text-xs rounded-full px-1" style={{ color: currentColors.text, backgroundColor: currentColors.textSecondary + "33" }}>
                     None
                 </span>
             )}

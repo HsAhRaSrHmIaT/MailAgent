@@ -1,6 +1,62 @@
 @import "tailwindcss";
+@custom-variant dark (&:is(.dark *));
+
+:root {
+    --color-primary: #3b82f6;
+    --color-bg: rgb(253, 255, 255);
+    --color-surface: #f3f4f6;
+    --color-border: #d1d5db;
+    --color-text: #111827;
+    --color-text-secondary: #6b7280;
+}
 
 body {
-    background-color: rgb(253, 255, 255);
+    background-color: var(--color-surface);
+    color: var(--color-text);
     overflow-y: hidden;
+    transition: background-color 0.3s ease;
+}
+
+/* Custom utility classes using your theme variables */
+.bg-theme {
+    background-color: var(--color-bg);
+}
+
+.bg-surface {
+    background-color: var(--color-surface);
+}
+
+.text-theme {
+    color: var(--color-text);
+}
+
+.text-theme-secondary {
+    color: var(--color-text-secondary);
+}
+
+.border-theme {
+    border-color: var(--color-border);
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-surface);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary);
+}
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) var(--color-surface);
 }
