@@ -13,23 +13,24 @@ from enum import Enum
 #     ES_US = "es-US"
 
 
-class LLMResponse(BaseModel):
-    prompt: str = Field(..., description="The prompt sent to the LLM")
-    response: str = Field(..., description="The response from the LLM")
-    input_type: str = Field(..., description="The type of input (text/audio)")
-    transcription: Optional[str] = Field(None, description="Transcription of the audio input if applicable")
+# class LLMResponse(BaseModel):
+#     prompt: str = Field(..., description="The prompt sent to the LLM")
+#     response: str = Field(..., description="The response from the LLM")
+#     input_type: str = Field(..., description="The type of input (text/audio)")
+#     transcription: Optional[str] = Field(None, description="Transcription of the audio input if applicable")
 
 
 class ChatMessage(BaseModel):
     role: str = Field(..., description="Role of the sender (user/assistant)")
     content: str = Field(..., description="Content of the message")
+    tone: Optional[str] = Field(None, description="Tone of the message")
     timestamp: int = Field(..., description="Timestamp of the message")
 
 
 class Email(BaseModel):
-    subject: str = Field(..., description="Subject of the email")
-    recipient: str = Field(..., description="Recipient of the email")
-    content: str = Field(..., description="Content of the email")
+    receiverEmail: str = Field(..., description="Email address of the receiver")
+    prompt: str = Field(..., description="Email content prompt")
+    tone: Optional[str] = Field(None, description="Tone of the email")
 
 
 class HealthStatus(BaseModel):
@@ -44,7 +45,3 @@ class ErrorResponse(BaseModel):
     tts_test: str = Field(..., description="TTS test error message")
     overall_status: str = Field(..., description="Overall status of the service")
 
-
-class OnlineStatus(BaseModel):
-    status: str = Field(..., description="Online status of the service online/offline")
-    timestamp: int = Field(..., description="Timestamp of the online status check")

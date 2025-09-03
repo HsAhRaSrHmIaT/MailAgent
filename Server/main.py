@@ -1,8 +1,9 @@
 import os
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from websocket import websocket_endpoint
 
 from app.core.config import settings
 
@@ -21,6 +22,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_api_websocket_route("/api", websocket_endpoint)
 
 @app.get("/")
 async def root():

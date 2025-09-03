@@ -221,7 +221,7 @@ const Themes: React.FC = () => {
                             >
                                 {/* img src - /public/themes/blue.png or dark-blue.png */}
                                 <img
-                                    src={`/public/themes/${
+                                    src={`/themes/${
                                         theme === "dark" ? "dark-" : ""
                                     }${currentPalette.name.toLowerCase()}.png`}
                                     alt={`${currentPalette.name} Theme`}

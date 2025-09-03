@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     # Server Settings
     host: str = os.getenv("HOST", "localhost")
     port: int = os.getenv("PORT", 8000)
-    debug: bool = True
+    debug: bool = False
 
     # Audio Settings
     # allowed_audio_types = [
@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     # default_voice_id: str = os.getenv("DEFAULT_VOICE_ID", "en-IN-alia")
     # default_language: str = os.getenv("DEFAULT_LANGUAGE", "en-IN")
     # max_prompt_length: int = 10000
-    # max_response_tokens: int = 1000
+    max_response_tokens: int = 3000
 
     class Config:
         env_file = ".env"

@@ -25,9 +25,9 @@ const CommandStatusBar = ({
             className="border-t p-3 shadow-sm"
             style={{
                 backgroundColor: isInvalidEmail
-                    ? "#fff0f0"
+                    ? currentColors.surface + "22"
                     : currentColors.surface,
-                borderColor: isInvalidEmail ? "#ffcccc" : currentColors.border,
+                borderColor: isInvalidEmail ? "#ec0c0cff" : currentColors.border,
                 boxShadow: `0 1px 4px 0 ${currentColors.border}22`,
             }}
         >

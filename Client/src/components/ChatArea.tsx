@@ -96,8 +96,7 @@ const ChatArea = ({
                                                 className="text-xs opacity-75 block mt-3 border-t-2 border-dashed -mx-4 px-2 text-center -mb-1"
                                                 style={{
                                                     borderColor:
-                                                        currentColors.border,
-                                                    color: currentColors.textSecondary,
+                                                        currentColors.surface,
                                                 }}
                                             >
                                                 {message.hashtag}

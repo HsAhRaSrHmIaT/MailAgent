@@ -6,30 +6,26 @@ import type { HeaderProps } from "../types";
 
 const Header = ({ setMessages }: HeaderProps) => {
     const { currentColors } = useTheme();
-    const [status, setStatus] = useState("Online");
+    const [status, setStatus] = useState("Offline");
     const handleRefresh = () => {
         // Logic to refresh messages or reset state
         setMessages([]);
     };
 
     useEffect(() => {
-        const checkOnlineStatus = async () => {
-            try {
-                // Logic to check if the user is online
-                const response = await apiService.getStatus();
-                if (response.status) {
-                    // User is online
-                    setStatus("Online");
-                } else {
-                    // User is offline
-                    setStatus("Offline");
-                }
-            } catch (error) {
-                console.error("Failed to check online status:", error);
+        apiService.connectWebSocket();
+        const checkOnlineStatus = () => {
+            if (apiService.isWebSocketConnected()) {
+                setStatus("Online");
+                // console.log("WebSocket is connected");
+            } else {
                 setStatus("Offline");
+                // console.log("Things are not going as expected");
             }
         };
         checkOnlineStatus();
+        const interval = setInterval(checkOnlineStatus, 3000);
+        return () => clearInterval(interval);
     }, []);
 
     return (
