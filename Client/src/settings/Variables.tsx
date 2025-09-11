@@ -1,9 +1,11 @@
 import { useState } from "react";
 import type { Variable } from "../types";
+import { useTheme } from "../contexts/ThemeContext";
 
 import { Save, Edit2, Eye, EyeOff, Lightbulb } from "lucide-react";
 
 const Variables = () => {
+    const { currentPalette, currentColors } = useTheme();
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [showValues, setShowValues] = useState<{ [key: number]: boolean }>(
@@ -82,16 +84,30 @@ const Variables = () => {
                 {/* Header */}
                 <div className="mb-8">
                     <div className="flex items-center gap-4 mb-4">
-                        <div className="p-3 px-2.5 bg-blue-500/20 rounded-xl">
-                            <span className="text-sm text-blue-400 font-mono font-bold">
+                        <div
+                            className="p-3 px-2.5 rounded-xl"
+                            style={{
+                                backgroundColor: `${currentPalette.primary}20`,
+                            }}
+                        >
+                            <span
+                                className="text-sm font-mono font-bold"
+                                style={{ color: currentColors.text }}
+                            >
                                 .env
                             </span>
                         </div>
                         <div>
-                            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+                            <h1
+                                className="text-4xl font-bold"
+                                style={{ color: currentColors.text }}
+                            >
                                 Environment Variables
                             </h1>
-                            <p className="text-gray-600 dark:text-slate-400 text-lg mt-1">
+                            <p
+                                className="text-lg mt-1"
+                                style={{ color: currentColors.textSecondary }}
+                            >
                                 Configure your application's environment
                                 variables securely and efficiently
                             </p>
@@ -103,10 +119,21 @@ const Variables = () => {
                     {/* Main Content */}
                     <div className="flex-1">
                         {isEditing ? (
-                            <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-lg">
+                            <div
+                                className="rounded-xl border shadow-lg"
+                                style={{
+                                    borderColor: currentColors.border,
+                                    minHeight: "500px",
+                                }}
+                            >
                                 <div className="p-6">
                                     <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                                        <h2
+                                            className="text-xl font-semibold"
+                                            style={{
+                                                color: currentColors.text,
+                                            }}
+                                        >
                                             Edit Environment Variables
                                         </h2>
                                     </div>
@@ -117,7 +144,11 @@ const Variables = () => {
                                             (variable, index) => (
                                                 <div
                                                     key={index}
-                                                    className="bg-gray-50 dark:bg-slate-900/50 rounded-lg border border-gray-200 dark:border-slate-700 p-4 hover:border-gray-300 dark:hover:border-slate-600 transition-colors"
+                                                    className="p-4 transition-colors"
+                                                    style={{
+                                                        borderColor:
+                                                            currentColors.border,
+                                                    }}
                                                 >
                                                     <div className="flex items-center gap-4">
                                                         <div className="flex-1">
@@ -201,10 +232,18 @@ const Variables = () => {
                                 </div>
                             </div>
                         ) : (
-                            <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-lg">
+                            <div
+                                className="rounded-xl border shadow-lg"
+                                style={{ borderColor: currentColors.border }}
+                            >
                                 <div className="p-6">
                                     <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                                        <h2
+                                            className="text-xl font-semibold"
+                                            style={{
+                                                color: currentColors.text,
+                                            }}
+                                        >
                                             Saved Environment Variables (
                                             {savedVariables.length})
                                         </h2>
@@ -215,27 +254,61 @@ const Variables = () => {
                                             (variable, index) => (
                                                 <div
                                                     key={index}
-                                                    className="bg-gray-50 dark:bg-slate-900/50 rounded-lg border border-gray-200 dark:border-slate-700 p-4 hover:border-gray-300 dark:hover:border-slate-600 transition-colors"
+                                                    className="rounded-lg border p-4 transition-colors"
+                                                    style={{
+                                                        borderColor:
+                                                            currentColors.border,
+                                                        backgroundColor:
+                                                            currentColors.surface,
+                                                    }}
                                                 >
                                                     <div className="flex justify-between items-center">
                                                         <div className="flex-1 min-w-0">
                                                             <div className="flex items-center gap-4">
                                                                 <div className="flex-1">
-                                                                    <div className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                                                                    <div
+                                                                        className="text-sm font-medium mb-1"
+                                                                        style={{
+                                                                            color: currentColors.textSecondary,
+                                                                        }}
+                                                                    >
                                                                         Key
                                                                     </div>
-                                                                    <div className="font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-slate-800 px-3 py-2 rounded border">
+                                                                    <div
+                                                                        className="font-mono px-3 py-2 rounded border"
+                                                                        style={{
+                                                                            backgroundColor:
+                                                                                currentColors.bg,
+                                                                            borderColor:
+                                                                                currentColors.border,
+                                                                            color: currentColors.text,
+                                                                        }}
+                                                                    >
                                                                         {
                                                                             variable.key
                                                                         }
                                                                     </div>
                                                                 </div>
                                                                 <div className="flex-1">
-                                                                    <div className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                                                                    <div
+                                                                        className="text-sm font-medium mb-1"
+                                                                        style={{
+                                                                            color: currentColors.textSecondary,
+                                                                        }}
+                                                                    >
                                                                         Value
                                                                     </div>
                                                                     <div className="flex items-center gap-2">
-                                                                        <div className="font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-slate-800 px-3 py-2 rounded border flex-1">
+                                                                        <div
+                                                                            className="font-mono px-3 py-2 rounded border flex-1"
+                                                                            style={{
+                                                                                backgroundColor:
+                                                                                    currentColors.bg,
+                                                                                borderColor:
+                                                                                    currentColors.border,
+                                                                                color: currentColors.text,
+                                                                            }}
+                                                                        >
                                                                             {showValues[
                                                                                 index
                                                                             ]
@@ -250,7 +323,10 @@ const Variables = () => {
                                                                                     index
                                                                                 )
                                                                             }
-                                                                            className="p-2 text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded transition-colors cursor-pointer"
+                                                                            className="p-2 rounded transition-colors cursor-pointer"
+                                                                            style={{
+                                                                                color: currentColors.text,
+                                                                            }}
                                                                         >
                                                                             {showValues[
                                                                                 index
@@ -269,10 +345,16 @@ const Variables = () => {
                                             )
                                         )}
                                     </div>
-                                    <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-slate-700 mt-6">
+                                    <div
+                                        className="flex justify-end gap-3 pt-6 border-t mt-6"
+                                        style={{
+                                            borderColor: currentColors.border,
+                                        }}
+                                    >
                                         <button
                                             onClick={startEditing}
-                                            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-sm transition-colors cursor-pointer"
+                                            className="inline-flex items-center gap-2 px-6 py-3 text-white font-medium rounded-sm transition-colors cursor-pointer"
+                                            style={{ backgroundColor: currentPalette.primary }}
                                         >
                                             <Edit2 className="w-4 h-4" />
                                             Edit Variables
@@ -285,16 +367,22 @@ const Variables = () => {
 
                     {/* Info Section */}
                     <div className="flex w-80">
-                        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-lg p-6 sticky top-6">
-                            <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                        <div
+                            className="rounded-xl border shadow-lg p-6 sticky top-6"
+                            style={{ borderColor: currentColors.border }}
+                        >
+                            <h3
+                                className="flex items-center gap-2 text-lg font-semibold"
+                                style={{
+                                    color: currentColors.text,
+                                }}
+                            >
                                 <Lightbulb className="w-6 h-6" />
                                 Best Practices
                             </h3>
-                            <div className="space-y-3 text-gray-600 dark:text-slate-400">
+                            <div className="space-y-3">
                                 <div className="flex items-start gap-2">
-                                    <span className="text-blue-500 mt-0.5">
-                                        •
-                                    </span>
+                                    <span className="mt-0.5">•</span>
                                     <span>
                                         Use uppercase with underscores for
                                         variable names (e.g., API_KEY,
@@ -302,27 +390,21 @@ const Variables = () => {
                                     </span>
                                 </div>
                                 <div className="flex items-start gap-2">
-                                    <span className="text-blue-500 mt-0.5">
-                                        •
-                                    </span>
+                                    <span className="mt-0.5">•</span>
                                     <span>
                                         Keep sensitive values secure and never
                                         commit them to version control
                                     </span>
                                 </div>
                                 <div className="flex items-start gap-2">
-                                    <span className="text-blue-500 mt-0.5">
-                                        •
-                                    </span>
+                                    <span className="mt-0.5">•</span>
                                     <span>
                                         Remove unused variables to keep your
                                         environment clean
                                     </span>
                                 </div>
                                 <div className="flex items-start gap-2">
-                                    <span className="text-blue-500 mt-0.5">
-                                        •
-                                    </span>
+                                    <span className="mt-0.5">•</span>
                                     <span>
                                         Use descriptive names that clearly
                                         indicate the variable's purpose
@@ -331,9 +413,14 @@ const Variables = () => {
                             </div>
 
                             {!isEditing && savedVariables.length > 0 && (
-                                <div className="mt-6 pt-4 border-t border-gray-200 dark:border-slate-700">
-                                    <div className="text-sm text-gray-500 dark:text-slate-400">
-                                        <strong className="text-gray-700 dark:text-slate-300">
+                                <div
+                                    className="mt-6 pt-4 border-t"
+                                    style={{
+                                        borderColor: currentColors.border,
+                                    }}
+                                >
+                                    <div className="text-sm text-gray-600 dark:text-slate-400">
+                                        <strong className="font-medium">
                                             Security:
                                         </strong>{" "}
                                         Values are masked by default. Click the

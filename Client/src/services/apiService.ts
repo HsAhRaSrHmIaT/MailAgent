@@ -25,52 +25,11 @@ export interface EmailResponse {
     error?: string;
 }
 
-export interface SendEmail {
-    receiverEmail: string;
-    emailMessage: string;
-    subject: string;
-}
-
-export interface SendEmailResponse {
-    message: string;
-    success: boolean;
-    error?: string;
-}
-
 class ApiService {
     private ws: WebSocket | null = null;
     private wsUrl = import.meta.env.VITE_WS_URL || "ws://localhost:8000/api";
     private wsReady: Promise<void> | null = null;
 
-    // private async makeRequest<T>(
-    //     endpoint: string,
-    //     options: RequestInit = {}
-    // ): Promise<T> {
-    //     try {
-    //         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    //             headers: {
-    //                 "Content-Type": "application/json",
-    //                 ...options.headers,
-    //             },
-    //             ...options,
-    //         });
-    //         if (!response.ok) {
-    //             throw new Error(`HTTP error! status: ${response.status}`);
-    //         }
-    //         return await response.json();
-    //     } catch (err) {
-    //         console.error("API request failed: ", err);
-    //         throw err;
-    //     }
-    // }
-
-    // async getStatus(): Promise<{ status: string }> {
-    //     return this.makeRequest<{ status: string }>("/", {
-    //         method: "GET",
-    //     });
-    // }
-
-    // WebSocket logic for chat messages only
     private ensureWebSocket(): Promise<void> {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             return Promise.resolve();
@@ -126,19 +85,6 @@ class ApiService {
         });
     }
 
-    // async generateEmail(data: EmailRequest): Promise<EmailResponse> {
-    //     const requestBody = {
-    //         receiver_email: data.receiverEmail,
-    //         prompt: data.prompt,
-    //         tone: data.tone || "",
-    //     };
-    //     console.log("About to send:", requestBody);
-    //     return this.makeRequest<EmailResponse>("/generate-email", {
-    //         method: "POST",
-    //         body: JSON.stringify(requestBody),
-    //     });
-    // }
-
     async generateEmail(data: EmailRequest): Promise<EmailResponse> {
         await this.ensureWebSocket();
         return new Promise<EmailResponse>((resolve, reject) => {
@@ -166,18 +112,6 @@ class ApiService {
             )
         });
     }
-
-    // async sendEmail(data: SendEmail): Promise<SendEmailResponse> {
-    //     const requestBody = {
-    //         receiver_email: data.receiverEmail,
-    //         email_message: data.emailMessage,
-    //         subject: data.subject,
-    //     };
-    //     return this.makeRequest<SendEmailResponse>("/send-email", {
-    //         method: "POST",
-    //         body: JSON.stringify(requestBody),
-    //     });
-    // }
 
     isWebSocketConnected(): boolean {
         return this.ws !== null && this.ws.readyState === WebSocket.OPEN;
