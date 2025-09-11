@@ -144,15 +144,22 @@ const Variables = () => {
                                             (variable, index) => (
                                                 <div
                                                     key={index}
-                                                    className="p-4 transition-colors"
+                                                    className="p-4 transition-colors rounded-lg border"
                                                     style={{
                                                         borderColor:
                                                             currentColors.border,
+                                                        backgroundColor:
+                                                            currentColors.surface,
                                                     }}
                                                 >
                                                     <div className="flex items-center gap-4">
                                                         <div className="flex-1">
-                                                            <div className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                                                            <div
+                                                                className="text-sm font-medium mb-1"
+                                                                style={{
+                                                                    color: currentColors.textSecondary,
+                                                                }}
+                                                            >
                                                                 Key
                                                             </div>
                                                             <input
@@ -169,13 +176,25 @@ const Variables = () => {
                                                                     )
                                                                 }
                                                                 placeholder="API_KEY"
-                                                                className="w-full font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-slate-800 px-3 py-2 rounded border border-gray-300 dark:border-slate-600 focus:outline-none focus:ring-1 
+                                                                className="w-full font-mono px-3 py-2 rounded border focus:outline-none focus:ring-1 
                                                             focus:ring-blue-500
                                                             focus:border-blue-500 dark:focus:ring-gray-200 dark:focus:border-gray-200 transition-colors"
+                                                                style={{
+                                                                    backgroundColor:
+                                                                        currentColors.bg,
+                                                                    borderColor:
+                                                                        currentColors.border,
+                                                                    color: currentColors.text,
+                                                                }}
                                                             />
                                                         </div>
                                                         <div className="flex-1">
-                                                            <div className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                                                            <div
+                                                                className="text-sm font-medium mb-1"
+                                                                style={{
+                                                                    color: currentColors.textSecondary,
+                                                                }}
+                                                            >
                                                                 Value
                                                             </div>
                                                             <input
@@ -192,9 +211,16 @@ const Variables = () => {
                                                                     )
                                                                 }
                                                                 placeholder="your-secret-value"
-                                                                className="w-full font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-slate-800 px-3 py-2 rounded border border-gray-300 dark:border-slate-600 focus:outline-none focus:ring-1 
+                                                                className="w-full font-mono px-3 py-2 rounded border focus:outline-none focus:ring-1 
                                                             focus:ring-blue-500
                                                             focus:border-blue-500 dark:focus:ring-gray-200 dark:focus:border-gray-200 transition-colors"
+                                                                style={{
+                                                                    backgroundColor:
+                                                                        currentColors.bg,
+                                                                    borderColor:
+                                                                        currentColors.border,
+                                                                    color: currentColors.text,
+                                                                }}
                                                             />
                                                         </div>
                                                     </div>
@@ -207,13 +233,24 @@ const Variables = () => {
                                     <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-slate-700">
                                         <button
                                             onClick={handleCancel}
-                                            className="px-6 py-3 text-gray-700 dark:text-slate-300 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-sm transition-colors cursor-pointer"
+                                            className="px-6 py-3 border rounded-sm transition-colors cursor-pointer"
+                                            style={{
+                                                borderColor:
+                                                    currentColors.border,
+                                                color: currentColors.text,
+                                                backgroundColor:
+                                                    currentColors.surface,
+                                            }}
                                         >
                                             Cancel
                                         </button>
                                         <button
                                             onClick={handleSave}
-                                            className="inline-flex items-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-sm transition-colors shadow-lg cursor-pointer"
+                                            className="inline-flex items-center gap-2 px-8 py-3 text-white font-medium rounded-sm transition-colors shadow-lg cursor-pointer"
+                                            style={{
+                                                backgroundColor:
+                                                    currentPalette.primary,
+                                            }}
                                         >
                                             {isSaving ? (
                                                 <span className="animate-spin">
@@ -354,7 +391,10 @@ const Variables = () => {
                                         <button
                                             onClick={startEditing}
                                             className="inline-flex items-center gap-2 px-6 py-3 text-white font-medium rounded-sm transition-colors cursor-pointer"
-                                            style={{ backgroundColor: currentPalette.primary }}
+                                            style={{
+                                                backgroundColor:
+                                                    currentPalette.primary,
+                                            }}
                                         >
                                             <Edit2 className="w-4 h-4" />
                                             Edit Variables
@@ -419,7 +459,12 @@ const Variables = () => {
                                         borderColor: currentColors.border,
                                     }}
                                 >
-                                    <div className="text-sm text-gray-600 dark:text-slate-400">
+                                    <div
+                                        className="text-sm"
+                                        style={{
+                                            color: currentColors.textSecondary,
+                                        }}
+                                    >
                                         <strong className="font-medium">
                                             Security:
                                         </strong>{" "}

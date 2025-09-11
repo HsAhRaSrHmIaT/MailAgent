@@ -14,7 +14,7 @@ import { MdDataObject, MdLogout } from "react-icons/md";
 import EmailNotification from "../settings/EmailNotification";
 import Config from "../settings/Config";
 import Themes from "../settings/Themes";
-import Account from "../settings/Account";
+import Account from "../settings/account/Account";
 import Logs from "../settings/extra/Logs";
 import ExportData from "../settings/extra/ExportData";
 
@@ -37,7 +37,7 @@ const reducer = (state: State, action: Action): State => {
 };
 
 const initialState: State = {
-    activeTab: "theme",
+    activeTab: "account",
 };
 
 const Settings = () => {
@@ -200,7 +200,8 @@ const Settings = () => {
                         Export Data
                     </li>
                     <div className="flex-1"></div>
-                    <li className="flex items-center gap-2 text-lg font-semibold hover:text-red-400 p-2 rounded cursor-pointer"
+                    <li
+                        className="flex items-center gap-2 text-lg font-semibold hover:text-red-400 p-2 rounded cursor-pointer"
                         style={{
                             backgroundColor: getTabBg("logout"),
                         }}
@@ -237,7 +238,7 @@ const Settings = () => {
                         case "export":
                             return <ExportData />;
                         default:
-                            return <Themes />;
+                            return <Account />;
                     }
                 })()}
             </div>
