@@ -214,7 +214,7 @@ const Settings = () => {
                 </ul>
             </div>
             <div
-                className={`w-3/4 p-4 m-4 rounded w-full`}
+                className="w-3/4 p-4 m-4 rounded w-full"
                 style={{
                     backgroundColor: currentColors.bg,
                     border: `1px solid ${currentColors.border}`,
