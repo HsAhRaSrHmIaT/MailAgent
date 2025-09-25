@@ -20,7 +20,7 @@ const Account = () => {
     ];
 
     return (
-        <div className="min-h-screen max-w-6xl mx-auto p-6">
+        <div className="min-h-screen max-w-6xl mx-auto p-6 select-none">
             <div className="select-none">
                 {/* Header */}
                 <div className="mb-8">
@@ -55,14 +55,29 @@ const Account = () => {
                     </div>
                 </div>
             </div>
-            <div className="space-y-6 border rounded-lg p-4">
+            <div
+                className="space-y-6 border rounded-xl p-4"
+                style={{
+                    borderColor: currentColors.border,
+                    minHeight: "500px",
+                }}
+            >
                 {/* Tabs */}
-                <div className="flex justify-between gap-4 p-4 border rounded-lg w-full">
+                <div
+                    className="flex justify-between gap-4 p-4 rounded-lg w-full"
+                    style={{ backgroundColor: currentColors.surface }}
+                >
                     <div>
-                        <h1 className="text-lg font-semibold">
+                        <h1
+                            className="text-lg font-semibold"
+                            style={{ color: currentColors.text }}
+                        >
                             Overall Settings
                         </h1>
-                        <p className="text-sm">
+                        <p
+                            className="text-sm"
+                            style={{ color: currentColors.textSecondary }}
+                        >
                             Manage your profile, usage, and security settings.
                         </p>
                     </div>
@@ -91,7 +106,10 @@ const Account = () => {
                 </div>
                 <div className="flex gap-6">
                     {/* Content */}
-                    <div className="flex-1 rounded-lg border p-6">
+                    <div
+                        className="flex-1 rounded-lg p-6"
+                        style={{ backgroundColor: currentColors.surface }}
+                    >
                         {activeTab === "profile" && <ProfileSection />}
                         {/* {activeTab === "ai-settings" && <AIPreferences  selectedTone="Professional"/>} */}
                         {activeTab === "usage" && <UsageStats />}
