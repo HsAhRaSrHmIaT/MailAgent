@@ -85,7 +85,7 @@ const ProfileSection = ({
             </div>
 
             {/* Email Signature */}
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
                 <label className="block text-sm font-medium mb-2">
                     Default Email Signature
                 </label>
@@ -99,7 +99,7 @@ const ProfileSection = ({
                     }}
                     defaultValue={user.defaultSignature}
                 />
-            </div>
+            </div> */}
         </div>
     );
 };
