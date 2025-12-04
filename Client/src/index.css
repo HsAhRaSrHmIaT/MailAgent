@@ -13,8 +13,32 @@
 body {
     background-color: var(--color-surface);
     color: var(--color-text);
-    overflow-y: hidden;
+    overflow: auto;
     transition: background-color 0.3s ease;
+    margin: 0;
+    padding: 0;
+}
+
+/* Mobile-first responsive adjustments */
+@media (max-width: 1024px) {
+    body {
+        padding-bottom: 100px; /* Increased space for enhanced mobile bottom bar */
+    }
+}
+
+@media (max-width: 640px) {
+    /* Improve touch target sizes for mobile */
+    button {
+        min-height: 44px;
+    }
+
+    /* Ensure proper text sizes on mobile */
+    .text-xs {
+        font-size: 0.75rem;
+    }
+    .text-sm {
+        font-size: 0.875rem;
+    }
 }
 
 /* Custom utility classes using your theme variables */

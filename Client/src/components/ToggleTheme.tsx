@@ -5,8 +5,6 @@ import { MdSunny } from "react-icons/md";
 const ToggleTheme = () => {
     const { theme, setTheme, currentColors } = useTheme();
 
-    const buttonBase =
-        "flex justify-center items-center w-8 h-8 rounded-full transition-colors duration-200 cursor-pointer";
     const activeStyle = {
         backgroundColor: currentColors.border,
     };
@@ -17,29 +15,45 @@ const ToggleTheme = () => {
 
     return (
         <div
-            className="flex items-center p-1 rounded-4xl shadow-md"
+            className="flex items-center rounded-4xl shadow-md lg:p-1"
             style={{
                 backgroundColor: currentColors.surface,
                 border: `1px solid ${currentColors.border}`,
+                padding: "4px",
+                gap: "4px",
             }}
         >
             <button
                 onClick={() => setTheme("dark")}
-                className={buttonBase}
-                style={theme === "dark" ? activeStyle : inactiveStyle}
+                className="flex justify-center items-center rounded-full transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 lg:w-8 lg:h-8"
+                style={{
+                    ...(theme === "dark" ? activeStyle : inactiveStyle),
+                    minHeight: "36px",
+                    minWidth: "36px",
+                }}
                 aria-label="Dark mode"
             >
                 <RiMoonClearFill
+                    size={18}
+                    className="lg:w-5 lg:h-5"
                     style={{ color: currentColors.text }}
                 />
             </button>
             <button
                 onClick={() => setTheme("light")}
-                className={buttonBase}
-                style={theme === "light" ? activeStyle : inactiveStyle}
+                className="flex justify-center items-center rounded-full transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 lg:w-8 lg:h-8"
+                style={{
+                    ...(theme === "light" ? activeStyle : inactiveStyle),
+                    minHeight: "36px",
+                    minWidth: "36px",
+                }}
                 aria-label="Light mode"
             >
-                <MdSunny style={{ color: currentColors.text }} />
+                <MdSunny
+                    size={18}
+                    className="lg:w-5 lg:h-5"
+                    style={{ color: currentColors.text }}
+                />
             </button>
         </div>
     );

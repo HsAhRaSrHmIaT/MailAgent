@@ -1,41 +1,98 @@
 from fastapi import WebSocket, WebSocketDisconnect
 from app.api.chat import handle_chat_message, handle_email_request
+from app.services.logger_service import logger_service, LogCategory
 import time
+import json
 
 class WebSocketHandler:
     def __init__(self, websocket: WebSocket):
         self.websocket = websocket
+        self.session_id = f"ws_{int(time.time())}_{id(websocket)}"
 
     async def connect(self):
         await self.websocket.accept()
+        await logger_service.info(
+            LogCategory.WEBSOCKET,
+            "WebSocket connection established",
+            details={"session_id": self.session_id}
+        )
 
     async def disconnect(self):
         await self.websocket.close()
+        await logger_service.info(
+            LogCategory.WEBSOCKET,
+            "WebSocket connection closed",
+            details={"session_id": self.session_id}
+        )
 
     async def handle_message(self, data: dict):
-        # print(f"Received WebSocket message: {data}")
+        await logger_service.info(
+            LogCategory.WEBSOCKET,
+            "Received chat message",
+            details={
+                "session_id": self.session_id,
+                "message_type": "chat",
+                "content_length": len(data.get("content", ""))
+            }
+        )
+        
         try:
             response = await handle_chat_message(data)
             await self.websocket.send_json(response.model_dump())
+            
+            await logger_service.info(
+                LogCategory.WEBSOCKET,
+                "Chat response sent successfully",
+                details={"session_id": self.session_id}
+            )
         except Exception as e:
+            await logger_service.log_exception(
+                LogCategory.WEBSOCKET,
+                "Failed to process chat message",
+                e,
+                details={"session_id": self.session_id}
+            )
+            
             await self.websocket.send_json({
                 "role": "assistant",
                 "content": "The message request could not be processed.",
                 "timestamp": int(time.time())
             })
-            print(f"Error handling message: {e}")
 
     async def handle_email(self, data: dict):
+        await logger_service.info(
+            LogCategory.WEBSOCKET,
+            "Received email request",
+            details={
+                "session_id": self.session_id,
+                "message_type": "email",
+                "receiver_email": data.get("receiverEmail", ""),
+                "prompt_length": len(data.get("prompt", ""))
+            }
+        )
+        
         try:
             response = await handle_email_request(data)
             await self.websocket.send_json(response)
+            
+            await logger_service.info(
+                LogCategory.WEBSOCKET,
+                "Email response sent successfully",
+                details={"session_id": self.session_id}
+            )
         except Exception as e:
+            await logger_service.log_exception(
+                LogCategory.WEBSOCKET,
+                "Failed to process email request",
+                e,
+                details={"session_id": self.session_id}
+            )
+            
             await self.websocket.send_json({
                 "role": "assistant",
                 "content": "The email request could not be processed.",
                 "timestamp": int(time.time())
             })
-            print(f"Error handling email request: {e}")
 
 async def websocket_endpoint(websocket: WebSocket):
     handler = WebSocketHandler(websocket)
@@ -47,10 +104,19 @@ async def websocket_endpoint(websocket: WebSocket):
             if message_type == "email":
                 await handler.handle_email(data)
             else:
-                    await handler.handle_message(data)
+                await handler.handle_message(data)
     except WebSocketDisconnect:
-        pass
+        await logger_service.info(
+            LogCategory.WEBSOCKET,
+            "WebSocket disconnected",
+            details={"session_id": handler.session_id}
+        )
     except Exception as e:
-        print(f"WebSocket error: {e}")
+        await logger_service.log_exception(
+            LogCategory.WEBSOCKET,
+            "WebSocket error occurred",
+            e,
+            details={"session_id": handler.session_id}
+        )
     finally:
         await handler.disconnect()

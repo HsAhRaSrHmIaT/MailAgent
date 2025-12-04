@@ -54,11 +54,11 @@ const ChatArea = ({
                                 message.sender === "user"
                                     ? "justify-end"
                                     : "justify-start"
-                            } p-4`}
+                            } p-2 sm:p-4`}
                         >
                             <div className="flex flex-col">
                                 {message.type === "email" ? (
-                                    <div className="max-w-xs lg:max-w-md">
+                                    <div className="max-w-xs sm:max-w-sm lg:max-w-md">
                                         <EmailPreviewBox
                                             emailData={
                                                 message.emailData || null
@@ -67,7 +67,7 @@ const ChatArea = ({
                                     </div>
                                 ) : (
                                     <div
-                                        className="max-w-xs lg:max-w-md px-4 py-2 rounded-sm shadow-sm"
+                                        className="max-w-xs sm:max-w-sm lg:max-w-md px-3 py-2 sm:px-4 rounded-sm shadow-sm"
                                         style={{
                                             backgroundColor:
                                                 message.sender === "user"

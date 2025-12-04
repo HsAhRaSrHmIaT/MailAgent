@@ -121,23 +121,23 @@ const Header = ({ setMessages }: HeaderProps) => {
 
     return (
         <div
-            className="p-4 flex items-center justify-between select-none shadow-sm"
+            className="p-3 sm:p-4 flex items-center justify-between select-none shadow-sm"
             style={{
                 backgroundColor: currentColors.surface,
                 color: currentColors.text,
                 boxShadow: `0 1px 3px 0 ${currentColors.border}20`,
             }}
         >
-            <div>
+            <div className="flex-1 min-w-0">
                 <h1
-                    className="text-lg font-semibold"
+                    className="text-base sm:text-lg font-semibold truncate"
                     style={{ color: currentColors.text }}
                 >
                     Chat & Email Assistant
                 </h1>
                 <div className="flex items-center space-x-1 ml-1">
                     <div
-                        className={`w-2 h-2 rounded-full`}
+                        className={`w-2 h-2 rounded-full flex-shrink-0`}
                         style={{
                             backgroundColor:
                                 status === "Online"
@@ -154,13 +154,13 @@ const Header = ({ setMessages }: HeaderProps) => {
                 </div>
             </div>
 
-            <div className="flex items-center gap-3 relative dropdown-container">
+            <div className="flex items-center gap-2 sm:gap-3 relative dropdown-container">
                 <div
-                    className="flex items-center gap-2 cursor-pointer"
+                    className="flex items-center gap-1 sm:gap-2 cursor-pointer"
                     onClick={toggleDropdown}
                 >
                     <span
-                        className="text-sm"
+                        className="text-xs sm:text-sm truncate max-w-20 sm:max-w-none"
                         style={{ color: currentColors.text }}
                     >
                         {selectedEmail.indexOf("@") > -1
@@ -169,12 +169,14 @@ const Header = ({ setMessages }: HeaderProps) => {
                     </span>
                     {!isDropdownOpen ? (
                         <LuChevronDown
-                            size={16}
+                            size={14}
+                            className="sm:w-4 sm:h-4 flex-shrink-0"
                             style={{ color: currentColors.text }}
                         />
                     ) : (
                         <LuChevronUp
-                            size={16}
+                            size={14}
+                            className="sm:w-4 sm:h-4 flex-shrink-0"
                             style={{ color: currentColors.text }}
                         />
                     )}
@@ -182,7 +184,7 @@ const Header = ({ setMessages }: HeaderProps) => {
 
                 {isDropdownOpen && (
                     <div
-                        className="absolute top-8 right-12 w-60 border rounded-sm shadow-lg z-50"
+                        className="absolute top-8 right-8 sm:right-12 w-48 sm:w-60 border rounded-sm shadow-lg z-50"
                         style={{
                             backgroundColor: currentColors.surface,
                             borderColor: currentColors.border,
@@ -199,7 +201,7 @@ const Header = ({ setMessages }: HeaderProps) => {
                 )}
 
                 <button
-                    className="p-2 rounded-full transition-all duration-300 cursor-pointer hover:-rotate-180"
+                    className="p-1.5 sm:p-2 rounded-full transition-all duration-300 cursor-pointer hover:-rotate-180 flex-shrink-0"
                     style={{
                         backgroundColor: currentColors.bg,
                         color: currentColors.text,
@@ -215,7 +217,7 @@ const Header = ({ setMessages }: HeaderProps) => {
                             currentColors.bg;
                     }}
                 >
-                    <LuRefreshCcw size={20} />
+                    <LuRefreshCcw size={16} className="sm:w-5 sm:h-5" />
                 </button>
             </div>
         </div>

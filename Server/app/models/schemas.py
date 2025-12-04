@@ -1,6 +1,49 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from enum import Enum
+
+
+class LogLevel(str, Enum):
+    DEBUG = "DEBUG"
+    INFO = "INFO"
+    WARNING = "WARNING"
+    ERROR = "ERROR"
+    CRITICAL = "CRITICAL"
+
+
+class LogCategory(str, Enum):
+    GENERAL = "GENERAL"
+    API = "API"
+    WEBSOCKET = "WEBSOCKET"
+    EMAIL = "EMAIL"
+    LLM = "LLM"
+    AUTH = "AUTH"
+    DATABASE = "DATABASE"
+
+
+class LogEntry(BaseModel):
+    id: int
+    timestamp: str
+    level: str
+    category: str
+    message: str
+    details: Optional[Dict[str, Any]] = None
+    source: Optional[str] = None
+    user_id: Optional[str] = None
+    session_id: Optional[str] = None
+    ip_address: Optional[str] = None
+    user_agent: Optional[str] = None
+    created_at: str
+
+
+class LogStats(BaseModel):
+    total_logs: int = 0
+    error_count: int = 0
+    warning_count: int = 0
+    info_count: int = 0
+    debug_count: int = 0
+    critical_count: int = 0
+    category_breakdown: Dict[str, int] = Field(default_factory=dict)
 
 
 # class VoiceID(str, Enum):

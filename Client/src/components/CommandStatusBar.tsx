@@ -22,17 +22,19 @@ const CommandStatusBar = ({
 
     return (
         <div
-            className="border-t p-3 shadow-sm"
+            className="border-t p-2 sm:p-3 shadow-sm"
             style={{
                 backgroundColor: isInvalidEmail
                     ? currentColors.surface + "22"
                     : currentColors.surface,
-                borderColor: isInvalidEmail ? "#ec0c0cff" : currentColors.border,
+                borderColor: isInvalidEmail
+                    ? "#ec0c0cff"
+                    : currentColors.border,
                 boxShadow: `0 1px 4px 0 ${currentColors.border}22`,
             }}
         >
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0">
+                <div className="flex flex-wrap items-center space-x-2">
                     <span
                         className="font-medium select-none"
                         style={{
@@ -56,7 +58,7 @@ const CommandStatusBar = ({
                     ) : (
                         <>
                             <span
-                                className="text-sm select-none"
+                                className="text-xs sm:text-sm select-none"
                                 style={{
                                     color: isInvalidEmail
                                         ? "#d32f2f"
@@ -67,7 +69,7 @@ const CommandStatusBar = ({
                             </span>
                             {commandState.data.receiverEmail && (
                                 <span
-                                    className="text-xs px-2 py-1 rounded shadow-sm"
+                                    className="text-xs px-2 py-1 rounded shadow-sm break-all"
                                     style={{
                                         backgroundColor:
                                             currentPalette.primary + "22",
@@ -80,27 +82,27 @@ const CommandStatusBar = ({
                         </>
                     )}
                 </div>
-                {isInvalidEmail && (
-                    <div className="flex items-center space-x-2">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-1 sm:space-y-0 sm:space-x-4">
+                    {isInvalidEmail && (
                         <span
-                            className="text-sm font-medium"
+                            className="text-xs sm:text-sm font-medium"
                             style={{ color: "#d32f2f" }}
                         >
                             Please enter a valid email address
                         </span>
-                    </div>
-                )}
-                <button
-                    onClick={onCancel}
-                    className="text-sm cursor-pointer"
-                    style={{
-                        color: isInvalidEmail
-                            ? "#d32f2f"
-                            : currentPalette.primary,
-                    }}
-                >
-                    Cancel
-                </button>
+                    )}
+                    <button
+                        onClick={onCancel}
+                        className="text-xs sm:text-sm cursor-pointer flex-shrink-0"
+                        style={{
+                            color: isInvalidEmail
+                                ? "#d32f2f"
+                                : currentPalette.primary,
+                        }}
+                    >
+                        Cancel
+                    </button>
+                </div>
             </div>
         </div>
     );

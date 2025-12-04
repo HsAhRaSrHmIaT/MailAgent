@@ -14,6 +14,16 @@ class Settings(BaseSettings):
     sender_email: Optional[str] = os.getenv("SENDER_EMAIL")
     email_password: Optional[str] = os.getenv("EMAIL_PASSWORD")
 
+    # Database Settings (NeonDB PostgreSQL)
+    database_url: Optional[str] = os.getenv("DATABASE_URL")
+    neon_database_url: Optional[str] = os.getenv("NEON_DATABASE_URL") 
+    db_host: Optional[str] = os.getenv("DB_HOST")
+    db_port: int = int(os.getenv("DB_PORT", "5432"))
+    db_name: Optional[str] = os.getenv("DB_NAME", "mailagent")
+    db_user: Optional[str] = os.getenv("DB_USER")
+    db_password: Optional[str] = os.getenv("DB_PASSWORD")
+    db_ssl_mode: str = os.getenv("DB_SSL_MODE", "require")
+
     # Server Settings
     host: str = os.getenv("HOST", "localhost")
     port: int = os.getenv("PORT", 8000)
@@ -34,6 +44,46 @@ class Settings(BaseSettings):
     # default_language: str = os.getenv("DEFAULT_LANGUAGE", "en-IN")
     # max_prompt_length: int = 10000
     max_response_tokens: int = 3000
+
+    @property
+    def database_connection_url(self) -> str:
+        """Get the database connection URL, prioritizing NEON_DATABASE_URL"""
+        if self.neon_database_url:
+            # Clean up NeonDB URL - remove query parameters that cause issues
+            url = self.neon_database_url
+            
+            # Remove problematic query parameters
+            if "?" in url:
+                base_url, query_params = url.split("?", 1)
+                # Keep only safe parameters, remove channel_binding and sslmode
+                safe_params = []
+                for param in query_params.split("&"):
+                    if not param.startswith(("channel_binding=", "sslmode=")):
+                        safe_params.append(param)
+                if safe_params:
+                    url = f"{base_url}?{'&'.join(safe_params)}"
+                else:
+                    url = base_url
+            
+            # Ensure asyncpg driver is used
+            if url.startswith("postgresql://"):
+                url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+            elif not url.startswith("postgresql+asyncpg://"):
+                # Handle case where URL doesn't have protocol
+                if "@" in url and not url.startswith("postgresql"):
+                    url = f"postgresql+asyncpg://{url}"
+            return url
+        elif self.database_url:
+            url = self.database_url
+            if url.startswith("postgresql://"):
+                url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+            return url
+        elif all([self.db_host, self.db_user, self.db_password, self.db_name]):
+            # Build URL without sslmode in the URL string
+            return f"postgresql+asyncpg://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
+        else:
+            # Fallback disabled - require proper database configuration
+            return ""
 
     class Config:
         env_file = ".env"

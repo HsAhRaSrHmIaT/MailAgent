@@ -1,11 +1,14 @@
 import os
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from websocket import websocket_endpoint
+import time
 
 from app.core.config import settings
+from app.api import logs
+from app.services.logger_service import logger_service, LogCategory
 
 app = FastAPI(
     title="MailAgent",
@@ -23,10 +26,52 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Add logging middleware
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.time()
+    
+    # Log incoming request
+    await logger_service.info(
+        LogCategory.API,
+        f"Incoming {request.method} request to {request.url.path}",
+        details={
+            "method": request.method,
+            "url": str(request.url),
+            "headers": dict(request.headers),
+            "query_params": dict(request.query_params)
+        },
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent")
+    )
+    
+    response = await call_next(request)
+    
+    # Log response
+    process_time = time.time() - start_time
+    await logger_service.info(
+        LogCategory.API,
+        f"Response for {request.method} {request.url.path} - Status: {response.status_code}",
+        details={
+            "status_code": response.status_code,
+            "process_time": f"{process_time:.4f}s"
+        }
+    )
+    
+    return response
+
+# Include routers
+app.include_router(logs.router, prefix="/api", tags=["logs"])
+
 app.add_api_websocket_route("/api", websocket_endpoint)
 
 @app.get("/")
 async def root():
+    await logger_service.info(
+        LogCategory.API,
+        "Root endpoint accessed",
+        details={"endpoint": "/", "message": "Welcome to MailAgent API!"}
+    )
     return JSONResponse(content={"message": "Welcome to MailAgent API!"})
 
 def main():

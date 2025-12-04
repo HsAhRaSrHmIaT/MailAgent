@@ -59,107 +59,108 @@ const EmailPreviewBox = ({ emailData }: EmailPreviewBoxProps) => {
 
     return (
         <div
-            className="p-4 rounded-sm shadow-sm"
+            className="p-3 sm:p-4 rounded-sm shadow-sm"
             style={{
-            background: currentColors.surface,
-            color: currentColors.text,
+                background: currentColors.surface,
+                color: currentColors.text,
             }}
         >
-            <p className="select-none">
-            I'll help you create that email. Here's a professional template:
-            SEND To{" "}
-            <i className="font-bold">
-                {emailData?.to}
-            </i>{" "}
+            <p className="select-none text-sm sm:text-base">
+                I'll help you create that email. Here's a professional template:
+                SEND To <i className="font-bold">{emailData?.to}</i>{" "}
             </p>
 
             {/* Email Preview Box */}
             <div
-            className="mt-3 p-4 border rounded-lg shadow-sm"
-            style={{
-                background: currentColors.bg,
-                borderColor: currentColors.border,
-            }}
+                className="mt-3 p-3 sm:p-4 border rounded-lg shadow-sm"
+                style={{
+                    background: currentColors.bg,
+                    borderColor: currentColors.border,
+                }}
             >
-            <div className="text-sm mb-2" style={{ color: currentColors.textSecondary }}>
-                Generated Email:
-            </div>
-            <div className="space-y-2 whitespace-pre-wrap">
-                <div>
-                <strong>
-                    Subject:
-                </strong>{" "}
-                <span>
-                    {emailData?.subject}
-                </span>
-                </div>
                 <div
-                className="border-t pt-2"
-                style={{ borderColor: currentColors.border }}
+                    className="text-sm mb-2"
+                    style={{ color: currentColors.textSecondary }}
                 >
-                <p className="mt-1">
-                    {emailData?.body}
-                </p>
+                    Generated Email:
                 </div>
-            </div>
+                <div className="space-y-2 whitespace-pre-wrap">
+                    <div>
+                        <strong>Subject:</strong>{" "}
+                        <span>{emailData?.subject}</span>
+                    </div>
+                    <div
+                        className="border-t pt-2"
+                        style={{ borderColor: currentColors.border }}
+                    >
+                        <p className="mt-1">{emailData?.body}</p>
+                    </div>
+                </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap gap-2 mt-3">
-            <button
-                className="border px-3 py-1 rounded text-sm w-16 shadow-sm"
-                style={{
-                borderColor: currentColors.border,
-                color: currentColors.text,
-                }}
-                onClick={sendEmail}
-                disabled={isLoading}
-            >
-                {getButtonText()}
-            </button>
-            <button
-                className="border px-3 py-1 rounded text-sm shadow-sm"
-                style={{
-                borderColor: currentColors.border,
-                }}
-            >
-                Save as Draft
-            </button>
-            <button
-                className="border px-3 py-1 rounded text-sm shadow-sm"
-                style={{
-                borderColor: currentColors.border,
-                }}
-            >
-                Edit
-            </button>
-            <button
-                className="border px-3 py-1 rounded text-sm shadow-sm"
-                style={{
-                borderColor: currentColors.border,
-                }}
-            >
-                Regenerate
-            </button>
-            <button
-                className="border px-3 py-1 rounded text-sm shadow-sm"
-                style={{
-                borderColor: currentColors.border,
-                }}
-                onClick={copy_to_clipboard}
-            >
-                {copied ? <GoCheck size={18} /> : <GoCopy size={18} />}
-            </button>
-            <button
-                className="border px-3 py-1 rounded text-sm shadow-sm"
-                style={{
-                borderColor: currentColors.border,
-                color: currentColors.textSecondary,
-                }}
-                disabled={true}
-            >
-                <GiSpeaker size={18} />
-            </button>
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-3">
+                <button
+                    className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm w-14 sm:w-16 shadow-sm"
+                    style={{
+                        borderColor: currentColors.border,
+                        color: currentColors.text,
+                    }}
+                    onClick={sendEmail}
+                    disabled={isLoading}
+                >
+                    {getButtonText()}
+                </button>
+                <button
+                    className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm flex-shrink-0"
+                    style={{
+                        borderColor: currentColors.border,
+                    }}
+                >
+                    Save as Draft
+                </button>
+                <button
+                    className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm flex-shrink-0"
+                    style={{
+                        borderColor: currentColors.border,
+                    }}
+                >
+                    Edit
+                </button>
+                <button
+                    className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm flex-shrink-0"
+                    style={{
+                        borderColor: currentColors.border,
+                    }}
+                >
+                    Regenerate
+                </button>
+                <button
+                    className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm flex-shrink-0"
+                    style={{
+                        borderColor: currentColors.border,
+                    }}
+                    onClick={copy_to_clipboard}
+                >
+                    {copied ? (
+                        <GoCheck
+                            size={16}
+                            className="sm:w-[18px] sm:h-[18px]"
+                        />
+                    ) : (
+                        <GoCopy size={16} className="sm:w-[18px] sm:h-[18px]" />
+                    )}
+                </button>
+                <button
+                    className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm flex-shrink-0"
+                    style={{
+                        borderColor: currentColors.border,
+                        color: currentColors.textSecondary,
+                    }}
+                    disabled={true}
+                >
+                    <GiSpeaker size={16} className="sm:w-[18px] sm:h-[18px]" />
+                </button>
             </div>
         </div>
     );

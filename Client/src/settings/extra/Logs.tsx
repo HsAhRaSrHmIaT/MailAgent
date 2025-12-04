@@ -1,59 +1,805 @@
-import { LuLogs } from "react-icons/lu";
+import {
+    LuLogs,
+    LuRefreshCw,
+    LuTrash2,
+    LuFilter,
+    LuSearch,
+} from "react-icons/lu";
 import { useTheme } from "../../contexts/ThemeContext";
+import { useState, useEffect } from "react";
+
+interface LogEntry {
+    id: number;
+    timestamp: string;
+    level: string;
+    category: string;
+    message: string;
+    details?: any;
+    source?: string;
+    user_id?: string;
+    session_id?: string;
+    ip_address?: string;
+    user_agent?: string;
+    created_at: string;
+}
+
+interface LogStats {
+    total_logs: number;
+    error_count: number;
+    warning_count: number;
+    info_count: number;
+    debug_count: number;
+    critical_count: number;
+    category_breakdown: Record<string, number>;
+}
+
+const LOG_LEVELS = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"];
+const LOG_CATEGORIES = [
+    "GENERAL",
+    "API",
+    "WEBSOCKET",
+    "EMAIL",
+    "LLM",
+    "AUTH",
+    "DATABASE",
+];
 
 const Logs = () => {
     const { currentColors, currentPalette } = useTheme();
+    const [logs, setLogs] = useState<LogEntry[]>([]);
+    const [stats, setStats] = useState<LogStats | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [dbStatus, setDbStatus] = useState<{
+        database_available: boolean;
+        file_logging: boolean;
+        database_error?: string;
+    } | null>(null);
+    const [filters, setFilters] = useState({
+        level: "",
+        category: "",
+        search_term: "",
+        limit: 100,
+    });
+    const [expandedLog, setExpandedLog] = useState<number | null>(null);
+
+    const fetchLogs = async () => {
+        setLoading(true);
+        try {
+            const params = new URLSearchParams();
+            if (filters.level) params.append("level", filters.level);
+            if (filters.category) params.append("category", filters.category);
+            if (filters.search_term)
+                params.append("search_term", filters.search_term);
+            params.append("limit", filters.limit.toString());
+
+            const response = await fetch(
+                `http://localhost:8000/api/logs?${params}`
+            );
+            if (response.ok) {
+                const data = await response.json();
+                setLogs(data);
+            } else {
+                console.error("Failed to fetch logs");
+            }
+        } catch (error) {
+            console.error("Error fetching logs:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchStats = async () => {
+        try {
+            const response = await fetch(
+                "http://localhost:8000/api/logs/stats"
+            );
+            if (response.ok) {
+                const data = await response.json();
+                setStats(data);
+            }
+        } catch (error) {
+            console.error("Error fetching stats:", error);
+        }
+    };
+
+    const clearOldLogs = async () => {
+        if (confirm("Are you sure you want to clear old logs (30+ days)?")) {
+            try {
+                const response = await fetch(
+                    "http://localhost:8000/api/logs/cleanup",
+                    {
+                        method: "DELETE",
+                    }
+                );
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(`${result.deleted_count} old logs deleted`);
+                    fetchLogs();
+                    fetchStats();
+                }
+            } catch (error) {
+                console.error("Error clearing logs:", error);
+            }
+        }
+    };
+
+    const fetchStatus = async () => {
+        try {
+            const response = await fetch(
+                "http://localhost:8000/api/logs/status"
+            );
+            if (response.ok) {
+                const data = await response.json();
+                setDbStatus(data);
+            }
+        } catch (error) {
+            console.error("Error fetching status:", error);
+            setDbStatus({
+                database_available: false,
+                file_logging: true,
+                database_error: "Could not connect to server",
+            });
+        }
+    };
+
+    useEffect(() => {
+        fetchLogs();
+        fetchStats();
+        fetchStatus();
+    }, [filters]);
+
+    const getLevelColor = (level: string) => {
+        switch (level) {
+            case "ERROR":
+                return "#ef4444";
+            case "CRITICAL":
+                return "#dc2626";
+            case "WARNING":
+                return "#f59e0b";
+            case "INFO":
+                return "#3b82f6";
+            case "DEBUG":
+                return "#6b7280";
+            default:
+                return currentColors.text;
+        }
+    };
+
+    const formatTimestamp = (timestamp: string) => {
+        return new Date(timestamp).toLocaleString();
+    };
 
     return (
         <div className="min-h-screen">
-            <div className="max-w-6xl mx-auto p-6 select-none">
+            <div className="max-w-7xl mx-auto p-6 select-none">
                 {/* Header */}
                 <div className="mb-8">
-                    <div className="flex items-center gap-4 mb-4">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-4">
+                            <div
+                                className="p-3 rounded-xl"
+                                style={{
+                                    backgroundColor: `${currentPalette.primary}20`,
+                                }}
+                            >
+                                <LuLogs
+                                    size={24}
+                                    style={{ color: currentColors.text }}
+                                />
+                            </div>
+                            <div>
+                                <h1
+                                    className="text-4xl font-bold"
+                                    style={{ color: currentColors.text }}
+                                >
+                                    Application Logs
+                                </h1>
+                                <p
+                                    className="text-lg mt-1"
+                                    style={{
+                                        color: currentColors.textSecondary,
+                                    }}
+                                >
+                                    Monitor system activity and troubleshoot
+                                    issues
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={fetchLogs}
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
+                                style={{
+                                    backgroundColor: currentPalette.primary,
+                                    color: "white",
+                                }}
+                                disabled={loading}
+                            >
+                                <LuRefreshCw
+                                    size={16}
+                                    className={loading ? "animate-spin" : ""}
+                                />
+                                Refresh
+                            </button>
+                            <button
+                                onClick={clearOldLogs}
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
+                                style={{
+                                    backgroundColor: "#ef4444",
+                                    color: "white",
+                                }}
+                            >
+                                <LuTrash2 size={16} />
+                                Clean Old
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Stats */}
+                    {stats && (
+                        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
+                            <div
+                                className="p-4 rounded-lg"
+                                style={{
+                                    backgroundColor: currentColors.surface,
+                                    borderColor: currentColors.border,
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        color: currentColors.textSecondary,
+                                    }}
+                                    className="text-sm"
+                                >
+                                    Total
+                                </div>
+                                <div
+                                    style={{ color: currentColors.text }}
+                                    className="text-2xl font-bold"
+                                >
+                                    {stats.total_logs}
+                                </div>
+                            </div>
+                            <div
+                                className="p-4 rounded-lg"
+                                style={{
+                                    backgroundColor: currentColors.surface,
+                                    borderColor: currentColors.border,
+                                }}
+                            >
+                                <div
+                                    style={{ color: "#ef4444" }}
+                                    className="text-sm"
+                                >
+                                    Errors
+                                </div>
+                                <div
+                                    style={{ color: "#ef4444" }}
+                                    className="text-2xl font-bold"
+                                >
+                                    {stats.error_count}
+                                </div>
+                            </div>
+                            <div
+                                className="p-4 rounded-lg"
+                                style={{
+                                    backgroundColor: currentColors.surface,
+                                    borderColor: currentColors.border,
+                                }}
+                            >
+                                <div
+                                    style={{ color: "#f59e0b" }}
+                                    className="text-sm"
+                                >
+                                    Warnings
+                                </div>
+                                <div
+                                    style={{ color: "#f59e0b" }}
+                                    className="text-2xl font-bold"
+                                >
+                                    {stats.warning_count}
+                                </div>
+                            </div>
+                            <div
+                                className="p-4 rounded-lg"
+                                style={{
+                                    backgroundColor: currentColors.surface,
+                                    borderColor: currentColors.border,
+                                }}
+                            >
+                                <div
+                                    style={{ color: "#3b82f6" }}
+                                    className="text-sm"
+                                >
+                                    Info
+                                </div>
+                                <div
+                                    style={{ color: "#3b82f6" }}
+                                    className="text-2xl font-bold"
+                                >
+                                    {stats.info_count}
+                                </div>
+                            </div>
+                            <div
+                                className="p-4 rounded-lg"
+                                style={{
+                                    backgroundColor: currentColors.surface,
+                                    borderColor: currentColors.border,
+                                }}
+                            >
+                                <div
+                                    style={{ color: "#6b7280" }}
+                                    className="text-sm"
+                                >
+                                    Debug
+                                </div>
+                                <div
+                                    style={{ color: "#6b7280" }}
+                                    className="text-2xl font-bold"
+                                >
+                                    {stats.debug_count}
+                                </div>
+                            </div>
+                            <div
+                                className="p-4 rounded-lg"
+                                style={{
+                                    backgroundColor: currentColors.surface,
+                                    borderColor: currentColors.border,
+                                }}
+                            >
+                                <div
+                                    style={{ color: "#dc2626" }}
+                                    className="text-sm"
+                                >
+                                    Critical
+                                </div>
+                                <div
+                                    style={{ color: "#dc2626" }}
+                                    className="text-2xl font-bold"
+                                >
+                                    {stats.critical_count}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Status Banner */}
+                    {dbStatus && !dbStatus.database_available && (
                         <div
-                            className="p-3 rounded-xl"
+                            className="p-4 rounded-lg mb-6 border-l-4"
                             style={{
-                                backgroundColor: `${currentPalette.primary}20`,
+                                backgroundColor: "#fef3c7",
+                                borderLeftColor: "#f59e0b",
+                                color: "#92400e",
                             }}
                         >
-                            <span
-                                className="text-md font-mono font-bold"
-                                style={{ color: currentColors.text }}
-                            >
-                                <LuLogs size={24} />
-                            </span>
-                        </div>
-                        <div>
-                            <h1
-                                className="text-4xl font-bold"
-                                style={{ color: currentColors.text }}
-                            >
-                                View Logs
-                            </h1>
-                            <p
-                                className="text-lg mt-1"
-                                style={{ color: currentColors.textSecondary }}
-                            >
-                                Monitor and manage your application logs
-                                effectively
+                            <div className="flex items-center gap-2">
+                                <span className="font-semibold">
+                                    ⚠️ Database Unavailable
+                                </span>
+                            </div>
+                            <p className="text-sm mt-1">
+                                {dbStatus.database_error ||
+                                    "Database connection failed"}
+                                . Using file-based logging as fallback. Some
+                                features may be limited.
                             </p>
+                        </div>
+                    )}
+
+                    {/* Filters */}
+                    <div
+                        className="p-4 rounded-lg mb-6"
+                        style={{
+                            backgroundColor: currentColors.surface,
+                            borderColor: currentColors.border,
+                        }}
+                    >
+                        <div className="flex items-center gap-4 flex-wrap">
+                            <LuFilter
+                                size={20}
+                                style={{ color: currentColors.text }}
+                            />
+
+                            <select
+                                value={filters.level}
+                                onChange={(e) =>
+                                    setFilters({
+                                        ...filters,
+                                        level: e.target.value,
+                                    })
+                                }
+                                className="px-3 py-2 rounded border"
+                                style={{
+                                    backgroundColor: currentColors.surface,
+                                    borderColor: currentColors.border,
+                                    color: currentColors.text,
+                                }}
+                            >
+                                <option value="">All Levels</option>
+                                {LOG_LEVELS.map((level) => (
+                                    <option key={level} value={level}>
+                                        {level}
+                                    </option>
+                                ))}
+                            </select>
+
+                            <select
+                                value={filters.category}
+                                onChange={(e) =>
+                                    setFilters({
+                                        ...filters,
+                                        category: e.target.value,
+                                    })
+                                }
+                                className="px-3 py-2 rounded border"
+                                style={{
+                                    backgroundColor: currentColors.surface,
+                                    borderColor: currentColors.border,
+                                    color: currentColors.text,
+                                }}
+                            >
+                                <option value="">All Categories</option>
+                                {LOG_CATEGORIES.map((category) => (
+                                    <option key={category} value={category}>
+                                        {category}
+                                    </option>
+                                ))}
+                            </select>
+
+                            <div className="flex items-center gap-2">
+                                <LuSearch
+                                    size={16}
+                                    style={{
+                                        color: currentColors.textSecondary,
+                                    }}
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Search logs..."
+                                    value={filters.search_term}
+                                    onChange={(e) =>
+                                        setFilters({
+                                            ...filters,
+                                            search_term: e.target.value,
+                                        })
+                                    }
+                                    className="px-3 py-2 rounded border"
+                                    style={{
+                                        backgroundColor: currentColors.surface,
+                                        borderColor: currentColors.border,
+                                        color: currentColors.text,
+                                    }}
+                                />
+                            </div>
+
+                            <select
+                                value={filters.limit}
+                                onChange={(e) =>
+                                    setFilters({
+                                        ...filters,
+                                        limit: parseInt(e.target.value),
+                                    })
+                                }
+                                className="px-3 py-2 rounded border"
+                                style={{
+                                    backgroundColor: currentColors.surface,
+                                    borderColor: currentColors.border,
+                                    color: currentColors.text,
+                                }}
+                            >
+                                <option value={50}>50 logs</option>
+                                <option value={100}>100 logs</option>
+                                <option value={250}>250 logs</option>
+                                <option value={500}>500 logs</option>
+                            </select>
                         </div>
                     </div>
                 </div>
+
+                {/* Logs Table */}
                 <div
-                    className="h-142 border rounded-xl p-6 flex items-center justify-center"
+                    className="border rounded-xl overflow-hidden"
                     style={{
                         borderColor: currentColors.border,
                         background: currentColors.surface,
                     }}
                 >
-                    <p style={{ color: currentColors.text }}>
-                        No logs available
-                    </p>
+                    {logs.length === 0 ? (
+                        <div className="p-8 flex items-center justify-center">
+                            <p style={{ color: currentColors.text }}>
+                                {loading
+                                    ? "Loading logs..."
+                                    : "No logs available"}
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead
+                                    style={{
+                                        backgroundColor: currentColors.surface,
+                                    }}
+                                >
+                                    <tr>
+                                        <th
+                                            className="px-4 py-3 text-left"
+                                            style={{
+                                                color: currentColors.text,
+                                            }}
+                                        >
+                                            Time
+                                        </th>
+                                        <th
+                                            className="px-4 py-3 text-left"
+                                            style={{
+                                                color: currentColors.text,
+                                            }}
+                                        >
+                                            Level
+                                        </th>
+                                        <th
+                                            className="px-4 py-3 text-left"
+                                            style={{
+                                                color: currentColors.text,
+                                            }}
+                                        >
+                                            Category
+                                        </th>
+                                        <th
+                                            className="px-4 py-3 text-left"
+                                            style={{
+                                                color: currentColors.text,
+                                            }}
+                                        >
+                                            Message
+                                        </th>
+                                        <th
+                                            className="px-4 py-3 text-left"
+                                            style={{
+                                                color: currentColors.text,
+                                            }}
+                                        >
+                                            Source
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {logs.map((log) => (
+                                        <>
+                                            <tr
+                                                key={log.id}
+                                                className="border-t cursor-pointer hover:opacity-80"
+                                                style={{
+                                                    borderColor:
+                                                        currentColors.border,
+                                                }}
+                                                onClick={() =>
+                                                    setExpandedLog(
+                                                        expandedLog === log.id
+                                                            ? null
+                                                            : log.id
+                                                    )
+                                                }
+                                            >
+                                                <td
+                                                    className="px-4 py-3 text-sm"
+                                                    style={{
+                                                        color: currentColors.textSecondary,
+                                                    }}
+                                                >
+                                                    {formatTimestamp(
+                                                        log.timestamp
+                                                    )}
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <span
+                                                        className="px-2 py-1 rounded text-xs font-medium"
+                                                        style={{
+                                                            backgroundColor: `${getLevelColor(
+                                                                log.level
+                                                            )}20`,
+                                                            color: getLevelColor(
+                                                                log.level
+                                                            ),
+                                                        }}
+                                                    >
+                                                        {log.level}
+                                                    </span>
+                                                </td>
+                                                <td
+                                                    className="px-4 py-3 text-sm"
+                                                    style={{
+                                                        color: currentColors.text,
+                                                    }}
+                                                >
+                                                    {log.category}
+                                                </td>
+                                                <td
+                                                    className="px-4 py-3 text-sm"
+                                                    style={{
+                                                        color: currentColors.text,
+                                                    }}
+                                                >
+                                                    {log.message.length > 100
+                                                        ? `${log.message.substring(
+                                                              0,
+                                                              100
+                                                          )}...`
+                                                        : log.message}
+                                                </td>
+                                                <td
+                                                    className="px-4 py-3 text-sm"
+                                                    style={{
+                                                        color: currentColors.textSecondary,
+                                                    }}
+                                                >
+                                                    {log.source ||
+                                                        log.session_id ||
+                                                        "-"}
+                                                </td>
+                                            </tr>
+                                            {expandedLog === log.id && (
+                                                <tr
+                                                    key={`${log.id}-expanded`}
+                                                    style={{
+                                                        backgroundColor: `${currentPalette.primary}10`,
+                                                    }}
+                                                >
+                                                    <td
+                                                        colSpan={5}
+                                                        className="px-4 py-4"
+                                                    >
+                                                        <div className="space-y-2">
+                                                            <div>
+                                                                <strong
+                                                                    style={{
+                                                                        color: currentColors.text,
+                                                                    }}
+                                                                >
+                                                                    Full
+                                                                    Message:
+                                                                </strong>
+                                                                <p
+                                                                    style={{
+                                                                        color: currentColors.text,
+                                                                    }}
+                                                                    className="mt-1"
+                                                                >
+                                                                    {
+                                                                        log.message
+                                                                    }
+                                                                </p>
+                                                            </div>
+                                                            {log.details && (
+                                                                <div>
+                                                                    <strong
+                                                                        style={{
+                                                                            color: currentColors.text,
+                                                                        }}
+                                                                    >
+                                                                        Details:
+                                                                    </strong>
+                                                                    <pre
+                                                                        className="mt-1 text-xs overflow-x-auto p-2 rounded"
+                                                                        style={{
+                                                                            backgroundColor:
+                                                                                currentColors.surface,
+                                                                            color: currentColors.text,
+                                                                        }}
+                                                                    >
+                                                                        {JSON.stringify(
+                                                                            log.details,
+                                                                            null,
+                                                                            2
+                                                                        )}
+                                                                    </pre>
+                                                                </div>
+                                                            )}
+                                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                                                                {log.user_id && (
+                                                                    <div>
+                                                                        <strong
+                                                                            style={{
+                                                                                color: currentColors.text,
+                                                                            }}
+                                                                        >
+                                                                            User
+                                                                            ID:
+                                                                        </strong>
+                                                                        <p
+                                                                            style={{
+                                                                                color: currentColors.textSecondary,
+                                                                            }}
+                                                                        >
+                                                                            {
+                                                                                log.user_id
+                                                                            }
+                                                                        </p>
+                                                                    </div>
+                                                                )}
+                                                                {log.session_id && (
+                                                                    <div>
+                                                                        <strong
+                                                                            style={{
+                                                                                color: currentColors.text,
+                                                                            }}
+                                                                        >
+                                                                            Session:
+                                                                        </strong>
+                                                                        <p
+                                                                            style={{
+                                                                                color: currentColors.textSecondary,
+                                                                            }}
+                                                                        >
+                                                                            {
+                                                                                log.session_id
+                                                                            }
+                                                                        </p>
+                                                                    </div>
+                                                                )}
+                                                                {log.ip_address && (
+                                                                    <div>
+                                                                        <strong
+                                                                            style={{
+                                                                                color: currentColors.text,
+                                                                            }}
+                                                                        >
+                                                                            IP:
+                                                                        </strong>
+                                                                        <p
+                                                                            style={{
+                                                                                color: currentColors.textSecondary,
+                                                                            }}
+                                                                        >
+                                                                            {
+                                                                                log.ip_address
+                                                                            }
+                                                                        </p>
+                                                                    </div>
+                                                                )}
+                                                                {log.user_agent && (
+                                                                    <div>
+                                                                        <strong
+                                                                            style={{
+                                                                                color: currentColors.text,
+                                                                            }}
+                                                                        >
+                                                                            User
+                                                                            Agent:
+                                                                        </strong>
+                                                                        <p
+                                                                            style={{
+                                                                                color: currentColors.textSecondary,
+                                                                            }}
+                                                                        >
+                                                                            {log
+                                                                                .user_agent
+                                                                                .length >
+                                                                            50
+                                                                                ? `${log.user_agent.substring(
+                                                                                      0,
+                                                                                      50
+                                                                                  )}...`
+                                                                                : log.user_agent}
+                                                                        </p>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
     );
-}
+};
 
 export default Logs;

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import Variables from "../settings/Variables";
 import { useTheme } from "../contexts/ThemeContext";
 
-import { FiHome } from "react-icons/fi";
+import { FiHome, FiMenu, FiX } from "react-icons/fi";
 import { IoColorPaletteOutline, IoNotificationsOutline } from "react-icons/io5";
 import { SlWrench } from "react-icons/sl";
 import { VscAccount } from "react-icons/vsc";
@@ -44,6 +44,7 @@ const Settings = () => {
     const [state, dispatch] = useReducer(reducer, initialState);
     const { currentColors } = useTheme();
     const [hoveredTab, setHoveredTab] = useState<string | null>(null);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const getTabBg = (tabKey: string) => {
         if (state.activeTab === tabKey || hoveredTab === tabKey) {
@@ -53,12 +54,69 @@ const Settings = () => {
     };
 
     return (
-        <div className="flex h-screen">
+        <div className="flex h-screen relative">
+            {/* Mobile Menu Button */}
             <div
-                className={`w-1/4 p-4 select-none flex flex-col`}
+                style={{
+                    backgroundColor: currentColors.bg + "f0",
+                }}
+            >
+                <button
+                    className="lg:hidden fixed top-4 right-4 z-50 p-3 rounded-xl shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95"
+                    style={{
+                        backgroundColor: currentColors.bg + "f0",
+                        color: currentColors.text,
+                        border: `2px solid ${currentColors.border}`,
+                        boxShadow: `0 8px 25px -5px ${currentColors.border}40, 0 10px 10px -5px ${currentColors.border}20`,
+                    }}
+                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                >
+                    <div className="relative w-5 h-5">
+                        {/* Animated hamburger to X transition */}
+                        <div
+                            className={`absolute inset-0 transition-all duration-300 ease-in-out ${
+                                sidebarOpen
+                                    ? "opacity-0 rotate-180"
+                                    : "opacity-100 rotate-0"
+                            }`}
+                        >
+                            <FiMenu size={20} />
+                        </div>
+                        <div
+                            className={`absolute inset-0 transition-all duration-300 ease-in-out ${
+                                sidebarOpen
+                                    ? "opacity-100 rotate-0"
+                                    : "opacity-0 -rotate-180"
+                            }`}
+                        >
+                            <FiX size={20} />
+                        </div>
+                    </div>
+                </button>
+            </div>
+
+            {/* Overlay for mobile */}
+            {sidebarOpen && (
+                <div
+                    className={`lg:hidden fixed inset-0 bg-black z-30 transition-opacity duration-300 ease-in-out ${
+                        sidebarOpen ? "bg-opacity-60" : "bg-opacity-0"
+                    }`}
+                    style={{
+                        backdropFilter: "blur(4px)",
+                    }}
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+
+            {/* Sidebar */}
+            <div
+                className={`${
+                    sidebarOpen ? "translate-x-0" : "-translate-x-full"
+                } 
+                    lg:translate-x-0 fixed lg:relative w-80 lg:w-1/5 h-full p-4 select-none flex flex-col z-40 transition-transform duration-300 ease-in-out`}
                 style={{ backgroundColor: currentColors.bg }}
             >
-                <div className="text-4xl font-semibold dark:text-white p-4 italic">
+                <div className="text-4xl font-semibold dark:text-white p-2 italic lg:block hidden">
                     @Settings
                 </div>
                 {/* Left Side Panel */}
@@ -83,12 +141,13 @@ const Settings = () => {
                         }}
                         onMouseEnter={() => setHoveredTab("account")}
                         onMouseLeave={() => setHoveredTab(null)}
-                        onClick={() =>
+                        onClick={() => {
                             dispatch({
                                 type: "SET_ACTIVE_TAB",
                                 payload: "account",
-                            })
-                        }
+                            });
+                            setSidebarOpen(false);
+                        }}
                     >
                         <VscAccount size={24} />
                         Account
@@ -100,12 +159,13 @@ const Settings = () => {
                         }}
                         onMouseEnter={() => setHoveredTab("notifications")}
                         onMouseLeave={() => setHoveredTab(null)}
-                        onClick={() =>
+                        onClick={() => {
                             dispatch({
                                 type: "SET_ACTIVE_TAB",
                                 payload: "notifications",
-                            })
-                        }
+                            });
+                            setSidebarOpen(false);
+                        }}
                     >
                         <IoNotificationsOutline size={24} />
                         Email Notifications
@@ -117,12 +177,13 @@ const Settings = () => {
                         }}
                         onMouseEnter={() => setHoveredTab("config")}
                         onMouseLeave={() => setHoveredTab(null)}
-                        onClick={() =>
+                        onClick={() => {
                             dispatch({
                                 type: "SET_ACTIVE_TAB",
                                 payload: "config",
-                            })
-                        }
+                            });
+                            setSidebarOpen(false);
+                        }}
                     >
                         <SlWrench size={24} />
                         Configuration
@@ -134,9 +195,13 @@ const Settings = () => {
                         }}
                         onMouseEnter={() => setHoveredTab("env")}
                         onMouseLeave={() => setHoveredTab(null)}
-                        onClick={() =>
-                            dispatch({ type: "SET_ACTIVE_TAB", payload: "env" })
-                        }
+                        onClick={() => {
+                            dispatch({
+                                type: "SET_ACTIVE_TAB",
+                                payload: "env",
+                            });
+                            setSidebarOpen(false);
+                        }}
                     >
                         <span className="font-mono dark:text-gray-400 text-xs">
                             .env
@@ -150,12 +215,13 @@ const Settings = () => {
                         }}
                         onMouseEnter={() => setHoveredTab("theme")}
                         onMouseLeave={() => setHoveredTab(null)}
-                        onClick={() =>
+                        onClick={() => {
                             dispatch({
                                 type: "SET_ACTIVE_TAB",
                                 payload: "theme",
-                            })
-                        }
+                            });
+                            setSidebarOpen(false);
+                        }}
                     >
                         <IoColorPaletteOutline size={24} />
                         Customize Theme
@@ -172,12 +238,13 @@ const Settings = () => {
                         }}
                         onMouseEnter={() => setHoveredTab("logs")}
                         onMouseLeave={() => setHoveredTab(null)}
-                        onClick={() =>
+                        onClick={() => {
                             dispatch({
                                 type: "SET_ACTIVE_TAB",
                                 payload: "logs",
-                            })
-                        }
+                            });
+                            setSidebarOpen(false);
+                        }}
                     >
                         <LuLogs size={24} />
                         View Logs
@@ -189,12 +256,13 @@ const Settings = () => {
                         }}
                         onMouseEnter={() => setHoveredTab("export")}
                         onMouseLeave={() => setHoveredTab(null)}
-                        onClick={() =>
+                        onClick={() => {
                             dispatch({
                                 type: "SET_ACTIVE_TAB",
                                 payload: "export",
-                            })
-                        }
+                            });
+                            setSidebarOpen(false);
+                        }}
                     >
                         <MdDataObject size={24} />
                         Export Data
@@ -213,8 +281,9 @@ const Settings = () => {
                     </li>
                 </ul>
             </div>
+            {/* Main Content Area */}
             <div
-                className="w-3/4 p-4 m-4 rounded w-full"
+                className="flex-1 p-4 sm:p-6 lg:p-8 m-3 sm:m-4 lg:m-6 ml-3 lg:ml-4 mt-20 lg:mt-6 rounded-lg overflow-auto"
                 style={{
                     backgroundColor: currentColors.bg,
                     border: `1px solid ${currentColors.border}`,

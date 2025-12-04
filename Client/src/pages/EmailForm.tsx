@@ -395,128 +395,156 @@ const EmailForm = () => {
     };
 
     return (
-        <div className="flex h-[calc(100vh-2rem)] m-4">
+        <div className="flex h-screen overflow-hidden">
             {/* Main Chat Container */}
-            <div
-                className={`flex-1 flex flex-col max-w-4xl mx-auto border shadow-lg rounded dark:shadow-gray-900/50 overflow-hidden`}
-                style={{
-                    borderColor: currentColors.border,
-                }}
-            >
-                {/* Header */}
-                <Header setMessages={setMessages} />
-
-                {/* Chat Messages Area */}
-                <ChatArea
-                    messages={messages}
-                    isLoading={isLoading}
-                    isAIThinking={isAIThinking}
-                    isEmailGenerating={isEmailGenerating}
-                />
-
-                {/* Command Status Bar */}
-                {commandState.isActive && (
-                    <CommandStatusBar
-                        commandState={commandState}
-                        clearCountdown={clearCountdown}
-                        totalSteps={totalSteps}
-                        onCancel={cancelCommand}
-                        currentMessage={message}
-                        isValidEmail={isValidEmail}
-                        showValidationError={emailValidationError}
-                    />
-                )}
-
-                {/* Input Section */}
+            <div className="flex-1 flex flex-col relative mx-2">
                 <div
-                    className="border-t p-4"
+                    className="flex flex-col h-full max-w-4xl w-full mx-auto border shadow-lg rounded-lg overflow-hidden my-3 mx-3 lg:my-4 lg:mx-auto"
                     style={{
                         borderColor: currentColors.border,
                     }}
                 >
-                    <div className="flex items-end space-x-3">
-                        {/* Message Input */}
-                        <div
-                            className="flex-1 border p-3 overflow-hidden rounded"
-                            style={{
-                                borderColor: currentColors.border,
-                                color: currentColors.text,
-                            }}
-                            tabIndex={-1}
-                            onFocus={e => {
-                                e.currentTarget.style.borderColor = currentColors.text || "#2563eb";
-                            }}
-                            onBlur={e => {
-                                e.currentTarget.style.borderColor = currentColors.border;
-                            }}
-                        >
-                            <textarea
-                                ref={textareaRef}
-                                value={message}
-                                onChange={handleInputChange}
-                                onKeyDown={handleKeyDown}
-                                className="w-full resize-none focus:outline-none scrollbar-hide"
-                                style={{
-                                    scrollbarWidth: "none",
-                                    msOverflowStyle: "none",
-                                    color: currentColors.text,
-                                }}
-                                rows={2}
-                                placeholder={getPlaceholder()}
-                            />
-                            <div className="flex justify-between mt-1 -mb-1">
-                                <HashTag
-                                    hashTag={hashTag}
-                                    setHashTag={setHashTag}
-                                />
+                    {/* Header */}
+                    <Header setMessages={setMessages} />
 
-                                <span className="text-xs select-none">
-                                    {commandState.isActive &&
-                                    commandState.command === "/email" &&
-                                    commandState.step === 0
-                                        ? `${message.length}/${emailLength}`
-                                        : `${message.length}/${maxMessageLength}`}{" "}
-                                    characters
-                                </span>
-                            </div>
-                        </div>
+                    {/* Chat Messages Area */}
+                    <ChatArea
+                        messages={messages}
+                        isLoading={isLoading}
+                        isAIThinking={isAIThinking}
+                        isEmailGenerating={isEmailGenerating}
+                    />
 
-                        {/* Send Buttons */}
-                        <SendButtons
-                            onSubmit={handleSubmit}
-                            disabled={
-                                !message.trim() ||
-                                (commandState.isActive &&
-                                    commandState.command === "/clear")
-                            }
-                        />
-                    </div>
-
-                    {/* Quick Action Buttons - Hide during command mode */}
-                    {!commandState.isActive && (
-                        <QuickActions
-                            setMessage={setMessage}
-                            setHashTag={setHashTag}
-                            hashTag={hashTag}
+                    {/* Command Status Bar */}
+                    {commandState.isActive && (
+                        <CommandStatusBar
+                            commandState={commandState}
+                            clearCountdown={clearCountdown}
+                            totalSteps={totalSteps}
+                            onCancel={cancelCommand}
+                            currentMessage={message}
+                            isValidEmail={isValidEmail}
+                            showValidationError={emailValidationError}
                         />
                     )}
 
-                    {/* Command Help */}
-                    {!commandState.isActive &&
-                        (message === "/" || message.includes("#")) && (
-                            <CommandHelp />
+                    {/* Input Section */}
+                    <div
+                        className="border-t p-4"
+                        style={{
+                            borderColor: currentColors.border,
+                        }}
+                    >
+                        <div className="flex items-end space-x-3">
+                            {/* Message Input */}
+                            <div
+                                className="flex-1 border p-3 overflow-hidden rounded-lg"
+                                style={{
+                                    borderColor: currentColors.border,
+                                    color: currentColors.text,
+                                }}
+                                tabIndex={-1}
+                                onFocus={(e) => {
+                                    e.currentTarget.style.borderColor =
+                                        currentColors.text || "#2563eb";
+                                }}
+                                onBlur={(e) => {
+                                    e.currentTarget.style.borderColor =
+                                        currentColors.border;
+                                }}
+                            >
+                                <textarea
+                                    ref={textareaRef}
+                                    value={message}
+                                    onChange={handleInputChange}
+                                    onKeyDown={handleKeyDown}
+                                    className="w-full resize-none focus:outline-none scrollbar-hide"
+                                    style={{
+                                        scrollbarWidth: "none",
+                                        msOverflowStyle: "none",
+                                        color: currentColors.text,
+                                    }}
+                                    rows={2}
+                                    placeholder={getPlaceholder()}
+                                />
+                                <div className="flex justify-between items-center mt-2">
+                                    <HashTag
+                                        hashTag={hashTag}
+                                        setHashTag={setHashTag}
+                                    />
+
+                                    <span className="text-xs select-none opacity-50">
+                                        {commandState.isActive &&
+                                        commandState.command === "/email" &&
+                                        commandState.step === 0
+                                            ? `${message.length}/${emailLength}`
+                                            : `${message.length}/${maxMessageLength}`}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Send Buttons */}
+                            <SendButtons
+                                onSubmit={handleSubmit}
+                                disabled={
+                                    !message.trim() ||
+                                    (commandState.isActive &&
+                                        commandState.command === "/clear")
+                                }
+                            />
+                        </div>
+
+                        {/* Quick Action Buttons - Hide during command mode */}
+                        {!commandState.isActive && (
+                            <QuickActions
+                                setMessage={setMessage}
+                                setHashTag={setHashTag}
+                                hashTag={hashTag}
+                            />
                         )}
+
+                        {/* Command Help */}
+                        {!commandState.isActive &&
+                            (message === "/" || message.includes("#")) && (
+                                <CommandHelp />
+                            )}
+                    </div>
                 </div>
             </div>
-            <div className="flex justify-between items-center space-x-4 h-16">
+
+            {/* Desktop Side Action Bar */}
+            <div className="hidden lg:flex flex-col items-center justify-start space-y-4 py-4 pr-4 absolute right-0 top-0 bottom-0 z-10">
                 <ToggleTheme />
                 <Link to="/settings">
-                    <div className="hover:rotate-180 transition-transform duration-200">
+                    <div className="hover:rotate-180 transition-transform duration-200 cursor-pointer">
                         <IoSettingsOutline
                             size={24}
                             style={{ color: currentColors.text }}
                         />
                     </div>
+                </Link>
+            </div>
+
+            {/* Mobile Bottom Action Bar */}
+            <div
+                className="lg:hidden fixed bottom-0 left-0 right-0 flex items-center justify-around border-t p-3 backdrop-blur-md z-50"
+                style={{
+                    backgroundColor: currentColors.surface + "f5",
+                    borderColor: currentColors.border,
+                }}
+            >
+                <ToggleTheme />
+                
+                <div
+                    className="h-6 w-px"
+                    style={{ backgroundColor: currentColors.border }}
+                />
+                
+                <Link to="/settings">
+                    <IoSettingsOutline
+                        size={24}
+                        style={{ color: currentColors.text }}
+                    />
                 </Link>
             </div>
         </div>
