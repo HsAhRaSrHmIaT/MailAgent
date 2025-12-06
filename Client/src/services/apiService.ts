@@ -1,29 +1,4 @@
-export interface ChatRequest {
-    message: string;
-    tone?: string;
-}
-
-export interface ChatResponse {
-    message?: string;
-    success: boolean;
-    error?: string;
-}
-
-export interface EmailRequest {
-    receiverEmail: string;
-    prompt: string;
-    tone?: string;
-}
-
-export interface EmailResponse {
-    success: boolean;
-    email?: {
-        subject: string;
-        body: string;
-        to: string;
-    };
-    error?: string;
-}
+import type { ChatRequest, ChatResponse, EmailRequest, EmailResponse } from "../types";
 
 class ApiService {
     private ws: WebSocket | null = null;

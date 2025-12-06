@@ -80,12 +80,12 @@ const Variables = () => {
 
     return (
         <div className="min-h-screen">
-            <div className="max-w-6xl mx-auto p-6 select-none">
+            <div className="max-w-6xl mx-auto select-none">
                 {/* Header */}
                 <div className="mb-8">
                     <div className="flex items-center gap-4 mb-4">
                         <div
-                            className="p-3 px-2.5 rounded-xl"
+                            className="p-2 sm:p-3 px-2 sm:px-2.5 rounded-xl"
                             style={{
                                 backgroundColor: `${currentPalette.primary}20`,
                             }}
@@ -99,13 +99,13 @@ const Variables = () => {
                         </div>
                         <div>
                             <h1
-                                className="text-4xl font-bold"
+                                className="text-2xl sm:text-4xl font-bold"
                                 style={{ color: currentColors.text }}
                             >
                                 Environment Variables
                             </h1>
                             <p
-                                className="text-lg mt-1"
+                                className="text-base sm:text-lg mt-1"
                                 style={{ color: currentColors.textSecondary }}
                             >
                                 Configure your application's environment
@@ -115,9 +115,9 @@ const Variables = () => {
                     </div>
                 </div>
 
-                <div className="flex gap-6">
+                <div className="flex flex-col sm:flex-row gap-6">
                     {/* Main Content */}
-                    <div className="flex-1">
+                    <div className="flex-2">
                         {isEditing ? (
                             <div
                                 className="rounded-xl border shadow-lg"
@@ -152,7 +152,7 @@ const Variables = () => {
                                                             currentColors.surface,
                                                     }}
                                                 >
-                                                    <div className="flex items-center gap-4">
+                                                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                                                         <div className="flex-1">
                                                             <div
                                                                 className="text-sm font-medium mb-1"
@@ -301,7 +301,7 @@ const Variables = () => {
                                                 >
                                                     <div className="flex justify-between items-center">
                                                         <div className="flex-1 min-w-0">
-                                                            <div className="flex items-center gap-4">
+                                                            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                                                                 <div className="flex-1">
                                                                     <div
                                                                         className="text-sm font-medium mb-1"
@@ -406,7 +406,7 @@ const Variables = () => {
                     </div>
 
                     {/* Info Section */}
-                    <div className="flex w-80">
+                    <div className="flex-1">
                         <div
                             className="rounded-xl border shadow-lg p-6 sticky top-6"
                             style={{ borderColor: currentColors.border }}

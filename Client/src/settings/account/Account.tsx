@@ -20,13 +20,13 @@ const Account = () => {
     ];
 
     return (
-        <div className="min-h-screen max-w-6xl mx-auto p-6 select-none">
+        <div className="max-w-6xl mx-auto select-none">
             <div className="select-none">
                 {/* Header */}
-                <div className="mb-8">
+                <div className="mb-6 sm:mb-8">
                     <div className="flex items-center gap-4 mb-4">
                         <div
-                            className="p-3 rounded-xl"
+                            className="p-2 sm:p-3 rounded-xl"
                             style={{
                                 backgroundColor: `${currentPalette.primary}20`,
                             }}
@@ -40,13 +40,13 @@ const Account = () => {
                         </div>
                         <div>
                             <h1
-                                className="text-4xl font-bold"
+                                className="text-2xl sm:text-4xl font-bold"
                                 style={{ color: currentColors.text }}
                             >
                                 Account Settings
                             </h1>
                             <p
-                                className="text-lg mt-1"
+                                className="text-base sm:text-lg mt-1"
                                 style={{ color: currentColors.textSecondary }}
                             >
                                 Configure your account settings and preferences.
@@ -64,7 +64,7 @@ const Account = () => {
             >
                 {/* Tabs */}
                 <div
-                    className="flex justify-between gap-4 p-4 rounded-lg w-full"
+                    className="flex flex-col sm:flex-row justify-between gap-4 p-4 rounded-lg w-full"
                     style={{ backgroundColor: currentColors.surface }}
                 >
                     <div>
@@ -82,14 +82,14 @@ const Account = () => {
                         </p>
                     </div>
                     <nav
-                        className="flex items-center gap-1 border px-1 rounded-lg"
+                        className="flex items-center gap-1 border p-1 rounded-lg"
                         style={{ borderColor: currentColors.border }}
                     >
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-md font-semibold transition-all duration-200 cursor-pointer`}
+                                className="flex items-center justify-center gap-1 flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 cursor-pointer"
                                 style={{
                                     backgroundColor:
                                         activeTab === tab.id
@@ -99,7 +99,7 @@ const Account = () => {
                                 }}
                             >
                                 <tab.icon className="w-5 h-5" />
-                                {tab.label}
+                                <span className="hidden sm:inline">{tab.label}</span>
                             </button>
                         ))}
                     </nav>
@@ -107,7 +107,7 @@ const Account = () => {
                 <div className="flex gap-6">
                     {/* Content */}
                     <div
-                        className="flex-1 rounded-lg p-6"
+                        className="flex-1 rounded-lg p-4"
                         style={{ backgroundColor: currentColors.surface }}
                     >
                         {activeTab === "profile" && <ProfileSection />}

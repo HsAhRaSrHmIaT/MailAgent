@@ -46,13 +46,13 @@ const Themes: React.FC = () => {
     // };
 
     return (
-        <div className="min-h-screen transition-colors duration-300">
-            <div className="max-w-6xl mx-auto p-6 select-none">
+        <div className="transition-colors duration-300">
+            <div className="max-w-6xl mx-auto select-none">
                 {/* Header */}
-                <div className="mb-8">
+                <div className="mb-6 sm:mb-8">
                     <div className="flex items-center gap-4 mb-4">
                         <div
-                            className="p-3 rounded-xl"
+                            className="p-2 sm:p-3 rounded-xl"
                             style={{
                                 backgroundColor: `${currentPalette.primary}20`,
                             }}
@@ -64,13 +64,13 @@ const Themes: React.FC = () => {
                         </div>
                         <div>
                             <h1
-                                className="text-4xl font-bold"
+                                className="text-2xl sm:text-4xl font-bold"
                                 style={{ color: currentColors.text }}
                             >
                                 Customize Theme
                             </h1>
                             <p
-                                className="text-lg mt-1"
+                                className="text-base sm:text-lg mt-1"
                                 style={{ color: currentColors.textSecondary }}
                             >
                                 Change the appearance of the application to suit
@@ -81,7 +81,7 @@ const Themes: React.FC = () => {
                 </div>
 
                 <div
-                    className="border rounded-xl p-4 flex flex-col gap-4"
+                    className="border rounded-xl p-3 sm:p-4 flex flex-col gap-4"
                     style={{
                         borderColor: currentColors.border,
                         minHeight: "500px",
@@ -89,7 +89,7 @@ const Themes: React.FC = () => {
                 >
                     {/* Theme Mode Selection */}
                     <div
-                        className="flex justify-between gap-4 p-4 rounded-lg w-full"
+                        className="flex flex-col sm:flex-row justify-between gap-4 p-3 sm:p-4 rounded-lg w-full"
                         style={{ backgroundColor: currentColors.surface }}
                     >
                         <div>
@@ -107,11 +107,11 @@ const Themes: React.FC = () => {
                             </p>
                         </div>
                         <div
-                            className="flex items-center gap-1 border px-1 rounded-lg"
+                            className="flex flex-wrap items-center gap-1 border px-1 py-1 sm:py-0 rounded-lg"
                             style={{ borderColor: currentColors.border }}
                         >
                             <button
-                                className={`flex items-center gap-2 px-4 py-2 rounded-md font-semibold transition-all duration-200 cursor-pointer ${
+                                className={`flex items-center justify-center gap-1 flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 cursor-pointer ${
                                     theme === "light" ? "shadow-sm" : ""
                                 }`}
                                 style={{
@@ -124,10 +124,10 @@ const Themes: React.FC = () => {
                                 onClick={toggleLightTheme}
                             >
                                 <MdSunny />
-                                <span>Light</span>
+                                <span className="hidden sm:inline">Light</span>
                             </button>
                             <button
-                                className={`flex items-center gap-2 px-4 py-2 rounded-md font-semibold transition-all duration-200 cursor-pointer ${
+                                className={`flex items-center justify-center gap-1 flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 cursor-pointer ${
                                     theme === "dark" ? "shadow-sm" : ""
                                 }`}
                                 style={{
@@ -140,21 +140,21 @@ const Themes: React.FC = () => {
                                 onClick={toggleDarkTheme}
                             >
                                 <RiMoonClearFill />
-                                <span>Dark</span>
+                                <span className="hidden sm:inline">Dark</span>
                             </button>
                             <button
-                                className="flex items-center gap-2 px-4 py-2 rounded-md font-semibold transition-all duration-200 cursor-pointer"
+                                className="flex items-center justify-center gap-1 flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 cursor-pointer"
                                 style={{ color: currentColors.text }}
                                 onClick={toggleSystemTheme}
                             >
                                 <MdOutlineDesktopWindows />
-                                <span>System</span>
+                                <span className="hidden sm:inline">System</span>
                             </button>
                         </div>
                     </div>
 
                     {/* Color Palette Selection */}
-                    <div className="flex justify-between px-2">
+                    <div className="flex flex-col sm:flex-row justify-between px-2">
                         <h1
                             className="text-md font-semibold mt-4"
                             style={{ color: currentColors.text }}
@@ -172,48 +172,13 @@ const Themes: React.FC = () => {
                     </div>
 
                     <div
-                        className="flex flex-col justify-center gap-6 p-6 rounded-lg w-full"
+                        className="flex flex-col justify-center gap-4 sm:gap-6 p-4 sm:p-6 rounded-lg w-full"
                         style={{ backgroundColor: currentColors.surface }}
                     >
                         {/* Preview Area */}
                         <div className="w-full flex items-center justify-center mb-4 gap-4">
-                            {/* <div
-                                className="rounded-lg border w-72 h-40 flex flex-col items-center justify-center p-4 transition-all duration-300"
-                                style={{
-                                    borderColor: currentColors.border,
-                                    backgroundColor: currentColors.bg,
-                                }}
-                            >
-                                <div
-                                    className="w-12 h-12 rounded-full mb-3 flex items-center justify-center"
-                                    style={{
-                                        backgroundColor: currentPalette.primary,
-                                    }}
-                                >
-                                    <IoColorPaletteOutline
-                                        size={24}
-                                        color="white"
-                                    />
-                                </div>
-                                <h3
-                                    className="font-semibold text-center"
-                                    style={{ color: currentColors.text }}
-                                >
-                                    {currentPalette.name} Theme
-                                </h3>
-                                <p
-                                    className="text-sm text-center"
-                                    style={{
-                                        color: currentColors.textSecondary,
-                                    }}
-                                >
-                                    {theme === "dark"
-                                        ? "Dark Mode"
-                                        : "Light Mode"}
-                                </p>
-                            </div> */}
                             <div
-                                className="rounded-lg border h-64 flex flex-col items-center justify-center transition-all duration-300"
+                                className="rounded-lg border h-48 sm:h-64 flex flex-col items-center justify-center transition-all duration-300"
                                 style={{
                                     borderColor: currentColors.border,
                                     backgroundColor: currentColors.bg,
@@ -276,126 +241,6 @@ const Themes: React.FC = () => {
                                 </button>
                             ))}
                         </div>
-
-                        {/* Current Palette Info */}
-                        {/* <div 
-                            className="mt-6 p-4 rounded-lg border"
-                            style={{ 
-                                backgroundColor: currentColors.bg,
-                                borderColor: currentColors.border
-                            }}
-                        >
-                            <div className="flex items-center justify-between mb-3">
-                                <h3 
-                                    className="font-semibold"
-                                    style={{ color: currentColors.text }}
-                                >
-                                    Current Palette: {currentPalette.name}
-                                </h3>
-                                <div 
-                                    className="w-8 h-8 rounded-full border-2"
-                                    style={{ 
-                                        backgroundColor: currentPalette.primary,
-                                        borderColor: currentColors.border
-                                    }}
-                                ></div>
-                            </div>
-                            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                                {[
-                                    { color: currentPalette.primary, label: "Primary" },
-                                    { color: currentColors.bg, label: "Background" },
-                                    { color: currentColors.surface, label: "Surface" },
-                                    { color: currentColors.text, label: "Text" },
-                                    { color: currentColors.border, label: "Border" }
-                                ].map(({ color, label }) => (
-                                    <div key={label} className="text-center">
-                                        <div 
-                                            className="w-full h-8 rounded border mb-1"
-                                            style={{ 
-                                                backgroundColor: color,
-                                                borderColor: currentColors.border
-                                            }}
-                                        ></div>
-                                        <span 
-                                            className="text-xs"
-                                            style={{ color: currentColors.textSecondary }}
-                                        >
-                                            {label}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div> */}
-
-                        {/* Sample UI Elements */}
-                        {/* <div 
-                            className="mt-6 p-4 rounded-lg border"
-                            style={{ 
-                                backgroundColor: currentColors.bg,
-                                borderColor: currentColors.border
-                            }}
-                        >
-                            <h3 
-                                className="font-semibold mb-4"
-                                style={{ color: currentColors.text }}
-                            >
-                                Preview
-                            </h3>
-                            <div className="space-y-3">
-                                <button 
-                                    type="button"
-                                    className="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:opacity-90"
-                                    style={{ 
-                                        backgroundColor: currentPalette.primary,
-                                        color: "white"
-                                    }}
-                                >
-                                    Primary Button
-                                </button>
-                                <div className="flex gap-2">
-                                    <input 
-                                        type="text" 
-                                        placeholder="Sample input"
-                                        className="px-3 py-2 rounded border transition-colors duration-200"
-                                        style={{ 
-                                            backgroundColor: currentColors.bg,
-                                            borderColor: currentColors.border,
-                                            color: currentColors.text
-                                        }}
-                                    />
-                                    <button 
-                                        type="button"
-                                        className="px-3 py-2 rounded border font-medium transition-all duration-200"
-                                        style={{ 
-                                            backgroundColor: currentColors.surface,
-                                            borderColor: currentColors.border,
-                                            color: currentColors.text
-                                        }}
-                                    >
-                                        Secondary
-                                    </button>
-                                </div>
-                                <div 
-                                    className="p-3 rounded border"
-                                    style={{ 
-                                        backgroundColor: currentColors.surface,
-                                        borderColor: currentColors.border
-                                    }}
-                                >
-                                    <p style={{ color: currentColors.text }}>
-                                        This is sample content with your selected theme.
-                                    </p>
-                                    <a 
-                                        href="#" 
-                                        className="underline transition-colors duration-200"
-                                        style={{ color: currentPalette.primary }}
-                                        onClick={(e: React.MouseEvent) => e.preventDefault()}
-                                    >
-                                        Sample link
-                                    </a>
-                                </div>
-                            </div>
-                        </div> */}
                     </div>
                 </div>
             </div>

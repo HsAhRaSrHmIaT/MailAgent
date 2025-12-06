@@ -66,12 +66,12 @@ const Config = () => {
             className="min-h-screen"
             // style={{ backgroundColor: currentColors.bg }}
         >
-            <div className="max-w-6xl mx-auto p-6 select-none">
+            <div className="max-w-6xl mx-auto select-none">
                 {/* Header */}
-                <div className="mb-8">
+                <div className="mb-6 sm:mb-8">
                     <div className="flex items-center gap-4 mb-4">
                         <div
-                            className="p-3 rounded-xl"
+                            className="p-2 sm:p-3 rounded-xl"
                             style={{
                                 backgroundColor: `${currentPalette.primary}20`,
                             }}
@@ -85,13 +85,13 @@ const Config = () => {
                         </div>
                         <div>
                             <h1
-                                className="text-4xl font-bold"
+                                className="text-2xl sm:text-4xl font-bold"
                                 style={{ color: currentColors.text }}
                             >
                                 Email Configurations
                             </h1>
                             <p
-                                className="text-lg mt-1"
+                                className="text-base sm:text-lg mt-1"
                                 style={{ color: currentColors.textSecondary }}
                             >
                                 Configure your emails and passwords securely and
@@ -101,9 +101,9 @@ const Config = () => {
                     </div>
                 </div>
 
-                <div className="flex gap-6">
+                <div className="flex flex-col sm:flex-row gap-6">
                     {/* Main Content */}
-                    <div className="flex-1">
+                    <div className="flex-2">
                         {isEditing ? (
                             <div
                                 className="rounded-xl border shadow-lg"
@@ -112,7 +112,7 @@ const Config = () => {
                                     minHeight: "500px",
                                 }}
                             >
-                                <div className="p-6">
+                                <div className="p-4 sm:p-6">
                                     <div className="flex justify-between items-center mb-6">
                                         <h2
                                             className="text-xl font-semibold"
@@ -250,7 +250,7 @@ const Config = () => {
                                     <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-slate-700">
                                         <button
                                             onClick={handleCancel}
-                                            className="px-6 py-3 border rounded-sm transition-colors cursor-pointer"
+                                            className="px-6 py-1 sm:py-3 border rounded-sm transition-colors cursor-pointer"
                                             style={{
                                                 borderColor:
                                                     currentColors.border,
@@ -263,7 +263,7 @@ const Config = () => {
                                         </button>
                                         <button
                                             onClick={handleSave}
-                                            className="inline-flex items-center gap-2 px-8 py-3 text-white font-medium rounded-sm transition-colors shadow-lg cursor-pointer"
+                                            className="sm:inline-flex items-center gap-2 px-8 py-1 sm:py-3 text-white font-medium rounded-sm transition-colors shadow-lg cursor-pointer"
                                             style={{
                                                 backgroundColor:
                                                     currentPalette.primary,
@@ -274,7 +274,7 @@ const Config = () => {
                                                     <div className="w-5 h-5 border-2 border-white-500 border-t-transparent rounded-full animate-spin"></div>
                                                 </span>
                                             ) : (
-                                                <SlCheck className="w-5 h-5" />
+                                                <SlCheck className="w-5 h-5 hidden sm:inline-flex" />
                                             )}
                                             <span>
                                                 {isSaving
@@ -413,7 +413,7 @@ const Config = () => {
                     </div>
 
                     {/* Info Section */}
-                    <div className="flex w-80">
+                    <div className="flex-1">
                         <div
                             className="rounded-xl border shadow-lg p-6 sticky top-6"
                             style={{ borderColor: currentColors.border }}

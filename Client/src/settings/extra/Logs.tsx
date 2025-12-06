@@ -6,32 +6,9 @@ import {
     LuSearch,
 } from "react-icons/lu";
 import { useTheme } from "../../contexts/ThemeContext";
-import { useState, useEffect } from "react";
-
-interface LogEntry {
-    id: number;
-    timestamp: string;
-    level: string;
-    category: string;
-    message: string;
-    details?: any;
-    source?: string;
-    user_id?: string;
-    session_id?: string;
-    ip_address?: string;
-    user_agent?: string;
-    created_at: string;
-}
-
-interface LogStats {
-    total_logs: number;
-    error_count: number;
-    warning_count: number;
-    info_count: number;
-    debug_count: number;
-    critical_count: number;
-    category_breakdown: Record<string, number>;
-}
+import { useState, useEffect, useCallback } from "react";
+import type { LogEntry, LogStats } from "../../types";
+import { logsService, type LogStatus } from "../../services/logsService";
 
 const LOG_LEVELS = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"];
 const LOG_CATEGORIES = [
@@ -49,11 +26,7 @@ const Logs = () => {
     const [logs, setLogs] = useState<LogEntry[]>([]);
     const [stats, setStats] = useState<LogStats | null>(null);
     const [loading, setLoading] = useState(false);
-    const [dbStatus, setDbStatus] = useState<{
-        database_available: boolean;
-        file_logging: boolean;
-        database_error?: string;
-    } | null>(null);
+    const [dbStatus, setDbStatus] = useState<LogStatus | null>(null);
     const [filters, setFilters] = useState({
         level: "",
         category: "",
@@ -62,91 +35,54 @@ const Logs = () => {
     });
     const [expandedLog, setExpandedLog] = useState<number | null>(null);
 
-    const fetchLogs = async () => {
+    const fetchLogs = useCallback(async () => {
         setLoading(true);
         try {
-            const params = new URLSearchParams();
-            if (filters.level) params.append("level", filters.level);
-            if (filters.category) params.append("category", filters.category);
-            if (filters.search_term)
-                params.append("search_term", filters.search_term);
-            params.append("limit", filters.limit.toString());
-
-            const response = await fetch(
-                `http://localhost:8000/api/logs?${params}`
-            );
-            if (response.ok) {
-                const data = await response.json();
-                setLogs(data);
-            } else {
-                console.error("Failed to fetch logs");
-            }
+            const data = await logsService.fetchLogs(filters);
+            setLogs(data);
         } catch (error) {
             console.error("Error fetching logs:", error);
         } finally {
             setLoading(false);
         }
-    };
+    }, [filters]);
 
-    const fetchStats = async () => {
+    const fetchStats = useCallback(async () => {
         try {
-            const response = await fetch(
-                "http://localhost:8000/api/logs/stats"
-            );
-            if (response.ok) {
-                const data = await response.json();
-                setStats(data);
-            }
+            const data = await logsService.fetchStats();
+            setStats(data);
         } catch (error) {
             console.error("Error fetching stats:", error);
         }
-    };
+    }, []);
 
     const clearOldLogs = async () => {
         if (confirm("Are you sure you want to clear old logs (30+ days)?")) {
             try {
-                const response = await fetch(
-                    "http://localhost:8000/api/logs/cleanup",
-                    {
-                        method: "DELETE",
-                    }
-                );
-                if (response.ok) {
-                    const result = await response.json();
-                    alert(`${result.deleted_count} old logs deleted`);
-                    fetchLogs();
-                    fetchStats();
-                }
+                const result = await logsService.clearOldLogs();
+                alert(`${result.deleted_count} old logs deleted`);
+                fetchLogs();
+                fetchStats();
             } catch (error) {
                 console.error("Error clearing logs:", error);
             }
         }
     };
 
-    const fetchStatus = async () => {
+    const fetchStatus = useCallback(async () => {
         try {
-            const response = await fetch(
-                "http://localhost:8000/api/logs/status"
-            );
-            if (response.ok) {
-                const data = await response.json();
-                setDbStatus(data);
-            }
+            const data = await logsService.fetchStatus();
+            setDbStatus(data);
         } catch (error) {
             console.error("Error fetching status:", error);
-            setDbStatus({
-                database_available: false,
-                file_logging: true,
-                database_error: "Could not connect to server",
-            });
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchLogs();
         fetchStats();
         fetchStatus();
-    }, [filters]);
+    }, [fetchLogs, fetchStats, fetchStatus]);
 
     const getLevelColor = (level: string) => {
         switch (level) {
@@ -171,13 +107,13 @@ const Logs = () => {
 
     return (
         <div className="min-h-screen">
-            <div className="max-w-7xl mx-auto p-6 select-none">
+            <div className="max-w-6xl mx-auto select-none">
                 {/* Header */}
-                <div className="mb-8">
+                <div className="mb-6 sm:mb-8">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-4">
                             <div
-                                className="p-3 rounded-xl"
+                                className="p-2 sm:p-3 rounded-xl"
                                 style={{
                                     backgroundColor: `${currentPalette.primary}20`,
                                 }}
@@ -189,13 +125,13 @@ const Logs = () => {
                             </div>
                             <div>
                                 <h1
-                                    className="text-4xl font-bold"
+                                    className="text-2xl sm:text-4xl font-bold"
                                     style={{ color: currentColors.text }}
                                 >
                                     Application Logs
                                 </h1>
                                 <p
-                                    className="text-lg mt-1"
+                                    className="text-base sm:text-lg mt-1"
                                     style={{
                                         color: currentColors.textSecondary,
                                     }}
@@ -205,7 +141,7 @@ const Logs = () => {
                                 </p>
                             </div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                             <button
                                 onClick={fetchLogs}
                                 className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
@@ -219,7 +155,7 @@ const Logs = () => {
                                     size={16}
                                     className={loading ? "animate-spin" : ""}
                                 />
-                                Refresh
+                                <span className="hidden sm:block">Refresh</span>
                             </button>
                             <button
                                 onClick={clearOldLogs}
@@ -230,7 +166,9 @@ const Logs = () => {
                                 }}
                             >
                                 <LuTrash2 size={16} />
-                                Clean Old
+                                <span className="hidden sm:block">
+                                    Clean Old
+                                </span>
                             </button>
                         </div>
                     </div>
@@ -499,7 +437,7 @@ const Logs = () => {
 
                 {/* Logs Table */}
                 <div
-                    className="border rounded-xl overflow-hidden"
+                    className="border rounded-xl overflow-y-auto max-h-96"
                     style={{
                         borderColor: currentColors.border,
                         background: currentColors.surface,

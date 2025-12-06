@@ -17,14 +17,14 @@ const UsageStats = () => {
             <h3 className="text-lg font-semibold">Your MailAgent Usage</h3>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-3">
                 <div
                     className="p-4 rounded-lg text-center"
                     style={{ backgroundColor: `${currentColors.bg}` }}
                 >
-                    <div className="text-2xl font-bold text-blue-600">247</div>
+                    <div className="text-xl sm:text-2xl font-bold text-blue-600">247</div>
                     <div
-                        className="text-sm"
+                        className="text-xs sm:text-sm"
                         style={{ color: currentColors.textSecondary }}
                     >
                         Emails Generated
@@ -34,9 +34,9 @@ const UsageStats = () => {
                     className="p-4 rounded-lg text-center"
                     style={{ backgroundColor: `${currentColors.bg}` }}
                 >
-                    <div className="text-2xl font-bold text-green-600">89%</div>
+                    <div className="text-xl sm:text-2xl font-bold text-green-600">89%</div>
                     <div
-                        className="text-sm"
+                        className="text-xs sm:text-sm"
                         style={{ color: currentColors.textSecondary }}
                     >
                         Success Rate
@@ -46,11 +46,11 @@ const UsageStats = () => {
                     className="p-4 rounded-lg text-center"
                     style={{ backgroundColor: `${currentColors.bg}` }}
                 >
-                    <div className="text-2xl font-bold text-purple-600">
+                    <div className="text-xl sm:text-2xl font-bold text-purple-600">
                         45min
                     </div>
                     <div
-                        className="text-sm"
+                        className="text-xs sm:text-sm"
                         style={{ color: currentColors.textSecondary }}
                     >
                         Time Saved

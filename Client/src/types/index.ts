@@ -111,8 +111,62 @@ export interface HashTagProps {
 
 export interface EmailPreviewBoxProps {
     emailData: EmailData | null;
-} // import { GoLightBulb } from "react-icons/go";
+}
 export interface Variable {
     key: string;
     value: string;
+}
+
+// Logs Service Types
+export interface LogEntry {
+    id: number;
+    timestamp: string;
+    level: string;
+    category: string;
+    message: string;
+    details?: any;
+    source?: string;
+    user_id?: string;
+    session_id?: string;
+    ip_address?: string;
+    user_agent?: string;
+    created_at: string;
+}
+
+export interface LogStats {
+    total_logs: number;
+    error_count: number;
+    warning_count: number;
+    info_count: number;
+    debug_count: number;
+    critical_count: number;
+    category_breakdown: Record<string, number>;
+}
+
+// API Service Types
+export interface ChatRequest {
+    message: string;
+    tone?: string;
+}
+
+export interface ChatResponse {
+    message?: string;
+    success: boolean;
+    error?: string;
+}
+
+export interface EmailRequest {
+    receiverEmail: string;
+    prompt: string;
+    tone?: string;
+}
+
+export interface EmailResponse {
+    success: boolean;
+    email?: {
+        subject: string;
+        body: string;
+        to: string;
+    };
+    error?: string;
 }

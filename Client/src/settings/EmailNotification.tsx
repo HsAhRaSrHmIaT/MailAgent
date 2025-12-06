@@ -6,12 +6,12 @@ const EmailNotification = () => {
     const { currentColors, currentPalette } = useTheme();
     return (
         <div className="min-h-screen">
-            <div className="max-w-6xl mx-auto p-6 select-none">
+            <div className="max-w-6xl mx-auto select-none">
                 {/* Header */}
-                <div className="mb-8">
+                <div className="mb-6 sm:mb-8">
                     <div className="flex items-center gap-4 mb-4">
                         <div
-                            className="p-3 rounded-xl"
+                            className="p-2 sm:p-3 rounded-xl"
                             style={{
                                 backgroundColor: `${currentPalette.primary}20`,
                             }}
@@ -25,13 +25,13 @@ const EmailNotification = () => {
                         </div>
                         <div>
                             <h1
-                                className="text-4xl font-bold"
+                                className="text-2xl sm:text-4xl font-bold"
                                 style={{ color: currentColors.text }}
                             >
                                 Email Notifications
                             </h1>
                             <p
-                                className="text-lg mt-1"
+                                className="text-base sm:text-lg mt-1"
                                 style={{ color: currentColors.textSecondary }}
                             >
                                 Manage your email notifications and preferences
@@ -40,7 +40,7 @@ const EmailNotification = () => {
                     </div>
                 </div>
                  <div
-                    className="h-142 border rounded-xl p-6 flex items-center justify-center"
+                    className="h-160 sm:h-142 border rounded-xl p-6 flex items-center justify-center"
                     style={{
                         borderColor: currentColors.border,
                         background: currentColors.surface,
