@@ -1,6 +1,46 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from typing import Optional, List, Dict, Any
 from enum import Enum
+
+
+# Auth Schemas
+class UserBase(BaseModel):
+    email: EmailStr
+    username: Optional[str] = None
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    username: Optional[str] = None
+    password: str
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class UserUpdate(BaseModel):
+    username: Optional[str] = None
+    email: Optional[EmailStr] = None
+
+class UserResponse(BaseModel):
+    id: str
+    email: str
+    username: Optional[str] = None
+    is_active: bool
+    profile_picture: Optional[str] = None
+    created_at: str
+    updated_at: str
+    last_login: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+class TokenData(BaseModel):
+    user_id: Optional[str] = None
+    email: Optional[str] = None
 
 
 class LogLevel(str, Enum):

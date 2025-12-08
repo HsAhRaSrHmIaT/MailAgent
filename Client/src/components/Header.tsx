@@ -7,6 +7,8 @@ import {
 } from "react-icons/lu";
 import { apiService } from "../services/apiService";
 import { useTheme } from "../contexts/ThemeContext";
+import { useAuth } from "../contexts/AuthContext";
+import UserMenu from "./auth/UserMenu";
 import type { HeaderProps } from "../types";
 
 const MockEmailIDs = [
@@ -78,6 +80,7 @@ const MockEmailList = ({
 
 const Header = ({ setMessages }: HeaderProps) => {
     const { currentColors } = useTheme();
+    const { isAuthenticated } = useAuth();
     const [status, setStatus] = useState("Offline");
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [selectedEmail, setSelectedEmail] = useState("default");
@@ -155,6 +158,13 @@ const Header = ({ setMessages }: HeaderProps) => {
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3 relative dropdown-container">
+                {/* User Menu - Show if authenticated */}
+                {isAuthenticated && (
+                    <div className="mr-2">
+                        <UserMenu />
+                    </div>
+                )}
+
                 <div
                     className="flex items-center gap-1 sm:gap-2 cursor-pointer"
                     onClick={toggleDropdown}

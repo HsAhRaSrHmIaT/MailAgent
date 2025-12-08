@@ -170,3 +170,46 @@ export interface EmailResponse {
     };
     error?: string;
 }
+
+// Auth Types
+export interface User {
+    id: string;
+    email: string;
+    username?: string;
+    createdAt?: string;
+    lastLogin?: string;
+    isActive?: boolean;
+    profilePicture?: string;
+}
+
+export interface LoginCredentials {
+    email: string;
+    password: string;
+    rememberMe?: boolean;
+}
+
+export interface RegisterData {
+    email: string;
+    username?: string;
+    password: string;
+    confirmPassword?: string;
+}
+
+export interface AuthResponse {
+    success: boolean;
+    user?: User;
+    token?: string;
+    message?: string;
+    error?: string;
+}
+
+export interface AuthContextType {
+    user: User | null;
+    token: string | null;
+    isAuthenticated: boolean;
+    isLoading: boolean;
+    login: (credentials: LoginCredentials) => Promise<AuthResponse>;
+    register: (data: RegisterData) => Promise<AuthResponse>;
+    logout: () => void;
+    updateUser: (userData: Partial<User>) => Promise<void>;
+}
