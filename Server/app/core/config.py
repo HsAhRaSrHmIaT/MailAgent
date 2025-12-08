@@ -45,6 +45,11 @@ class Settings(BaseSettings):
     # max_prompt_length: int = 10000
     max_response_tokens: int = 3000
 
+    # Authentication Settings
+    secret_key: str = os.getenv("SECRET_KEY", "your-secret-key-change-this-in-production")
+    algorithm: str = os.getenv("ALGORITHM", "HS256")
+    access_token_expire_minutes: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "10080"))  # 7 days default
+
     @property
     def database_connection_url(self) -> str:
         """Get the database connection URL, prioritizing NEON_DATABASE_URL"""

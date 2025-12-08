@@ -1,6 +1,7 @@
 from fastapi import WebSocket, WebSocketDisconnect
 from app.api.chat import handle_chat_message, handle_email_request
 from app.services.logger_service import logger_service, LogCategory
+from app.core.security import verify_token
 import time
 import json
 
@@ -96,10 +97,37 @@ class WebSocketHandler:
 
 async def websocket_endpoint(websocket: WebSocket):
     handler = WebSocketHandler(websocket)
+    authenticated_user = None
+    
     try:
         await handler.connect()
         while True:
             data = await websocket.receive_json()
+            
+            # Check for authentication token in the message
+            token = data.get("token")
+            if token and not authenticated_user:
+                user_id = verify_token(token)
+                if user_id:
+                    authenticated_user = user_id
+                    await logger_service.info(
+                        LogCategory.WEBSOCKET,
+                        "User authenticated via WebSocket",
+                        details={
+                            "session_id": handler.session_id,
+                            "user_id": user_id
+                        }
+                    )
+            
+            # Optional: Require authentication for certain operations
+            # if not authenticated_user:
+            #     await websocket.send_json({
+            #         "error": "Unauthorized",
+            #         "status": 401,
+            #         "message": "Authentication required"
+            #     })
+            #     continue
+            
             message_type = data.get("type", "chat")
             if message_type == "email":
                 await handler.handle_email(data)

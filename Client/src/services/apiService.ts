@@ -1,4 +1,10 @@
-import type { ChatRequest, ChatResponse, EmailRequest, EmailResponse } from "../types";
+import type {
+    ChatRequest,
+    ChatResponse,
+    EmailRequest,
+    EmailResponse,
+} from "../types";
+import { getToken } from "./authService";
 
 class ApiService {
     private ws: WebSocket | null = null;
@@ -20,6 +26,19 @@ class ApiService {
         return this.wsReady;
     }
 
+    private getAuthHeaders(): HeadersInit {
+        const token = getToken();
+        const headers: HeadersInit = {
+            "Content-Type": "application/json",
+        };
+
+        if (token) {
+            headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        return headers;
+    }
+
     public connectWebSocket(): void {
         if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
             this.ws = new WebSocket(this.wsUrl);
@@ -33,10 +52,24 @@ class ApiService {
     async sendChatMessage(data: ChatRequest): Promise<ChatResponse> {
         await this.ensureWebSocket();
         return new Promise<ChatResponse>((resolve, reject) => {
-            if (!this.ws) return reject(new Error("WebSocket not initialized. Cannot send message!"));
+            if (!this.ws)
+                return reject(
+                    new Error("WebSocket not initialized. Cannot send message!")
+                );
             this.ws.onmessage = (event) => {
                 try {
                     const response = JSON.parse(event.data);
+
+                    // Handle 401 Unauthorized
+                    if (
+                        response.status === 401 ||
+                        response.error === "Unauthorized"
+                    ) {
+                        window.location.href = "/login";
+                        reject(new Error("Unauthorized"));
+                        return;
+                    }
+
                     resolve({
                         message: response.content || response.message,
                         success: true,
@@ -49,12 +82,15 @@ class ApiService {
             this.ws.onerror = (err) => {
                 reject(err);
             };
+
+            const token = getToken();
             this.ws.send(
                 JSON.stringify({
                     role: "user",
                     type: "chat",
                     content: data.message,
                     ...(data.tone ? { tone: data.tone } : {}),
+                    ...(token ? { token } : {}),
                 })
             );
         });
@@ -63,19 +99,37 @@ class ApiService {
     async generateEmail(data: EmailRequest): Promise<EmailResponse> {
         await this.ensureWebSocket();
         return new Promise<EmailResponse>((resolve, reject) => {
-            if (!this.ws) return reject(new Error("Websocket not initialized. Cannot generate email!"));
+            if (!this.ws)
+                return reject(
+                    new Error(
+                        "Websocket not initialized. Cannot generate email!"
+                    )
+                );
             this.ws.onmessage = (event) => {
                 try {
                     const response = JSON.parse(event.data);
+
+                    // Handle 401 Unauthorized
+                    if (
+                        response.status === 401 ||
+                        response.error === "Unauthorized"
+                    ) {
+                        window.location.href = "/login";
+                        reject(new Error("Unauthorized"));
+                        return;
+                    }
+
                     resolve(response);
                     console.log("Received response:", response);
                 } catch (err) {
                     reject(err);
                 }
-            }
+            };
             this.ws.onerror = (err) => {
                 reject(err);
-            }
+            };
+
+            const token = getToken();
             this.ws.send(
                 JSON.stringify({
                     role: "user",
@@ -83,9 +137,31 @@ class ApiService {
                     receiverEmail: data.receiverEmail,
                     prompt: data.prompt,
                     ...(data.tone ? { tone: data.tone } : {}),
+                    ...(token ? { token } : {}),
                 })
-            )
+            );
         });
+    }
+
+    // HTTP request helper with auth
+    async fetch(url: string, options: RequestInit = {}): Promise<Response> {
+        const headers = this.getAuthHeaders();
+        const response = await fetch(url, {
+            ...options,
+            headers: {
+                ...headers,
+                ...options.headers,
+            },
+        });
+
+        // Handle 401 Unauthorized
+        if (response.status === 401) {
+            // Redirect to login
+            window.location.href = "/login";
+            throw new Error("Unauthorized");
+        }
+
+        return response;
     }
 
     isWebSocketConnected(): boolean {

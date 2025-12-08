@@ -1,86 +1,18 @@
 import { useEffect, useState } from "react";
 import {
     LuRefreshCcw,
-    LuChevronDown,
-    LuChevronUp,
-    LuCheck,
 } from "react-icons/lu";
 import { apiService } from "../services/apiService";
 import { useTheme } from "../contexts/ThemeContext";
+import { useAuth } from "../contexts/AuthContext";
+import UserMenu from "./auth/UserMenu";
 import type { HeaderProps } from "../types";
 
-const MockEmailIDs = [
-    "user1@example.com",
-    "user2@example.com",
-    "user3@example.com",
-    "user4@example.com",
-    "user5@example.com",
-    "default",
-];
-
-interface MockEmailListProps {
-    setSelectedEmail: (email: string) => void;
-    setIsDropdownOpen: (isOpen: boolean) => void;
-    selectedEmail: string; // Add this prop
-    currentColors: {
-        text: string;
-        bg: string;
-    };
-}
-
-const MockEmailList = ({
-    setSelectedEmail,
-    setIsDropdownOpen,
-    selectedEmail,
-    currentColors,
-}: MockEmailListProps) => {
-    const handleEmailSelect = (email: string) => {
-        setSelectedEmail(email);
-        setIsDropdownOpen(false);
-    };
-
-    return (
-        <ul className="max-h-60 overflow-y-auto">
-            {MockEmailIDs.map((email, index) => (
-                <li
-                    key={index}
-                    className="px-4 py-2 cursor-pointer transition-colors flex items-center justify-between"
-                    style={{
-                        color: currentColors.text,
-                        backgroundColor:
-                            email === selectedEmail
-                                ? `${currentColors.bg}`
-                                : "transparent",
-                    }}
-                    onMouseEnter={(e) => {
-                        if (email !== selectedEmail) {
-                            e.currentTarget.style.backgroundColor =
-                                currentColors.bg;
-                        }
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor =
-                            email === selectedEmail
-                                ? currentColors.bg
-                                : "transparent";
-                    }}
-                    onClick={() => handleEmailSelect(email)}
-                >
-                    <span>{email}</span>
-                    {email === selectedEmail && (
-                        <LuCheck className="w-4 h-4 text-green-500" />
-                    )}
-                </li>
-            ))}
-        </ul>
-    );
-};
 
 const Header = ({ setMessages }: HeaderProps) => {
     const { currentColors } = useTheme();
+    const { isAuthenticated } = useAuth();
     const [status, setStatus] = useState("Offline");
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [selectedEmail, setSelectedEmail] = useState("default");
 
     const handleRefresh = () => {
         // Logic to refresh messages or reset state
@@ -100,24 +32,6 @@ const Header = ({ setMessages }: HeaderProps) => {
         const interval = setInterval(checkOnlineStatus, 3000);
         return () => clearInterval(interval);
     }, []);
-
-    const toggleDropdown = () => {
-        setIsDropdownOpen(!isDropdownOpen);
-    };
-
-    // Close dropdown when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            const target = event.target as Element;
-            if (isDropdownOpen && !target.closest(".dropdown-container")) {
-                setIsDropdownOpen(false);
-            }
-        };
-
-        document.addEventListener("mousedown", handleClickOutside);
-        return () =>
-            document.removeEventListener("mousedown", handleClickOutside);
-    }, [isDropdownOpen]);
 
     return (
         <div
@@ -155,53 +69,15 @@ const Header = ({ setMessages }: HeaderProps) => {
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3 relative dropdown-container">
-                <div
-                    className="flex items-center gap-1 sm:gap-2 cursor-pointer"
-                    onClick={toggleDropdown}
-                >
-                    <span
-                        className="text-xs sm:text-sm truncate max-w-20 sm:max-w-none"
-                        style={{ color: currentColors.text }}
-                    >
-                        {selectedEmail.indexOf("@") > -1
-                            ? selectedEmail.split("@")[0]
-                            : selectedEmail}
-                    </span>
-                    {!isDropdownOpen ? (
-                        <LuChevronDown
-                            size={14}
-                            className="sm:w-4 sm:h-4 flex-shrink-0"
-                            style={{ color: currentColors.text }}
-                        />
-                    ) : (
-                        <LuChevronUp
-                            size={14}
-                            className="sm:w-4 sm:h-4 flex-shrink-0"
-                            style={{ color: currentColors.text }}
-                        />
-                    )}
-                </div>
-
-                {isDropdownOpen && (
-                    <div
-                        className="absolute top-8 right-8 sm:right-12 w-48 sm:w-60 border rounded-sm shadow-lg z-50"
-                        style={{
-                            backgroundColor: currentColors.surface,
-                            borderColor: currentColors.border,
-                            boxShadow: `0 4px 6px -1px ${currentColors.border}40`,
-                        }}
-                    >
-                        <MockEmailList
-                            setSelectedEmail={setSelectedEmail}
-                            setIsDropdownOpen={setIsDropdownOpen}
-                            selectedEmail={selectedEmail} // Pass selectedEmail prop
-                            currentColors={currentColors}
-                        />
+                {/* User Menu - Show if authenticated */}
+                {isAuthenticated && (
+                    <div className="mr-2">
+                        <UserMenu />
                     </div>
                 )}
 
                 <button
-                    className="p-1.5 sm:p-2 rounded-full transition-all duration-300 cursor-pointer hover:-rotate-180 flex-shrink-0"
+                    className="p-4 sm:p-2 rounded-full transition-all duration-300 cursor-pointer hover:-rotate-180 flex-shrink-0"
                     style={{
                         backgroundColor: currentColors.bg,
                         color: currentColors.text,
@@ -217,7 +93,7 @@ const Header = ({ setMessages }: HeaderProps) => {
                             currentColors.bg;
                     }}
                 >
-                    <LuRefreshCcw size={16} className="sm:w-5 sm:h-5" />
+                    <LuRefreshCcw />
                 </button>
             </div>
         </div>

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 import Variables from "../settings/Variables";
 import { useTheme } from "../contexts/ThemeContext";
+import { useAuth } from "../contexts/AuthContext";
 
 import { FiHome, FiMenu, FiX } from "react-icons/fi";
 import { IoColorPaletteOutline, IoNotificationsOutline } from "react-icons/io5";
@@ -45,12 +46,17 @@ const Settings = () => {
     const { currentColors } = useTheme();
     const [hoveredTab, setHoveredTab] = useState<string | null>(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const { logout } = useAuth();
 
     const getTabBg = (tabKey: string) => {
         if (state.activeTab === tabKey || hoveredTab === tabKey) {
             return currentColors.textSecondary + "30";
         }
         return "";
+    };
+
+    const handleLogout = () => {
+        logout();
     };
 
     return (
@@ -121,7 +127,7 @@ const Settings = () => {
                 </div>
                 {/* Left Side Panel */}
                 <ul className="space-y-3 dark:text-white text-gray-600 p-2 mt-4 flex-1 flex flex-col">
-                    <Link to="/">
+                    <Link to="/email-form">
                         <li
                             className="flex items-center gap-2 text-lg font-semibold p-2 rounded cursor-pointer"
                             style={{
@@ -268,17 +274,18 @@ const Settings = () => {
                         Export Data
                     </li>
                     <div className="flex-1"></div>
-                    <li
+                    <button
                         className="flex items-center gap-2 text-lg font-semibold hover:text-red-400 p-2 rounded cursor-pointer"
                         style={{
                             backgroundColor: getTabBg("logout"),
                         }}
                         onMouseEnter={() => setHoveredTab("logout")}
                         onMouseLeave={() => setHoveredTab(null)}
+                        onClick={handleLogout}
                     >
                         <MdLogout size={24} />
                         Logout
-                    </li>
+                    </button>
                 </ul>
             </div>
             {/* Main Content Area */}
