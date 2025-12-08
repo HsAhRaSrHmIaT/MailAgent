@@ -1,14 +1,72 @@
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useAuth } from "../../contexts/AuthContext";
-import { FiUser, FiSettings, FiLogOut, FiChevronDown } from "react-icons/fi";
+import { FiChevronDown } from "react-icons/fi";
+import { LuCheck } from "react-icons/lu";
+import type { MockEmailListProps } from "../../types";
 import Avatar from "./Avatar";
+
+const MockEmailIDs = [
+    "user1@example.com",
+    "user2@example.com",
+    "user3@example.com",
+    "user4@example.com",
+    "default",
+];
+
+const MockEmailList = ({
+    setSelectedEmail,
+    setIsDropdownOpen,
+    selectedEmail,
+    currentColors,
+}: MockEmailListProps) => {
+    const handleEmailSelect = (email: string) => {
+        setSelectedEmail(email);
+        setIsDropdownOpen(false);
+    };
+
+    return (
+        <ul className="max-h-60 overflow-y-auto">
+            {MockEmailIDs.map((email, index) => (
+                <li
+                    key={index}
+                    className="px-4 py-2 cursor-pointer transition-colors flex items-center justify-between"
+                    style={{
+                        color: currentColors.text,
+                        backgroundColor:
+                            email === selectedEmail
+                                ? `${currentColors.bg}`
+                                : "transparent",
+                    }}
+                    onMouseEnter={(e) => {
+                        if (email !== selectedEmail) {
+                            e.currentTarget.style.backgroundColor =
+                                currentColors.bg;
+                        }
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor =
+                            email === selectedEmail
+                                ? currentColors.bg
+                                : "transparent";
+                    }}
+                    onClick={() => handleEmailSelect(email)}
+                >
+                    <span>{email}</span>
+                    {email === selectedEmail && (
+                        <LuCheck className="w-4 h-4 text-green-500" />
+                    )}
+                </li>
+            ))}
+        </ul>
+    );
+};
 
 const UserMenu = () => {
     const { currentColors, currentPalette } = useTheme();
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
+    const [selectedEmail, setSelectedEmail] = useState("default");
     const menuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -25,11 +83,6 @@ const UserMenu = () => {
         return () =>
             document.removeEventListener("mousedown", handleClickOutside);
     }, []);
-
-    const handleLogout = () => {
-        logout();
-        setIsOpen(false);
-    };
 
     if (!user) return null;
 
@@ -124,71 +177,18 @@ const UserMenu = () => {
                         </div>
                     </div>
 
+                    <span className="px-4 py-2 block text-[10px] uppercase opacity-60 font-semibold" style={{ color: currentColors.text }}>
+                        Email ID: {selectedEmail}
+                    </span>
+
                     {/* Menu Items */}
-                    <div className="py-2">
-                        <Link
-                            to="/profile"
-                            onClick={() => setIsOpen(false)}
-                            className="flex items-center gap-3 px-4 py-3 transition-colors"
-                            style={{ color: currentColors.text }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor =
-                                    currentColors.bg;
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor =
-                                    "transparent";
-                            }}
-                        >
-                            <FiUser size={18} />
-                            <span className="text-sm font-medium">
-                                My Profile
-                            </span>
-                        </Link>
-
-                        <Link
-                            to="/settings"
-                            onClick={() => setIsOpen(false)}
-                            className="flex items-center gap-3 px-4 py-3 transition-colors"
-                            style={{ color: currentColors.text }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor =
-                                    currentColors.bg;
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor =
-                                    "transparent";
-                            }}
-                        >
-                            <FiSettings size={18} />
-                            <span className="text-sm font-medium">
-                                Settings
-                            </span>
-                        </Link>
-
-                        <div
-                            style={{
-                                borderTop: `1px solid ${currentColors.border}`,
-                                margin: "8px 0",
-                            }}
+                    <div className="pb-2">
+                        <MockEmailList
+                            setSelectedEmail={setSelectedEmail}
+                            setIsDropdownOpen={setIsOpen}
+                            selectedEmail={selectedEmail}
+                            currentColors={currentColors}
                         />
-
-                        <button
-                            onClick={handleLogout}
-                            className="w-full flex items-center gap-3 px-4 py-3 transition-colors text-left"
-                            style={{ color: "#EF4444" }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor =
-                                    currentColors.bg;
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor =
-                                    "transparent";
-                            }}
-                        >
-                            <FiLogOut size={18} />
-                            <span className="text-sm font-medium">Logout</span>
-                        </button>
                     </div>
                 </div>
             )}

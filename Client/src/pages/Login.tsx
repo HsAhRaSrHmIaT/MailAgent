@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
+import { toast } from "react-toastify";
 import { FiMail, FiLock, FiEye, FiEyeOff, FiLogIn } from "react-icons/fi";
 import { HiSparkles } from "react-icons/hi2";
 
@@ -35,14 +36,14 @@ const Login = () => {
 
         // Validation
         if (!formData.email || !formData.password) {
-            setError("Please fill in all fields");
+            toast.error("Please fill in all fields");
             setIsLoading(false);
             return;
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(formData.email)) {
-            setError("Please enter a valid email address");
+            toast.error("Please enter a valid email address");
             setIsLoading(false);
             return;
         }
@@ -51,12 +52,15 @@ const Login = () => {
             const response = await login(formData);
 
             if (response.success) {
+                toast.success("Login successful! Welcome back.");
                 navigate("/email-form");
             } else {
-                setError(response.error || "Login failed. Please try again.");
+                toast.error(
+                    response.error || "Login failed. Please try again."
+                );
             }
         } catch (err) {
-            setError("An unexpected error occurred");
+            toast.error("An unexpected error occurred");
         } finally {
             setIsLoading(false);
         }

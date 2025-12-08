@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
+import { toast } from "react-toastify";
 import {
     FiMail,
     FiLock,
@@ -67,32 +68,32 @@ const Register = () => {
             !formData.password ||
             !formData.confirmPassword
         ) {
-            setError("Please fill in all required fields");
+            toast.error("Please fill in all required fields");
             setIsLoading(false);
             return;
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(formData.email)) {
-            setError("Please enter a valid email address");
+            toast.error("Please enter a valid email address");
             setIsLoading(false);
             return;
         }
 
         if (formData.password.length < 8) {
-            setError("Password must be at least 8 characters long");
+            toast.error("Password must be at least 8 characters long");
             setIsLoading(false);
             return;
         }
 
         if (formData.password !== formData.confirmPassword) {
-            setError("Passwords do not match");
+            toast.error("Passwords do not match");
             setIsLoading(false);
             return;
         }
 
         if (!formData.agreeTerms) {
-            setError("Please agree to the terms and conditions");
+            toast.error("Please agree to the terms and conditions");
             setIsLoading(false);
             return;
         }
@@ -105,14 +106,15 @@ const Register = () => {
             });
 
             if (response.success) {
+                toast.success("Account created successfully! Welcome aboard.");
                 navigate("/email-form");
             } else {
-                setError(
+                toast.error(
                     response.error || "Registration failed. Please try again."
                 );
             }
         } catch (err) {
-            setError("An unexpected error occurred");
+            toast.error("An unexpected error occurred");
         } finally {
             setIsLoading(false);
         }

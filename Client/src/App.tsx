@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import EmailForm from "./pages/EmailForm";
 import Settings from "./pages/Settings";
@@ -8,7 +10,6 @@ import GetDB from "./pages/GetDB";
 import Welcome from "./pages/Welcome";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Profile from "./pages/Profile";
 import PageNotFound from "./pages/PageNotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -42,14 +43,6 @@ function App() {
                             }
                         />
                         <Route
-                            path="/profile"
-                            element={
-                                <ProtectedRoute>
-                                    <Profile />
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
                             path="/get-db"
                             element={
                                 <ProtectedRoute>
@@ -61,6 +54,18 @@ function App() {
                         {/* 404 Page */}
                         <Route path="*" element={<PageNotFound />} />
                     </Routes>
+                    <ToastContainer
+                        position="top-right"
+                        autoClose={3000}
+                        hideProgressBar={false}
+                        newestOnTop={false}
+                        closeOnClick
+                        rtl={false}
+                        pauseOnFocusLoss
+                        draggable
+                        pauseOnHover
+                        theme="colored"
+                    />
                 </Router>
             </AuthProvider>
         </ThemeProvider>

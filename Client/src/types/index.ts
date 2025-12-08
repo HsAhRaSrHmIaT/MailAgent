@@ -213,3 +213,13 @@ export interface AuthContextType {
     logout: () => void;
     updateUser: (userData: Partial<User>) => Promise<void>;
 }
+
+export interface MockEmailListProps {
+    setSelectedEmail: (email: string) => void;
+    setIsDropdownOpen: (isOpen: boolean) => void;
+    selectedEmail: string;
+    currentColors: {
+        text: string;
+        bg: string;
+    };
+}
