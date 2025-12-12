@@ -24,12 +24,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             if (storedToken) {
                 setToken(storedToken);
                 try {
-                    const currentUser = await authService.getCurrentUser();
-                    setUser(currentUser);
+                    setUser(await authService.getCurrentUser());
                 } catch (error) {
-                    // Token invalid or expired
                     authService.removeToken();
                     setToken(null);
+                    console.error("Failed to fetch current user:", error);
                 }
             }
             setIsLoading(false);
@@ -88,12 +87,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     const updateUser = async (userData: Partial<User>) => {
-        try {
-            const updatedUser = await authService.updateProfile(userData);
-            setUser(updatedUser);
-        } catch (error) {
-            throw error;
-        }
+        const updatedUser = await authService.updateProfile(userData);
+        setUser(updatedUser);
     };
 
     const value: AuthContextType = {

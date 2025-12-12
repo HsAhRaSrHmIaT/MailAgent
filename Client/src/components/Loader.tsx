@@ -15,7 +15,7 @@ const Loader = ({ variant = "chat", size = "sm" }: LoaderProps) => {
         email: "flex justify-center space-x-1 my-4 items-center p-2 rounded h-72 sm:w-80 sm:h-72",
         circle: "flex justify-center space-x-1",
     };
-
+ 
     const renderChatLoader = () => (
         <>
             <div
