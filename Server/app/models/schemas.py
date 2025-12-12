@@ -128,3 +128,31 @@ class ErrorResponse(BaseModel):
     tts_test: str = Field(..., description="TTS test error message")
     overall_status: str = Field(..., description="Overall status of the service")
 
+
+# Environment Variables Schemas
+class EnvironmentVariableCreate(BaseModel):
+    key: str = Field(..., description="Environment variable key")
+    value: str = Field(..., description="Environment variable value")
+
+class EnvironmentVariableUpdate(BaseModel):
+    value: str = Field(..., description="Updated environment variable value")
+
+class EnvironmentVariableResponse(BaseModel):
+    id: int
+    key: str
+    value: str  # Decrypted value, sent only when requested
+    created_at: str
+    updated_at: str
+
+    class Config:
+        from_attributes = True
+
+class EnvironmentVariableListItem(BaseModel):
+    id: int
+    key: str
+    value: str  # Decrypted value for display
+    created_at: str
+    updated_at: str
+
+    class Config:
+        from_attributes = True

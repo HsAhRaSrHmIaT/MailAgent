@@ -22,8 +22,8 @@ function AppRoutes() {
             <div className="flex flex-col items-center justify-center min-h-screen" style={{ backgroundColor: currentColors.bg }}>
                 <div className="flex flex-col items-center space-y-6">
                     <div className="relative">
-                        <div className="w-16 h-16 border-4 rounded-full animate-spin" style={{borderColor: currentColors.border, borderTopColor: currentColors.bg }} />
-                        <div className="absolute inset-2 w-12 h-12 border-4 rounded-full animate-spin" style={{ animationDirection: 'reverse', borderColor: currentColors.border, borderBottomColor: currentColors.bg }} />
+                        <div className="w-16 h-16 border-4 rounded-full animate-spin" style={{borderColor: currentColors.border, borderTopColor: `${currentColors.border}60` }} />
+                        <div className="absolute inset-2 w-12 h-12 border-4 rounded-full animate-spin" style={{ animationDirection: 'reverse', borderColor: currentColors.border, borderBottomColor: `${currentColors.border}60` }} />
                     </div>
                     <div className="flex flex-col items-center space-y-2">
                         <div className="text-lg font-medium" style={{ color: currentColors.textSecondary }}>Loading...</div>

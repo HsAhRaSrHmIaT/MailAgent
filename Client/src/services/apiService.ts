@@ -167,6 +167,74 @@ class ApiService {
     isWebSocketConnected(): boolean {
         return this.ws !== null && this.ws.readyState === WebSocket.OPEN;
     }
+
+    // Environment Variables API Methods
+    private apiUrl =
+        import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+
+    async getEnvironmentVariables(): Promise<any[]> {
+        const response = await this.fetch(`${this.apiUrl}/env-vars/`);
+        if (!response.ok) {
+            throw new Error("Failed to fetch environment variables");
+        }
+        return response.json();
+    }
+
+    async getEnvironmentVariable(key: string): Promise<any> {
+        const response = await this.fetch(`${this.apiUrl}/env-vars/${key}`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch environment variable: ${key}`);
+        }
+        return response.json();
+    }
+
+    async saveEnvironmentVariable(key: string, value: string): Promise<any> {
+        const response = await this.fetch(`${this.apiUrl}/env-vars/`, {
+            method: "POST",
+            body: JSON.stringify({ key, value }),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(
+                error.detail || "Failed to save environment variable"
+            );
+        }
+        return response.json();
+    }
+
+    async updateEnvironmentVariable(key: string, value: string): Promise<any> {
+        const response = await this.fetch(`${this.apiUrl}/env-vars/${key}`, {
+            method: "PUT",
+            body: JSON.stringify({ value }),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(
+                error.detail || "Failed to update environment variable"
+            );
+        }
+        return response.json();
+    }
+
+    async deleteEnvironmentVariable(key: string): Promise<any> {
+        const response = await this.fetch(`${this.apiUrl}/env-vars/${key}`, {
+            method: "DELETE",
+        });
+        if (!response.ok) {
+            throw new Error("Failed to delete environment variable");
+        }
+        return response.json();
+    }
+
+    async deleteAllEnvironmentVariables(): Promise<any> {
+        const response = await this.fetch(`${this.apiUrl}/env-vars/`, {
+            method: "DELETE",
+        });
+        if (!response.ok) {
+            throw new Error("Failed to delete all environment variables");
+        }
+        return response.json();
+    }
 }
 
 export const apiService = new ApiService();

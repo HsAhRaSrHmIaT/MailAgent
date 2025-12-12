@@ -7,7 +7,7 @@ from websocket import websocket_endpoint
 import time
 
 from app.core.config import settings
-from app.api import logs, auth
+from app.api import logs, auth, env_vars
 from app.services.logger_service import logger_service, LogCategory
 
 app = FastAPI(
@@ -63,6 +63,7 @@ async def log_requests(request: Request, call_next):
 # Include routers
 app.include_router(auth.router, prefix="/api", tags=["auth"])
 app.include_router(logs.router, prefix="/api", tags=["logs"])
+app.include_router(env_vars.router, prefix="/api", tags=["env-vars"])
 
 app.add_api_websocket_route("/api", websocket_endpoint)
 
