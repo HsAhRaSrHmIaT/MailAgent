@@ -9,6 +9,7 @@ class WebSocketHandler:
     def __init__(self, websocket: WebSocket):
         self.websocket = websocket
         self.session_id = f"ws_{int(time.time())}_{id(websocket)}"
+        self.user_id = None
 
     async def connect(self):
         await self.websocket.accept()
@@ -38,7 +39,7 @@ class WebSocketHandler:
         )
         
         try:
-            response = await handle_chat_message(data)
+            response = await handle_chat_message(data, user_id=self.user_id)
             await self.websocket.send_json(response.model_dump())
             
             await logger_service.info(
@@ -73,7 +74,7 @@ class WebSocketHandler:
         )
         
         try:
-            response = await handle_email_request(data)
+            response = await handle_email_request(data, user_id=self.user_id)
             await self.websocket.send_json(response)
             
             await logger_service.info(
@@ -110,6 +111,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 user_id = verify_token(token)
                 if user_id:
                     authenticated_user = user_id
+                    handler.user_id = user_id  # Store user_id in handler
                     await logger_service.info(
                         LogCategory.WEBSOCKET,
                         "User authenticated via WebSocket",

@@ -36,6 +36,16 @@ class LogEntryModel(Base):
     user_agent = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+class UserEnvironmentVariablesModel(Base):
+    __tablename__ = "user_environment_variables"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String, nullable=False, index=True)
+    key = Column(String, nullable=False)
+    encrypted_value = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
 class DatabaseManager:
     def __init__(self):
         self.engine = None
