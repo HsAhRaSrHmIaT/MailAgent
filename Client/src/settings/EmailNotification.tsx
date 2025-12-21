@@ -5,7 +5,7 @@ import { IoNotificationsOutline } from "react-icons/io5";
 const EmailNotification = () => {
     const { currentColors, currentPalette } = useTheme();
     return (
-        <div className="min-h-screen">
+        <div>
             <div className="max-w-6xl mx-auto select-none">
                 {/* Header */}
                 <div className="mb-6 sm:mb-8">
