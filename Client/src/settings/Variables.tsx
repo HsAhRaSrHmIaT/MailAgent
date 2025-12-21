@@ -155,7 +155,7 @@ const Variables = () => {
     };
 
     return (
-        <div className="min-h-screen">
+        <div>
             <div className="max-w-6xl mx-auto select-none">
                 {/* Header */}
                 <div className="mb-8">
