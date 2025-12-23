@@ -6,13 +6,13 @@ import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
 
 import { FiHome, FiMenu, FiX } from "react-icons/fi";
-import { IoColorPaletteOutline, IoNotificationsOutline } from "react-icons/io5";
+import { IoColorPaletteOutline } from "react-icons/io5"; // IoNotificationsOutline
 import { SlWrench } from "react-icons/sl";
 import { VscAccount } from "react-icons/vsc";
 import { LuLogs } from "react-icons/lu";
 import { MdDataObject, MdLogout } from "react-icons/md";
 
-import EmailNotification from "../settings/EmailNotification";
+// import EmailNotification from "../settings/EmailNotification";
 import Config from "../settings/Config";
 import Themes from "../settings/Themes";
 import Account from "../settings/account/Account";
@@ -158,7 +158,7 @@ const Settings = () => {
                         <VscAccount size={24} />
                         Account
                     </li>
-                    <li
+                    {/* <li
                         className={`flex items-center gap-2 text-lg font-semibold p-2 rounded cursor-pointer`}
                         style={{
                             backgroundColor: getTabBg("notifications"),
@@ -175,7 +175,7 @@ const Settings = () => {
                     >
                         <IoNotificationsOutline size={24} />
                         Email Notifications
-                    </li>
+                    </li> */}
                     <li
                         className={`flex items-center gap-2 text-lg font-semibold p-2 rounded cursor-pointer`}
                         style={{
@@ -301,8 +301,8 @@ const Settings = () => {
                     switch (state.activeTab) {
                         case "account":
                             return <Account />;
-                        case "notifications":
-                            return <EmailNotification />;
+                        // case "notifications":
+                        //     return <EmailNotification />;
                         case "config":
                             return <Config />;
                         case "env":

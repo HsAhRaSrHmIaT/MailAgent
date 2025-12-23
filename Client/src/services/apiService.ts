@@ -235,6 +235,79 @@ class ApiService {
         }
         return response.json();
     }
+
+    // Email Configuration API Methods
+    async getEmailConfigs(): Promise<any[]> {
+        const response = await this.fetch(`${this.apiUrl}/email-configs/`);
+        if (!response.ok) {
+            throw new Error("Failed to fetch email configurations");
+        }
+        return response.json();
+    }
+
+    async getEmailConfig(email: string): Promise<any> {
+        const response = await this.fetch(
+            `${this.apiUrl}/email-configs/${encodeURIComponent(email)}`
+        );
+        if (!response.ok) {
+            throw new Error(`Failed to fetch email configuration: ${email}`);
+        }
+        return response.json();
+    }
+
+    async saveEmailConfig(email: string, password: string): Promise<any> {
+        const response = await this.fetch(`${this.apiUrl}/email-configs/`, {
+            method: "POST",
+            body: JSON.stringify({ email, password }),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(
+                error.detail || "Failed to save email configuration"
+            );
+        }
+        return response.json();
+    }
+
+    async updateEmailConfig(email: string, password: string): Promise<any> {
+        const response = await this.fetch(
+            `${this.apiUrl}/email-configs/${encodeURIComponent(email)}`,
+            {
+                method: "PUT",
+                body: JSON.stringify({ password }),
+            }
+        );
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(
+                error.detail || "Failed to update email configuration"
+            );
+        }
+        return response.json();
+    }
+
+    async deleteEmailConfig(email: string): Promise<any> {
+        const response = await this.fetch(
+            `${this.apiUrl}/email-configs/${encodeURIComponent(email)}`,
+            {
+                method: "DELETE",
+            }
+        );
+        if (!response.ok) {
+            throw new Error("Failed to delete email configuration");
+        }
+        return response.json();
+    }
+
+    async deleteAllEmailConfigs(): Promise<any> {
+        const response = await this.fetch(`${this.apiUrl}/email-configs/`, {
+            method: "DELETE",
+        });
+        if (!response.ok) {
+            throw new Error("Failed to delete all email configurations");
+        }
+        return response.json();
+    }
 }
 
 export const apiService = new ApiService();

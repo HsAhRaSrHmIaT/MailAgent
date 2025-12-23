@@ -629,6 +629,51 @@ const Variables = () => {
                                             </div>
                                         </div>
 
+                                        <div className="mt-6">
+                                            <h4
+                                                className="text-sm font-medium"
+                                                style={{
+                                                    color: currentColors.text,
+                                                }}
+                                            >
+                                                How to obtain API keys
+                                            </h4>
+                                            <div
+                                                className="mt-3 p-4 rounded-lg"
+                                                style={{
+                                                    borderStyle: "dashed",
+                                                    borderColor:
+                                                        currentColors.border,
+                                                    backgroundColor:
+                                                        currentColors.bg,
+                                                }}
+                                            >
+                                                <div
+                                                    className="text-sm"
+                                                    style={{
+                                                        color: currentColors.textSecondary,
+                                                    }}
+                                                >
+                                                    Video placeholder — add a
+                                                    short video or step-by-step
+                                                    guide here explaining how to
+                                                    obtain API keys from Google
+                                                    Gemini, Murf, Deepgram, and
+                                                    other services. You can
+                                                    replace this with an
+                                                    embedded video later.
+                                                </div>
+                                                <div
+                                                    className="mt-3 h-32 rounded bg-black/5 flex items-center justify-center text-sm"
+                                                    style={{
+                                                        color: currentColors.textSecondary,
+                                                    }}
+                                                >
+                                                    Video placeholder
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         {savedVariables.length > 0 && (
                                             <div
                                                 className="mt-6 pt-4 border-t"
