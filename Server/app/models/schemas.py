@@ -156,3 +156,31 @@ class EnvironmentVariableListItem(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# Email Configuration Schemas
+class EmailConfigCreate(BaseModel):
+    email: str = Field(..., description="Email address")
+    password: str = Field(..., description="Email password")
+
+class EmailConfigUpdate(BaseModel):
+    password: str = Field(..., description="Updated email password")
+
+class EmailConfigResponse(BaseModel):
+    id: int
+    email: str
+    created_at: str
+    updated_at: str
+
+    class Config:
+        from_attributes = True
+
+class EmailConfigWithPassword(BaseModel):
+    id: int
+    email: str
+    password: str  # Decrypted password
+    created_at: str
+    updated_at: str
+
+    class Config:
+        from_attributes = True

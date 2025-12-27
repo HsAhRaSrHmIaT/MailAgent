@@ -46,6 +46,17 @@ class UserEnvironmentVariablesModel(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
+class UserEmailConfigModel(Base):
+    __tablename__ = "user_email_configs"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String, nullable=False, index=True)
+    email = Column(String, nullable=False)
+    encrypted_password = Column(Text, nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
 class DatabaseManager:
     def __init__(self):
         self.engine = None

@@ -2,85 +2,193 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-    --color-primary: #3b82f6;
-    --color-bg: rgb(253, 255, 255);
-    --color-surface: #f3f4f6;
-    --color-border: #d1d5db;
-    --color-text: #111827;
-    --color-text-secondary: #6b7280;
+  --color-primary: #3b82f6;
+  --color-bg: rgb(253, 255, 255);
+  --color-surface: #f3f4f6;
+  --color-border: #d1d5db;
+  --color-text: #111827;
+  --color-text-secondary: #6b7280;
 }
 
 body {
-    background-color: var(--color-surface);
-    color: var(--color-text);
-    overflow: auto;
-    transition: background-color 0.3s ease;
-    margin: 0;
-    padding: 0;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  overflow: auto;
+  transition: background-color 0.3s ease;
+  margin: 0;
+  padding: 0;
 }
 
 /* Mobile-first responsive adjustments */
 @media (max-width: 1024px) {
-    body {
-        padding-bottom: 100px; /* Increased space for enhanced mobile bottom bar */
-    }
+  body {
+    padding-bottom: 100px; /* Increased space for enhanced mobile bottom bar */
+  }
 }
 
 @media (max-width: 640px) {
-    /* Improve touch target sizes for mobile */
-    button {
-        min-height: 44px;
-    }
+  /* Improve touch target sizes for mobile */
+  button {
+    min-height: 44px;
+  }
 
-    /* Ensure proper text sizes on mobile */
-    .text-xs {
-        font-size: 0.75rem;
-    }
-    .text-sm {
-        font-size: 0.875rem;
-    }
+  /* Ensure proper text sizes on mobile */
+  .text-xs {
+    font-size: 0.75rem;
+  }
+  .text-sm {
+    font-size: 0.875rem;
+  }
 }
 
 /* Custom utility classes using your theme variables */
 .bg-theme {
-    background-color: var(--color-bg);
+  background-color: var(--color-bg);
 }
 
 .bg-surface {
-    background-color: var(--color-surface);
+  background-color: var(--color-surface);
 }
 
 .text-theme {
-    color: var(--color-text);
+  color: var(--color-text);
 }
 
 .text-theme-secondary {
-    color: var(--color-text-secondary);
+  color: var(--color-text-secondary);
 }
 
 .border-theme {
-    border-color: var(--color-border);
+  border-color: var(--color-border);
 }
 
 ::-webkit-scrollbar {
-    width: 8px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--color-surface);
+  background: var(--color-surface);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--color-border);
-    border-radius: 4px;
+  background: var(--color-border);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-primary);
+  background: var(--color-primary);
 }
 
 /* Firefox */
 * {
-    scrollbar-width: thin;
-    scrollbar-color: var(--color-border) var(--color-surface);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) var(--color-surface);
+}
+
+/* Toast Notifications - Theme Integrated */
+.Toastify__toast-container {
+  z-index: 9999;
+}
+
+.custom-toast {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text) !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  padding: 16px !important;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.custom-toast:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2) !important;
+}
+
+.custom-toast-body {
+  padding: 0;
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.custom-progress-bar {
+  background: var(--color-primary) !important;
+  height: 4px;
+}
+
+/* Success Toast */
+.Toastify__toast--success .custom-toast-body::before {
+  content: "✓";
+  display: inline-block;
+  margin-right: 8px;
+  color: #10b981;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.Toastify__toast--success .custom-progress-bar {
+  background: linear-gradient(to right, #10b981, #059669) !important;
+}
+
+/* Error Toast */
+.Toastify__toast--error .custom-toast-body::before {
+  content: "✕";
+  display: inline-block;
+  margin-right: 8px;
+  color: #ef4444;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.Toastify__toast--error .custom-progress-bar {
+  background: linear-gradient(to right, #ef4444, #dc2626) !important;
+}
+
+/* Warning Toast */
+.Toastify__toast--warning .custom-toast-body::before {
+  content: "⚠";
+  display: inline-block;
+  margin-right: 8px;
+  color: #f59e0b;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.Toastify__toast--warning .custom-progress-bar {
+  background: linear-gradient(to right, #f59e0b, #d97706) !important;
+}
+
+/* Info Toast */
+.Toastify__toast--info .custom-toast-body::before {
+  content: "ℹ";
+  display: inline-block;
+  margin-right: 8px;
+  color: var(--color-primary);
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.Toastify__toast--info .custom-progress-bar {
+  background: var(--color-primary) !important;
+}
+
+/* Close button styling */
+.Toastify__close-button {
+  color: var(--color-text-secondary) !important;
+  opacity: 0.7;
+}
+
+.Toastify__close-button:hover {
+  opacity: 1;
+  color: var(--color-text) !important;
+}
+
+/* Dark mode specific adjustments */
+.dark .custom-toast {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dark .custom-toast:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6) !important;
 }
