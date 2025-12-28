@@ -191,24 +191,24 @@ async def delete_email_config(
         )
 
 
-@router.delete("/", response_model=dict)
-async def delete_all_email_configs(
-    current_user: Dict[str, Any] = Depends(get_current_user_from_token),
-    db: AsyncSession = Depends(get_db)
-):
-    """
-    Delete all email configurations for the current user.
-    """
-    try:
-        deleted_count = await email_config_service.delete_all_email_configs(db, current_user["id"])
+# @router.delete("/", response_model=dict)
+# async def delete_all_email_configs(
+#     current_user: Dict[str, Any] = Depends(get_current_user_from_token),
+#     db: AsyncSession = Depends(get_db)
+# ):
+#     """
+#     Delete all email configurations for the current user.
+#     """
+#     try:
+#         deleted_count = await email_config_service.delete_all_email_configs(db, current_user["id"])
         
-        return {
-            "success": True,
-            "message": f"Deleted {deleted_count} email configuration(s)",
-            "deleted_count": deleted_count
-        }
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete email configurations: {str(e)}"
-        )
+#         return {
+#             "success": True,
+#             "message": f"Deleted {deleted_count} email configuration(s)",
+#             "deleted_count": deleted_count
+#         }
+#     except Exception as e:
+#         raise HTTPException(
+#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             detail=f"Failed to delete email configurations: {str(e)}"
+#         )

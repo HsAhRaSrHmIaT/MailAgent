@@ -163,55 +163,55 @@ async def update_variable(
         )
 
 
-@router.delete("/{key}", response_model=dict)
-async def delete_variable(
-    key: str,
-    current_user: Dict[str, Any] = Depends(get_current_user_from_token),
-    db: AsyncSession = Depends(get_db)
-):
-    """
-    Delete a specific environment variable.
-    """
-    try:
-        deleted = await env_vars_service.delete_variable(db, current_user["id"], key)
+# @router.delete("/{key}", response_model=dict)
+# async def delete_variable(
+#     key: str,
+#     current_user: Dict[str, Any] = Depends(get_current_user_from_token),
+#     db: AsyncSession = Depends(get_db)
+# ):
+#     """
+#     Delete a specific environment variable.
+#     """
+#     try:
+#         deleted = await env_vars_service.delete_variable(db, current_user["id"], key)
         
-        if not deleted:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Environment variable '{key}' not found"
-            )
+#         if not deleted:
+#             raise HTTPException(
+#                 status_code=status.HTTP_404_NOT_FOUND,
+#                 detail=f"Environment variable '{key}' not found"
+#             )
         
-        return {
-            "success": True,
-            "message": f"Environment variable '{key}' deleted successfully"
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete environment variable: {str(e)}"
-        )
+#         return {
+#             "success": True,
+#             "message": f"Environment variable '{key}' deleted successfully"
+#         }
+#     except HTTPException:
+#         raise
+#     except Exception as e:
+#         raise HTTPException(
+#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             detail=f"Failed to delete environment variable: {str(e)}"
+#         )
 
 
-@router.delete("/", response_model=dict)
-async def delete_all_variables(
-    current_user: Dict[str, Any] = Depends(get_current_user_from_token),
-    db: AsyncSession = Depends(get_db)
-):
-    """
-    Delete all environment variables for the current user.
-    """
-    try:
-        count = await env_vars_service.delete_all_user_variables(db, current_user["id"])
+# @router.delete("/", response_model=dict)
+# async def delete_all_variables(
+#     current_user: Dict[str, Any] = Depends(get_current_user_from_token),
+#     db: AsyncSession = Depends(get_db)
+# ):
+#     """
+#     Delete all environment variables for the current user.
+#     """
+#     try:
+#         count = await env_vars_service.delete_all_user_variables(db, current_user["id"])
         
-        return {
-            "success": True,
-            "message": f"Deleted {count} environment variable(s)",
-            "count": count
-        }
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete environment variables: {str(e)}"
-        )
+#         return {
+#             "success": True,
+#             "message": f"Deleted {count} environment variable(s)",
+#             "count": count
+#         }
+#     except Exception as e:
+#         raise HTTPException(
+#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             detail=f"Failed to delete environment variables: {str(e)}"
+#         )

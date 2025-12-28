@@ -85,17 +85,17 @@ class EmailConfigService:
         await db.commit()
         return result.rowcount > 0
 
-    async def delete_all_email_configs(
-        self, db: AsyncSession, user_id: str
-    ) -> int:
-        """Delete all email configurations for a user"""
-        result = await db.execute(
-            delete(UserEmailConfigModel).where(
-                UserEmailConfigModel.user_id == user_id
-            )
-        )
-        await db.commit()
-        return result.rowcount
+    # async def delete_all_email_configs(
+    #     self, db: AsyncSession, user_id: str
+    # ) -> int:
+    #     """Delete all email configurations for a user"""
+    #     result = await db.execute(
+    #         delete(UserEmailConfigModel).where(
+    #             UserEmailConfigModel.user_id == user_id
+    #         )
+    #     )
+    #     await db.commit()
+    #     return result.rowcount
 
 
 # Singleton instance

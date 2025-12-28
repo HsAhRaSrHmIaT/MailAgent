@@ -198,9 +198,7 @@ const Config = () => {
   };
 
   return (
-    <div
-    // style={{ backgroundColor: currentColors.bg }}
-    >
+    <div>
       <div className="max-w-6xl mx-auto select-none">
         {/* Header */}
         <div className="mb-8">
@@ -293,16 +291,17 @@ const Config = () => {
                               borderColor: currentColors.border,
                             }}
                           >
+                            {/* Email Field */}
                             <div className="flex-1">
                               <label
-                                className="block text-sm font-medium mb-1"
+                                className="block text-sm font-medium mb-2"
                                 style={{
                                   color: currentColors.text,
                                 }}
                               >
                                 Email Address
                               </label>
-                              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                              <div className="flex items-center gap-2">
                                 <input
                                   type="email"
                                   value={config.email}
@@ -314,7 +313,7 @@ const Config = () => {
                                     )
                                   }
                                   disabled={index === 0}
-                                  className={`w-full p-2 border rounded-lg ${
+                                  className={`flex-1 px-3 py-2.5 border rounded-lg text-sm ${
                                     index === 0
                                       ? "opacity-60 cursor-not-allowed"
                                       : ""
@@ -332,7 +331,7 @@ const Config = () => {
                                 />
                                 {index === 0 && (
                                   <span
-                                    className="text-xs px-2 py-0.5 rounded"
+                                    className="text-xs px-2 py-1 rounded whitespace-nowrap"
                                     style={{
                                       backgroundColor: `${currentPalette.primary}20`,
                                       color: currentPalette.primary,
@@ -343,66 +342,73 @@ const Config = () => {
                                 )}
                               </div>
                             </div>
+
+                            {/* Password Field with Actions */}
                             <div className="flex-1">
                               <label
-                                className="block text-sm font-medium mb-1"
+                                className="block text-sm font-medium mb-2"
                                 style={{
                                   color: currentColors.text,
                                 }}
                               >
                                 App Password
                               </label>
-                              <input
-                                type="password"
-                                value={config.password}
-                                onChange={(e) =>
-                                  updateEmailConfig(
-                                    index,
-                                    "password",
-                                    e.target.value
-                                  )
-                                }
-                                className="w-full p-2 border rounded-lg"
-                                style={{
-                                  backgroundColor: currentColors.surface,
-                                  borderColor: currentColors.border,
-                                  color: currentColors.text,
-                                }}
-                                placeholder={
-                                  index === 0
-                                    ? "Add or update app password"
-                                    : "Enter app password"
-                                }
-                              />
-                            </div>
-                            {index !== 0 && (
-                              <button
-                                onClick={() => {
-                                  if (
-                                    !window.confirm(
-                                      "Remove this email configuration?"
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type={"text"}
+                                  value={config.password}
+                                  onChange={(e) =>
+                                    updateEmailConfig(
+                                      index,
+                                      "password",
+                                      e.target.value
                                     )
-                                  )
-                                    return;
-                                  removeEmailConfig(index);
-                                }}
-                                className="p-2 rounded-lg transition-colors"
-                                style={{
-                                  color: "#ef4444",
-                                  backgroundColor: "transparent",
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.backgroundColor =
-                                    "#fee2e2";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.backgroundColor =
-                                    "transparent";
-                                }}
-                              >
-                                <SlTrash size={20} />
-                              </button>
-                            )}
+                                  }
+                                  className="flex-1 px-3 py-2.5 border rounded-lg text-sm"
+                                  style={{
+                                    backgroundColor: currentColors.surface,
+                                    borderColor: currentColors.border,
+                                    color: currentColors.text,
+                                  }}
+                                  placeholder={
+                                    index === 0
+                                      ? "Add or update app password"
+                                      : "Enter app password"
+                                  }
+                                />
+
+                                {index !== 0 && (
+                                  <button
+                                    onClick={() => {
+                                      if (
+                                        !window.confirm(
+                                          "Remove this email configuration?"
+                                        )
+                                      )
+                                        return;
+                                      removeEmailConfig(index);
+                                    }}
+                                    className="p-2.5 transition-all cursor-pointer border rounded-lg"
+                                    style={{
+                                      backgroundColor: currentColors.surface,
+                                      borderColor: currentColors.border,
+                                      color: "#ef4444",
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.backgroundColor =
+                                        currentPalette.primary + "15";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.backgroundColor =
+                                        currentColors.surface;
+                                    }}
+                                    title="Remove configuration"
+                                  >
+                                    <SlTrash size={16} />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -428,7 +434,7 @@ const Config = () => {
                             Add Email Account
                           </button>
                           <div
-                            className="mt-2 text-sm"
+                            className="mt-6 text-sm"
                             style={{
                               color: currentColors.textSecondary,
                             }}
@@ -438,7 +444,7 @@ const Config = () => {
                         </div>
                       ) : (
                         <div
-                          className="mt-4 text-sm"
+                          className="mt-6 text-sm"
                           style={{
                             color: currentColors.textSecondary,
                           }}
@@ -447,7 +453,11 @@ const Config = () => {
                         </div>
                       )}
 
-                      <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-slate-700">
+                      <div className="flex justify-end gap-3 pt-6 border-t"
+                        style={{
+                          borderColor: currentColors.border,
+                        }}
+                      >
                         <button
                           onClick={handleCancel}
                           className="px-6 py-3 border rounded-sm transition-colors cursor-pointer"
@@ -576,7 +586,7 @@ const Config = () => {
                                           onClick={() =>
                                             togglePasswordVisibility(index)
                                           }
-                                          className="p-2.5 transition-all cursor-pointer border-r"
+                                          className="p-2.5 transition-all cursor-pointer"
                                           style={{
                                             backgroundColor: currentColors.bg,
                                             borderColor: currentColors.border,
@@ -611,14 +621,15 @@ const Config = () => {
                                           onClick={() =>
                                             removeSavedConfig(index)
                                           }
-                                          className="p-2.5 transition-all cursor-pointer"
+                                          className="p-2.5 transition-all cursor-pointer border-l"
                                           style={{
                                             backgroundColor: currentColors.bg,
+                                            borderColor: currentColors.border,
                                             color: "#ef4444",
                                           }}
                                           onMouseEnter={(e) => {
                                             e.currentTarget.style.backgroundColor =
-                                              "#fef2f2";
+                                              currentPalette.primary + "15";
                                           }}
                                           onMouseLeave={(e) => {
                                             e.currentTarget.style.backgroundColor =

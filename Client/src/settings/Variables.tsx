@@ -244,7 +244,7 @@ const Variables = () => {
                           className="p-4 transition-colors rounded-lg border"
                           style={{
                             borderColor: currentColors.border,
-                            backgroundColor: currentColors.surface,
+                            backgroundColor: currentColors.bg,
                           }}
                         >
                           <div className="flex flex-col sm:flex-row sm:items-start gap-4">
@@ -258,9 +258,9 @@ const Variables = () => {
                                 Key (Read-only)
                               </div>
                               <div
-                                className="w-full font-mono text-sm px-3 py-2.5 rounded-lg border"
+                                className="w-full font-mono text-sm px-3 py-2.5 rounded-lg border cursor-not-allowed"
                                 style={{
-                                  backgroundColor: currentColors.surface,
+                                  backgroundColor: currentColors.bg,
                                   borderColor: currentColors.border,
                                   color: currentColors.text,
                                 }}
@@ -290,7 +290,7 @@ const Variables = () => {
                                 }
                                 className="w-full font-mono text-sm px-3 py-2.5 rounded-lg border focus:outline-none focus:ring-2 transition-all"
                                 style={{
-                                  backgroundColor: currentColors.bg,
+                                  backgroundColor: currentColors.surface,
                                   borderColor: currentColors.border,
                                   color: currentColors.text,
                                 }}
@@ -421,9 +421,23 @@ const Variables = () => {
                                         onClick={() =>
                                           toggleValueVisibility(index)
                                         }
-                                        className="p-2 rounded-lg transition-colors cursor-pointer hover:bg-opacity-10"
+                                        className="p-2.5 transition-all cursor-pointer rounded-lg border"
                                         style={{
-                                          color: currentColors.text,
+                                          backgroundColor:
+                                            currentColors.bg,
+                                          borderColor: currentColors.border,
+                                          color: currentColors.textSecondary,
+                                        }}
+                                        onMouseEnter={(e) => {
+                                          e.currentTarget.style.backgroundColor = `${currentPalette.primary}15`;
+                                          e.currentTarget.style.color =
+                                            currentPalette.primary;
+                                        }}
+                                        onMouseLeave={(e) => {
+                                          e.currentTarget.style.backgroundColor =
+                                            currentColors.surface;
+                                          e.currentTarget.style.color =
+                                            currentColors.textSecondary;
                                         }}
                                         title={
                                           showValues[index]
