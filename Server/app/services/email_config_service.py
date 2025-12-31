@@ -17,11 +17,15 @@ class EmailConfigService:
         self.cipher = Fernet(base64.urlsafe_b64encode(key))
 
     def _encrypt_password(self, password: str) -> str:
-        """Encrypt a password"""
+        """Encrypt a password (returns empty string if password is empty)"""
+        if not password or password.strip() == "":
+            return ""
         return self.cipher.encrypt(password.encode()).decode()
 
     def _decrypt_password(self, encrypted_password: str) -> str:
-        """Decrypt a password"""
+        """Decrypt a password (returns empty string if encrypted_password is empty)"""
+        if not encrypted_password or encrypted_password.strip() == "":
+            return ""
         return self.cipher.decrypt(encrypted_password.encode()).decode()
 
     async def get_all_user_email_configs(
@@ -65,12 +69,29 @@ class EmailConfigService:
                 user_id=user_id,
                 email=email_data.email,
                 encrypted_password=encrypted_password,
-                is_active=True
+                is_active=False
             )
             db.add(new_config)
             await db.commit()
             await db.refresh(new_config)
             return new_config
+
+    async def set_active_email(
+        self, db: AsyncSession, user_id: str, email: str
+    ) -> bool:
+        """Set an email as active and deactivate all others"""
+        # First, deactivate all email configs for this user
+        all_configs = await self.get_all_user_email_configs(db, user_id)
+        for config in all_configs:
+            config.is_active = False
+        
+        # Then activate the selected email
+        target_config = await self.get_email_config_by_email(db, user_id, email)
+        if target_config:
+            target_config.is_active = True
+            await db.commit()
+            return True
+        return False
 
     async def delete_email_config(
         self, db: AsyncSession, user_id: str, email: str

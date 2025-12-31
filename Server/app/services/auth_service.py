@@ -94,6 +94,9 @@ class AuthService:
                 raise ValueError("Username already taken")
             user.username = user_data.username
         
+        if user_data.profile_picture is not None:
+            user.profile_picture = user_data.profile_picture
+        
         user.updated_at = datetime.utcnow()
         
         await db.commit()

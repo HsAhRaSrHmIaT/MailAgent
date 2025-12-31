@@ -13,7 +13,8 @@ const Avatar = ({ name, email, size = "md", imageUrl }: AvatarProps) => {
     const sizeClasses = {
         sm: "w-8 h-8 text-sm",
         md: "w-10 h-10 text-base",
-        lg: "w-12 h-12 text-lg",
+        lg: "w-16 h-16 text-lg",
+        xl: "w-36 h-36 text-xl",
     };
 
     const displayText =

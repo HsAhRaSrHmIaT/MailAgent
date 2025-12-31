@@ -1,10 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
+import cloudinary
+import cloudinary.uploader
+from typing import Optional
 
 from app.models.schemas import UserCreate, UserLogin, UserUpdate, UserResponse, Token
 from app.services.auth_service import auth_service
 from app.core.security import get_current_user_from_token
 from app.core.database import DatabaseManager
+from app.core.config import settings
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -226,3 +230,72 @@ async def logout(current_user: dict = Depends(get_current_user_from_token)):
         "success": True,
         "message": "Logged out successfully"
     }
+
+
+@router.post("/upload-avatar", response_model=dict)
+async def upload_avatar(
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user_from_token),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Upload profile picture to Cloudinary and update user profile.
+    
+    Requires authentication (Bearer token).
+    """
+    try:
+        # Configure Cloudinary (ensure settings are loaded)
+        cloudinary.config(
+            cloud_name=settings.cloudinary_cloud_name,
+            api_key=settings.cloudinary_api_key,
+            api_secret=settings.cloudinary_api_secret
+        )
+        
+        # Validate file type
+        allowed_types = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"]
+        if file.content_type not in allowed_types:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid file type. Allowed: {', '.join(allowed_types)}"
+            )
+        
+        # Read file content
+        contents = await file.read()
+        
+        # Upload to Cloudinary
+        upload_result = cloudinary.uploader.upload(
+            contents,
+            folder="mailagent/avatars",
+            public_id=f"user_{current_user['id']}",
+            overwrite=True,
+            transformation=[
+                {"width": 200, "height": 200, "crop": "fill", "gravity": "face"},
+                {"quality": "auto", "fetch_format": "auto"}
+            ]
+        )
+        
+        # Get the secure URL
+        avatar_url = upload_result.get("secure_url")
+        
+        # Update user profile with new avatar URL
+        user_update = UserUpdate(profile_picture=avatar_url)
+        user = await auth_service.update_user(db, current_user["id"], user_update)
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        return {
+            "success": True,
+            "message": "Avatar uploaded successfully",
+            "profilePicture": avatar_url
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to upload avatar: {str(e)}"
+        )

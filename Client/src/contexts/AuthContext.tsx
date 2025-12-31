@@ -1,116 +1,139 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import type {
-    AuthContextType,
-    User,
-    LoginCredentials,
-    RegisterData,
-    AuthResponse,
+  AuthContextType,
+  User,
+  LoginCredentials,
+  RegisterData,
+  AuthResponse,
+  EmailConfigResponse,
 } from "../types";
 import * as authService from "../services/authService";
+import { apiService } from "../services/apiService";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-    children,
+  children,
 }) => {
-    const [user, setUser] = useState<User | null>(null);
-    const [token, setToken] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [emailConfigs, setEmailConfigs] = useState<EmailConfigResponse[]>([]);
 
-    // Initialize auth state from localStorage
-    useEffect(() => {
-        const initAuth = async () => {
-            const storedToken = authService.getToken();
-            if (storedToken) {
-                setToken(storedToken);
-                try {
-                    setUser(await authService.getCurrentUser());
-                } catch (error) {
-                    authService.removeToken();
-                    setToken(null);
-                    console.error("Failed to fetch current user:", error);
-                }
-            }
-            setIsLoading(false);
-        };
+  // Fetch email configurations
+  const fetchEmailConfigs = async () => {
+    try {
+      const configs = await apiService.getEmailConfigs();
+      // Filter to only show emails with passwords
+      const configsWithPasswords = configs.filter(
+        (config) => config.password && config.password.trim() !== ""
+      );
+      setEmailConfigs(configsWithPasswords);
+    } catch (error) {
+      console.error("Failed to fetch email configurations:", error);
+      setEmailConfigs([]);
+    }
+  };
 
-        initAuth();
-    }, []);
-
-    const login = async (
-        credentials: LoginCredentials
-    ): Promise<AuthResponse> => {
+  // Initialize auth state from localStorage
+  useEffect(() => {
+    const initAuth = async () => {
+      const storedToken = authService.getToken();
+      if (storedToken) {
+        setToken(storedToken);
         try {
-            const response = await authService.login(credentials);
-
-            if (response.success && response.token && response.user) {
-                setToken(response.token);
-                setUser(response.user);
-                authService.setToken(response.token);
-            }
-
-            return response;
+          const currentUser = await authService.getCurrentUser();
+          setUser(currentUser);
+          // Fetch email configs after user is loaded
+          await fetchEmailConfigs();
         } catch (error) {
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : "Login failed",
-            };
+          authService.removeToken();
+          setToken(null);
+          console.error("Failed to fetch current user:", error);
         }
+      }
+      setIsLoading(false);
     };
 
-    const register = async (data: RegisterData): Promise<AuthResponse> => {
-        try {
-            const response = await authService.register(data);
+    initAuth();
+  }, []);
 
-            if (response.success && response.token && response.user) {
-                setToken(response.token);
-                setUser(response.user);
-                authService.setToken(response.token);
-            }
+  const login = async (
+    credentials: LoginCredentials
+  ): Promise<AuthResponse> => {
+    try {
+      const response = await authService.login(credentials);
 
-            return response;
-        } catch (error) {
-            return {
-                success: false,
-                error:
-                    error instanceof Error
-                        ? error.message
-                        : "Registration failed",
-            };
-        }
-    };
+      if (response.success && response.token && response.user) {
+        setToken(response.token);
+        setUser(response.user);
+        authService.setToken(response.token);
+        // Fetch email configs after successful login
+        await fetchEmailConfigs();
+      }
 
-    const logout = () => {
-        authService.logout();
-        setUser(null);
-        setToken(null);
-    };
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Login failed",
+      };
+    }
+  };
 
-    const updateUser = async (userData: Partial<User>) => {
-        const updatedUser = await authService.updateProfile(userData);
-        setUser(updatedUser);
-    };
+  const register = async (data: RegisterData): Promise<AuthResponse> => {
+    try {
+      const response = await authService.register(data);
 
-    const value: AuthContextType = {
-        user,
-        token,
-        isAuthenticated: !!user && !!token,
-        isLoading,
-        login,
-        register,
-        logout,
-        updateUser,
-    };
+      if (response.success && response.token && response.user) {
+        setToken(response.token);
+        setUser(response.user);
+        authService.setToken(response.token);
+        // Fetch email configs after successful registration
+        await fetchEmailConfigs();
+      }
 
-    return (
-        <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-    );
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Registration failed",
+      };
+    }
+  };
+
+  const logout = () => {
+    authService.logout();
+    setUser(null);
+    setToken(null);
+    setEmailConfigs([]);
+  };
+
+  const updateUser = async (userData: Partial<User>) => {
+    const updatedUser = await authService.updateProfile(userData);
+    setUser(updatedUser);
+  };
+
+  const value: AuthContextType = {
+    user,
+    token,
+    isAuthenticated: !!user && !!token,
+    isLoading,
+    emailConfigs,
+    login,
+    register,
+    logout,
+    updateUser,
+    refreshEmailConfigs: fetchEmailConfigs,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (context === undefined) {
-        throw new Error("useAuth must be used within an AuthProvider");
-    }
-    return context;
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 };

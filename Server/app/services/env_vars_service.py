@@ -21,11 +21,15 @@ class EnvVarsService:
         self.cipher = Fernet(key)
     
     def _encrypt_value(self, value: str) -> str:
-        """Encrypt a value."""
+        """Encrypt a value (returns empty string if value is empty)"""
+        if not value or value.strip() == "":
+            return ""
         return self.cipher.encrypt(value.encode()).decode()
     
     def _decrypt_value(self, encrypted_value: str) -> str:
-        """Decrypt a value."""
+        """Decrypt a value (returns empty string if encrypted_value is empty)"""
+        if not encrypted_value or encrypted_value.strip() == "":
+            return ""
         return self.cipher.decrypt(encrypted_value.encode()).decode()
     
     def _mask_value(self, value: str) -> str:

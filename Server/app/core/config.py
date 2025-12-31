@@ -50,6 +50,11 @@ class Settings(BaseSettings):
     algorithm: str = os.getenv("ALGORITHM", "HS256")
     access_token_expire_minutes: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "10080"))  # 7 days default
 
+    # Cloudinary Settings
+    cloudinary_cloud_name: Optional[str] = os.getenv("CLOUDINARY_CLOUD_NAME")
+    cloudinary_api_key: Optional[str] = os.getenv("CLOUDINARY_API_KEY")
+    cloudinary_api_secret: Optional[str] = os.getenv("CLOUDINARY_API_SECRET")
+
     @property
     def database_connection_url(self) -> str:
         """Get the database connection URL, prioritizing NEON_DATABASE_URL"""

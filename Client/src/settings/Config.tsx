@@ -13,7 +13,7 @@ interface EmailConfig {
 }
 
 const Config = () => {
-  const { user } = useAuth();
+  const { user, refreshEmailConfigs } = useAuth();
   const { currentColors, currentPalette } = useTheme();
   const MAX_EMAILS = 4;
   const PLACEHOLDER_PASSWORD = "your-app-password";
@@ -32,6 +32,8 @@ const Config = () => {
   const [showPasswords, setShowPasswords] = useState<{
     [key: number]: boolean;
   }>({});
+  const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
+  const [deletedIndex, setDeletedIndex] = useState<number | null>(null);
 
   // Fetch email configs on component mount
   useEffect(() => {
@@ -91,12 +93,29 @@ const Config = () => {
     if (!window.confirm(`Remove ${toRemove.email}?`)) return;
 
     try {
+      setDeletingIndex(index);
       await apiService.deleteEmailConfig(toRemove.email);
+
+      // Remove from local state instead of fetching
+      setSavedConfigs(savedConfigs.filter((_, i) => i !== index));
+
+      // Show success checkmark
+      setDeletingIndex(null);
+      setDeletedIndex(index);
+
+      // Refresh email configs in AuthContext
+      await refreshEmailConfigs();
+
       toast.success(
         `Email configuration for ${toRemove.email} removed successfully`
       );
-      await fetchEmailConfigs();
+
+      // Clear checkmark after 2 seconds
+      setTimeout(() => {
+        setDeletedIndex(null);
+      }, 2000);
     } catch (err) {
+      setDeletingIndex(null);
       const errorMessage =
         err instanceof Error
           ? err.message
@@ -132,28 +151,27 @@ const Config = () => {
     toast.dismiss();
 
     try {
-      // Save only configs with both email and password
-      const configsToSave = emailConfigs.filter(
-        (c) => c.email.trim() && c.password.trim()
-      );
+      // Save all configs with valid emails (password optional)
+      const configsToSave = emailConfigs.filter((c) => c.email.trim());
 
       if (configsToSave.length === 0) {
-        toast.warning(
-          "Please provide at least one email configuration with password"
-        );
+        toast.warning("Please provide at least one email address");
         setIsSaving(false);
         return;
       }
 
-      // Save each configuration
+      // Save each configuration (password can be empty)
       const savePromises = configsToSave.map((config) =>
-        apiService.saveEmailConfig(config.email, config.password)
+        apiService.saveEmailConfig(config.email, config.password || "")
       );
 
       await Promise.all(savePromises);
 
       // Refresh the list from server
       await fetchEmailConfigs();
+
+      // Refresh email configs in AuthContext
+      await refreshEmailConfigs();
 
       setIsEditing(false);
       toast.success("Email configurations saved successfully");
@@ -453,7 +471,8 @@ const Config = () => {
                         </div>
                       )}
 
-                      <div className="flex justify-end gap-3 pt-6 border-t"
+                      <div
+                        className="flex justify-end gap-3 pt-6 border-t"
                         style={{
                           borderColor: currentColors.border,
                         }}
@@ -484,7 +503,7 @@ const Config = () => {
                             <Save className="w-5 h-5" />
                           )}
                           <span>
-                            {isSaving ? "Saving..." : "Save Configurations"}
+                            {isSaving ? "Saving..." : "Save Configs"}
                           </span>
                         </button>
                       </div>
@@ -621,15 +640,26 @@ const Config = () => {
                                           onClick={() =>
                                             removeSavedConfig(index)
                                           }
-                                          className="p-2.5 transition-all cursor-pointer border-l"
+                                          disabled={
+                                            deletingIndex === index ||
+                                            deletedIndex === index
+                                          }
+                                          className={`p-2.5 transition-all cursor-pointer ${config.password ? "border-l" : ""}`}
                                           style={{
                                             backgroundColor: currentColors.bg,
                                             borderColor: currentColors.border,
                                             color: "#ef4444",
+                                            opacity:
+                                              deletingIndex === index ? 0.6 : 1,
                                           }}
                                           onMouseEnter={(e) => {
-                                            e.currentTarget.style.backgroundColor =
-                                              currentPalette.primary + "15";
+                                            if (
+                                              deletingIndex !== index &&
+                                              deletedIndex !== index
+                                            ) {
+                                              e.currentTarget.style.backgroundColor =
+                                                currentPalette.primary + "15";
+                                            }
                                           }}
                                           onMouseLeave={(e) => {
                                             e.currentTarget.style.backgroundColor =
@@ -637,7 +667,11 @@ const Config = () => {
                                           }}
                                           title="Remove configuration"
                                         >
-                                          <SlTrash size={16} />
+                                          {deletingIndex === index ? (
+                                            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                          ) : (
+                                            <SlTrash size={16} />
+                                          )}
                                         </button>
                                       )}
                                     </div>
@@ -671,8 +705,8 @@ const Config = () => {
                             backgroundColor: currentPalette.primary,
                           }}
                         >
-                          <SlSettings className="w-4 h-4" />
-                          Edit Configurations
+                          <SlSettings className="w-5 h-5" />
+                          Edit Configs
                         </button>
                       </div>
                     </div>

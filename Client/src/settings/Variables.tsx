@@ -102,9 +102,7 @@ const Variables = () => {
 
     try {
       // Save only variables with non-empty values
-      const variablesToSave = editingVariables.filter(
-        (v) => v.key.trim() && v.value.trim()
-      );
+      const variablesToSave = editingVariables.filter((v) => v.key.trim());
 
       // Save each variable
       const savePromises = variablesToSave.map((variable) =>
@@ -423,8 +421,7 @@ const Variables = () => {
                                         }
                                         className="p-2.5 transition-all cursor-pointer rounded-lg border"
                                         style={{
-                                          backgroundColor:
-                                            currentColors.bg,
+                                          backgroundColor: currentColors.bg,
                                           borderColor: currentColors.border,
                                           color: currentColors.textSecondary,
                                         }}
@@ -484,104 +481,101 @@ const Variables = () => {
           )}
 
           {/* Info Section */}
-          {!isLoading && (
-            <div className="flex-1">
-              <div
-                className="rounded-xl border shadow-lg p-6 sticky top-6"
-                style={{ borderColor: currentColors.border }}
+          <div className="flex-1">
+            <div
+              className="rounded-xl border shadow-lg p-6 sticky top-6"
+              style={{ borderColor: currentColors.border }}
+            >
+              <h3
+                className="flex items-center gap-2 text-lg font-semibold mb-4"
+                style={{
+                  color: currentColors.text,
+                }}
               >
-                <h3
-                  className="flex items-center gap-2 text-lg font-semibold mb-4"
-                  style={{
-                    color: currentColors.text,
-                  }}
-                >
-                  <Lightbulb className="w-6 h-6" />
-                  {isEditing ? "Editing Guidelines" : "Information"}
-                </h3>
+                <Lightbulb className="w-6 h-6" />
+                {isEditing ? "Editing Guidelines" : "Information"}
+              </h3>
 
-                {isEditing ? (
+              {isEditing ? (
+                <div className="space-y-3">
+                  <div className="flex items-start gap-2">
+                    <span className="mt-0.5">•</span>
+                    <span>
+                      Variable keys are <strong>read-only</strong> and cannot be
+                      modified
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="mt-0.5">•</span>
+                    <span>
+                      Only the values can be updated to maintain configuration
+                      stability
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="mt-0.5">•</span>
+                    <span>
+                      Keep sensitive values secure and never share them publicly
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="mt-0.5">•</span>
+                    <span>
+                      Ensure all values are properly formatted before saving
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <>
                   <div className="space-y-3">
                     <div className="flex items-start gap-2">
                       <span className="mt-0.5">•</span>
                       <span>
-                        Variable keys are <strong>read-only</strong> and cannot
-                        be modified
+                        Environment variable keys are predefined and cannot be
+                        changed
                       </span>
                     </div>
                     <div className="flex items-start gap-2">
                       <span className="mt-0.5">•</span>
                       <span>
-                        Only the values can be updated to maintain configuration
-                        stability
+                        Go to their respective services to obtain API keys
                       </span>
                     </div>
                     <div className="flex items-start gap-2">
                       <span className="mt-0.5">•</span>
-                      <span>
-                        Keep sensitive values secure and never share them
-                        publicly
-                      </span>
+                      <span>Click "Edit Variables" to update the values</span>
                     </div>
                     <div className="flex items-start gap-2">
                       <span className="mt-0.5">•</span>
                       <span>
-                        Ensure all values are properly formatted before saving
+                        Never commit sensitive values to version control
                       </span>
                     </div>
                   </div>
-                ) : (
-                  <>
-                    <div className="space-y-3">
-                      <div className="flex items-start gap-2">
-                        <span className="mt-0.5">•</span>
-                        <span>
-                          Environment variable keys are predefined and cannot be
-                          changed
-                        </span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <span className="mt-0.5">•</span>
-                        <span>
-                          Go to their respective services to obtain API keys
-                        </span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <span className="mt-0.5">•</span>
-                        <span>Click "Edit Variables" to update the values</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <span className="mt-0.5">•</span>
-                        <span>
-                          Never commit sensitive values to version control
-                        </span>
-                      </div>
-                    </div>
 
-                    {savedVariables.length > 0 && (
+                  {savedVariables.length > 0 && (
+                    <div
+                      className="mt-6 pt-4 border-t"
+                      style={{
+                        borderColor: currentColors.border,
+                      }}
+                    >
                       <div
-                        className="mt-6 pt-4 border-t"
+                        className="text-sm"
                         style={{
-                          borderColor: currentColors.border,
+                          color: currentColors.textSecondary,
                         }}
                       >
-                        <div
-                          className="text-sm"
-                          style={{
-                            color: currentColors.textSecondary,
-                          }}
-                        >
-                          <strong className="font-medium">Security:</strong>{" "}
-                          Values are masked by default. Click the eye icon to
-                          reveal them.
-                        </div>
+                        <strong className="font-medium">Security:</strong>{" "}
+                        Values are masked by default. Click the eye icon to
+                        reveal them.
                       </div>
-                    )}
-                  </>
-                )}
-              </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
