@@ -208,10 +208,12 @@ export interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  emailConfigs: EmailConfigResponse[];
   login: (credentials: LoginCredentials) => Promise<AuthResponse>;
   register: (data: RegisterData) => Promise<AuthResponse>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => Promise<void>;
+  refreshEmailConfigs: () => Promise<void>;
 }
 
 export interface MockEmailListProps {

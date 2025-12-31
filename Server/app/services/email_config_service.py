@@ -17,11 +17,15 @@ class EmailConfigService:
         self.cipher = Fernet(base64.urlsafe_b64encode(key))
 
     def _encrypt_password(self, password: str) -> str:
-        """Encrypt a password"""
+        """Encrypt a password (returns empty string if password is empty)"""
+        if not password or password.strip() == "":
+            return ""
         return self.cipher.encrypt(password.encode()).decode()
 
     def _decrypt_password(self, encrypted_password: str) -> str:
-        """Decrypt a password"""
+        """Decrypt a password (returns empty string if encrypted_password is empty)"""
+        if not encrypted_password or encrypted_password.strip() == "":
+            return ""
         return self.cipher.decrypt(encrypted_password.encode()).decode()
 
     async def get_all_user_email_configs(

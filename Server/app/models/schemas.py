@@ -132,10 +132,10 @@ class ErrorResponse(BaseModel):
 # Environment Variables Schemas
 class EnvironmentVariableCreate(BaseModel):
     key: str = Field(..., description="Environment variable key")
-    value: str = Field(..., description="Environment variable value")
+    value: str = Field(default="", description="Environment variable value")
 
 class EnvironmentVariableUpdate(BaseModel):
-    value: str = Field(..., description="Updated environment variable value")
+    value: str = Field(default="", description="Updated environment variable value")
 
 class EnvironmentVariableResponse(BaseModel):
     id: int
@@ -161,7 +161,7 @@ class EnvironmentVariableListItem(BaseModel):
 # Email Configuration Schemas
 class EmailConfigCreate(BaseModel):
     email: str = Field(..., description="Email address")
-    password: str = Field(..., description="Email password")
+    password: str = Field(default="", description="Email password (optional)")
 
 class EmailConfigUpdate(BaseModel):
     password: str = Field(..., description="Updated email password")
