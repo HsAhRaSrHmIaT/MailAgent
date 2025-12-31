@@ -20,6 +20,7 @@ class UserLogin(BaseModel):
 class UserUpdate(BaseModel):
     username: Optional[str] = None
     email: Optional[EmailStr] = None
+    profile_picture: Optional[str] = None
 
 class UserResponse(BaseModel):
     id: str

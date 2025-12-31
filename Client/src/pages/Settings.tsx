@@ -298,7 +298,7 @@ const Settings = () => {
         className="flex-1 p-4 sm:p-6 lg:p-8 m-3 sm:m-4 lg:m-6 ml-3 lg:ml-4 mt-20 lg:mt-6 rounded-lg overflow-auto"
         style={{
           backgroundColor: currentColors.bg,
-          border: `1px solid ${currentColors.border}`,
+          border: `2px solid ${currentColors.border}`,
         }}
       >
         {/* Main Area */}
