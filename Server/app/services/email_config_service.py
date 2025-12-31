@@ -69,12 +69,29 @@ class EmailConfigService:
                 user_id=user_id,
                 email=email_data.email,
                 encrypted_password=encrypted_password,
-                is_active=True
+                is_active=False
             )
             db.add(new_config)
             await db.commit()
             await db.refresh(new_config)
             return new_config
+
+    async def set_active_email(
+        self, db: AsyncSession, user_id: str, email: str
+    ) -> bool:
+        """Set an email as active and deactivate all others"""
+        # First, deactivate all email configs for this user
+        all_configs = await self.get_all_user_email_configs(db, user_id)
+        for config in all_configs:
+            config.is_active = False
+        
+        # Then activate the selected email
+        target_config = await self.get_email_config_by_email(db, user_id, email)
+        if target_config:
+            target_config.is_active = True
+            await db.commit()
+            return True
+        return False
 
     async def delete_email_config(
         self, db: AsyncSession, user_id: str, email: str

@@ -191,6 +191,37 @@ async def delete_email_config(
         )
 
 
+@router.patch("/{email}/set-active", response_model=dict)
+async def set_active_email(
+    email: str,
+    current_user: Dict[str, Any] = Depends(get_current_user_from_token),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Set an email as active and deactivate all others.
+    """
+    try:
+        success = await email_config_service.set_active_email(db, current_user["id"], email)
+        
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Email configuration for '{email}' not found"
+            )
+        
+        return {
+            "success": True,
+            "message": f"Email '{email}' set as active"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to set active email: {str(e)}"
+        )
+
+
 # @router.delete("/", response_model=dict)
 # async def delete_all_email_configs(
 #     current_user: Dict[str, Any] = Depends(get_current_user_from_token),

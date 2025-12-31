@@ -298,6 +298,19 @@ class ApiService {
     return response.json();
   }
 
+  async setActiveEmail(email: string): Promise<{ message: string }> {
+    const response = await this.fetch(
+      `${this.apiUrl}/email-configs/${encodeURIComponent(email)}/set-active`,
+      {
+        method: "PATCH",
+      }
+    );
+    if (!response.ok) {
+      throw new Error("Failed to set active email");
+    }
+    return response.json();
+  }
+
   // async deleteAllEmailConfigs(): Promise<any> {
   //     const response = await this.fetch(`${this.apiUrl}/email-configs/`, {
   //         method: "DELETE",

@@ -216,7 +216,7 @@ export interface AuthContextType {
   refreshEmailConfigs: () => Promise<void>;
 }
 
-export interface MockEmailListProps {
+export interface EmailListProps {
   setSelectedEmail: (email: string) => void;
   setIsDropdownOpen: (isOpen: boolean) => void;
   selectedEmail: string;
