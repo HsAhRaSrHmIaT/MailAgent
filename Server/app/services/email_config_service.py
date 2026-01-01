@@ -85,13 +85,25 @@ class EmailConfigService:
         for config in all_configs:
             config.is_active = False
         
-        # Then activate the selected email
+        # Then activate the selected email (if it exists)
         target_config = await self.get_email_config_by_email(db, user_id, email)
         if target_config:
             target_config.is_active = True
-            await db.commit()
-            return True
-        return False
+        
+        await db.commit()
+        return True  # Always return True, even if we just deactivated all
+
+    async def get_active_email(
+        self, db: AsyncSession, user_id: str
+    ) -> Optional[UserEmailConfigModel]:
+        """Get the currently active email configuration for a user"""
+        result = await db.execute(
+            select(UserEmailConfigModel).where(
+                UserEmailConfigModel.user_id == user_id,
+                UserEmailConfigModel.is_active == True
+            )
+        )
+        return result.scalar_one_or_none()
 
     async def delete_email_config(
         self, db: AsyncSession, user_id: str, email: str

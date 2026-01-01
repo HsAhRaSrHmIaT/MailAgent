@@ -115,7 +115,7 @@ const EmailList = ({
 
 const UserMenu = () => {
   const { currentColors, currentPalette } = useTheme();
-  const { user } = useAuth();
+  const { user, emailConfigs } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedEmail, setSelectedEmail] = useState("default");
   const menuRef = useRef<HTMLDivElement>(null);
@@ -130,6 +130,23 @@ const UserMenu = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    // Only fetch once when user is available
+    if (!user) return;
+
+    apiService
+      .getActiveEmail()
+      .then((response) => {
+        // If the active email is the user's primary email, show it as "default"
+        const activeEmail =
+          response.email === user.email ? "default" : response.email;
+        setSelectedEmail(activeEmail);
+      })
+      .catch(() => {
+        setSelectedEmail("default");
+      });
+  }, [user]);
 
   if (!user) return null;
 

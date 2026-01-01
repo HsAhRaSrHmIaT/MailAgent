@@ -311,6 +311,14 @@ class ApiService {
     return response.json();
   }
 
+  async getActiveEmail(): Promise<EmailConfigResponse> {
+    const response = await this.fetch(`${this.apiUrl}/email-configs/active`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch active email");
+    }
+    return response.json();
+  }
+
   // async deleteAllEmailConfigs(): Promise<any> {
   //     const response = await this.fetch(`${this.apiUrl}/email-configs/`, {
   //         method: "DELETE",

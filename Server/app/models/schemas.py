@@ -20,7 +20,10 @@ class UserLogin(BaseModel):
 class UserUpdate(BaseModel):
     username: Optional[str] = None
     email: Optional[EmailStr] = None
-    profile_picture: Optional[str] = None
+    profile_picture: Optional[str] = Field(None, alias='profilePicture')
+    
+    class Config:
+        populate_by_name = True  # Allow both profile_picture and profilePicture
 
 class UserResponse(BaseModel):
     id: str
