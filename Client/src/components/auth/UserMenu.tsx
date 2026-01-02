@@ -115,7 +115,7 @@ const EmailList = ({
 
 const UserMenu = () => {
   const { currentColors, currentPalette } = useTheme();
-  const { user, emailConfigs } = useAuth();
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedEmail, setSelectedEmail] = useState("default");
   const menuRef = useRef<HTMLDivElement>(null);

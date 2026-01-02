@@ -28,11 +28,18 @@ export interface Message {
       };
 }
 
+export interface ChatHistoryResponse {
+  messages: Message[];
+  hasMore: boolean;
+  total: number;
+}
+
 export interface ChatAreaProps {
   messages: Message[];
   isLoading?: boolean;
   isAIThinking?: boolean;
   isEmailGenerating?: boolean;
+  onScrollToTop?: () => void;
 }
 
 export interface CommandStatusBarProps {
@@ -254,4 +261,11 @@ export interface EmailConfig {
 export interface EmailConfigResponse {
   email: string;
   password: string;
+}
+
+// Add to Client/src/types/index.ts
+export interface ChatHistoryResponse {
+  messages: Message[];
+  hasMore: boolean;
+  total: number;
 }

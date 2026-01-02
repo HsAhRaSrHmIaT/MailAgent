@@ -57,6 +57,19 @@ class UserEmailConfigModel(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
+class ChatMessageModel(Base):
+    __tablename__ = "chat_messages"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String, nullable=False, index=True)
+    message_id = Column(String, unique=True, nullable=False)  # Frontend-generated ID
+    content = Column(Text, nullable=False)
+    sender = Column(String, nullable=False)  # 'user' or 'assistant'
+    tone = Column(String, nullable=True)  # hashtag/tone used
+    message_type = Column(String, default="text")  # 'text' or 'email'
+    email_data = Column(JSON, nullable=True)  # Store email data if type is 'email'
+    timestamp = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 class DatabaseManager:
     def __init__(self):
         self.engine = None

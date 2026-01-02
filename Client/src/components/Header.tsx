@@ -12,7 +12,6 @@ const Header = ({ setMessages }: HeaderProps) => {
   const [status, setStatus] = useState("Offline");
 
   const handleRefresh = () => {
-    // Logic to refresh messages or reset state
     setMessages([]);
   };
 

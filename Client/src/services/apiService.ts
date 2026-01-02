@@ -7,6 +7,8 @@ import type {
   EnvironmentVariableResponse,
   EmailConfig,
   EmailConfigResponse,
+  Message,
+  ChatHistoryResponse,
 } from "../types";
 import { getToken } from "./authService";
 
@@ -319,15 +321,69 @@ class ApiService {
     return response.json();
   }
 
-  // async deleteAllEmailConfigs(): Promise<any> {
-  //     const response = await this.fetch(`${this.apiUrl}/email-configs/`, {
-  //         method: "DELETE",
-  //     });
-  //     if (!response.ok) {
-  //         throw new Error("Failed to delete all email configurations");
-  //     }
-  //     return response.json();
-  // }
+  // Chat History API Methods
+  async saveMessage(message: Message): Promise<void> {
+    await this.fetch(`${this.apiUrl}/chat/messages`, {
+      method: "POST",
+      body: JSON.stringify({
+        message_id: message.id,
+        content: message.content,
+        sender: message.sender,
+        timestamp: message.timestamp.toISOString(),
+        tone: message.hashtag,
+        message_type: message.type || "text",
+        email_data: message.emailData,
+      }),
+    });
+  }
+
+  async getChatHistory(
+    limit: number = 50,
+    beforeTimestamp?: string
+  ): Promise<ChatHistoryResponse> {
+    const params = new URLSearchParams({
+      limit: limit.toString(),
+      ...(beforeTimestamp && { before: beforeTimestamp }),
+    });
+
+    const response = await this.fetch(`${this.apiUrl}/chat/messages?${params}`);
+    if (!response.ok) throw new Error("Failed to fetch chat history");
+
+    const data = (await response.json()) as {
+      messages: Array<{
+        id: string;
+        content: string;
+        sender: string;
+        timestamp: string;
+        hashtag?: string;
+        type: string;
+        emailData?: unknown;
+      }>;
+      hasMore: boolean;
+      total: number;
+    };
+
+    return {
+      messages: data.messages.map((msg) => ({
+        id: msg.id,
+        content: msg.content,
+        sender: msg.sender as "user" | "assistant",
+        timestamp: new Date(msg.timestamp),
+        hashtag: msg.hashtag,
+        type: msg.type as "text" | "email",
+        emailData: msg.emailData as Message["emailData"],
+      })),
+      hasMore: data.hasMore,
+      total: data.total,
+    };
+  }
+
+  async clearChatHistory(): Promise<void> {
+    const response = await this.fetch(`${this.apiUrl}/chat/messages`, {
+      method: "DELETE",
+    });
+    if (!response.ok) throw new Error("Failed to clear chat history");
+  }
 }
 
 export const apiService = new ApiService();
