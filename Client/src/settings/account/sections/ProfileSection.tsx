@@ -69,7 +69,7 @@ const ProfileSection = () => {
     setIsLoading(true);
 
     try {
-      const updatedData: any = { ...formData };
+      const updatedData: any = { ...formData }; /* eslint-disable-line */
 
       // Handle avatar upload if there's a pending file
       if (pendingAvatar) {
@@ -152,10 +152,10 @@ const ProfileSection = () => {
               className="text-xs mt-1"
               style={{ color: currentColors.textSecondary }}
             >
-                Last login:{" "}
-                {user?.lastLogin
-                  ? new Date(user.lastLogin).toLocaleString()
-                  : "N/A"}
+              Last login:{" "}
+              {user?.lastLogin
+                ? new Date(user.lastLogin).toLocaleString()
+                : "N/A"}
             </p>
           </div>
         </div>
@@ -168,7 +168,7 @@ const ProfileSection = () => {
           className="animate-in fade-in duration-300"
         >
           <div
-            className="p-6 rounded-xl border-2 space-y-6 shadow-lg"
+            className="p-4 sm:p-6 rounded-xl border-2 space-y-4 sm:space-y-6 shadow-lg"
             style={{
               backgroundColor: `${currentColors.bg}`,
               borderColor: `${currentPalette.primary}30`,
@@ -177,12 +177,12 @@ const ProfileSection = () => {
           >
             {/* Header */}
             <div
-              className="flex items-center justify-between pb-4 border-b"
+              className="flex items-start sm:items-center justify-between pb-4 border-b gap-2"
               style={{ borderColor: currentColors.border }}
             >
-              <div>
+              <div className="flex-1 min-w-0">
                 <h4
-                  className="font-bold text-xl"
+                  className="font-bold text-lg sm:text-xl truncate"
                   style={{ color: currentPalette.primary }}
                 >
                   Edit Profile
@@ -197,7 +197,7 @@ const ProfileSection = () => {
               <button
                 type="button"
                 onClick={handleCancel}
-                className="p-2 rounded-lg transition-all cursor-pointer hover:opacity-70"
+                className="p-2 rounded-lg transition-all cursor-pointer hover:opacity-70 flex-shrink-0"
                 style={{
                   backgroundColor: `${currentColors.surface}`,
                   color: currentColors.textSecondary,
@@ -210,7 +210,7 @@ const ProfileSection = () => {
 
             {/* Avatar Upload Section */}
             <div
-              className="bg-gradient-to-br from-transparent to-transparent p-5 rounded-xl border"
+              className="bg-gradient-to-br from-transparent to-transparent p-3 sm:p-5 rounded-xl border"
               style={{
                 borderColor: currentColors.border,
                 backgroundColor: `${currentColors.surface}50`,
@@ -240,7 +240,7 @@ const ProfileSection = () => {
                 value={formData.username}
                 onChange={handleChange}
                 placeholder="Enter username"
-                className="w-full p-3 border-2 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                className="w-full p-2 border rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm sm:text-base"
                 style={{
                   backgroundColor: `${currentColors.surface}`,
                   borderColor: `${currentColors.border}`,
@@ -263,7 +263,7 @@ const ProfileSection = () => {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="Enter email"
-                className="w-full p-3 border-2 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                className="w-full p-2 border rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm sm:text-base"
                 style={{
                   backgroundColor: `${currentColors.surface}`,
                   borderColor: `${currentColors.border}`,
@@ -274,14 +274,14 @@ const ProfileSection = () => {
 
             {/* Action Buttons */}
             <div
-              className="flex justify-end gap-3 pt-6 border-t"
+              className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 sm:pt-6 border-t"
               style={{ borderColor: currentColors.border }}
             >
               <button
                 type="button"
                 onClick={handleCancel}
                 disabled={isLoading}
-                className="px-6 py-2.5 rounded-lg font-semibold cursor-pointer transition-all hover:shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto px-6 py-2.5 rounded-lg font-semibold cursor-pointer transition-all hover:shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                 style={{
                   backgroundColor: `${currentColors.surface}`,
                   color: `${currentColors.text}`,
@@ -293,7 +293,7 @@ const ProfileSection = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="px-6 py-2.5 text-white rounded-lg font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                className="w-full sm:w-auto px-6 py-2.5 text-white rounded-lg font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
                 style={{
                   backgroundColor: `${currentPalette.primary}`,
                   boxShadow: `0 2px 8px ${currentPalette.primary}30`,

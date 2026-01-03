@@ -29,6 +29,34 @@ async def get_db():
             await session.close()
 
 
+@router.get("/active", response_model=dict)
+async def get_active_email(
+    current_user: Dict[str, Any] = Depends(get_current_user_from_token),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get the currently active email for the user.
+    Returns the active email or "default" if none is set.
+    """
+    try:
+        active_config = await email_config_service.get_active_email(db, current_user["id"])
+        
+        if not active_config:
+            return {
+                "email": "default",
+                "password": ""
+            }
+        
+        return {
+            "email": active_config.email,
+            "password": email_config_service._decrypt_password(active_config.encrypted_password)
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve active email: {str(e)}"
+        )
+
 @router.get("/", response_model=List[EmailConfigWithPassword])
 async def get_all_email_configs(
     current_user: Dict[str, Any] = Depends(get_current_user_from_token),
@@ -220,7 +248,6 @@ async def set_active_email(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to set active email: {str(e)}"
         )
-
 
 # @router.delete("/", response_model=dict)
 # async def delete_all_email_configs(

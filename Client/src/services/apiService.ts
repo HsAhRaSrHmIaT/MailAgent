@@ -7,6 +7,10 @@ import type {
   EnvironmentVariableResponse,
   EmailConfig,
   EmailConfigResponse,
+  Message,
+  ChatHistoryResponse,
+  EmailHistoryResponse,
+  UsageStats,
 } from "../types";
 import { getToken } from "./authService";
 
@@ -311,15 +315,191 @@ class ApiService {
     return response.json();
   }
 
-  // async deleteAllEmailConfigs(): Promise<any> {
-  //     const response = await this.fetch(`${this.apiUrl}/email-configs/`, {
-  //         method: "DELETE",
-  //     });
-  //     if (!response.ok) {
-  //         throw new Error("Failed to delete all email configurations");
-  //     }
-  //     return response.json();
-  // }
+  async getActiveEmail(): Promise<EmailConfigResponse> {
+    const response = await this.fetch(`${this.apiUrl}/email-configs/active`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch active email");
+    }
+    return response.json();
+  }
+
+  // Chat History API Methods
+  async saveMessage(message: Message): Promise<void> {
+    await this.fetch(`${this.apiUrl}/chat/messages`, {
+      method: "POST",
+      body: JSON.stringify({
+        message_id: message.id,
+        content: message.content,
+        sender: message.sender,
+        timestamp: message.timestamp.toISOString(),
+        tone: message.hashtag,
+        message_type: message.type || "text",
+        email_data: message.emailData,
+      }),
+    });
+  }
+
+  async getChatHistory(
+    limit: number = 50,
+    beforeTimestamp?: string
+  ): Promise<ChatHistoryResponse> {
+    const params = new URLSearchParams({
+      limit: limit.toString(),
+      ...(beforeTimestamp && { before: beforeTimestamp }),
+    });
+
+    const response = await this.fetch(`${this.apiUrl}/chat/messages?${params}`);
+    if (!response.ok) throw new Error("Failed to fetch chat history");
+
+    const data = (await response.json()) as {
+      messages: Array<{
+        id: string;
+        content: string;
+        sender: string;
+        timestamp: string;
+        hashtag?: string;
+        type: string;
+        emailData?: unknown;
+      }>;
+      hasMore: boolean;
+      total: number;
+    };
+
+    return {
+      messages: data.messages.map((msg) => ({
+        id: msg.id,
+        content: msg.content,
+        sender: msg.sender as "user" | "assistant",
+        timestamp: new Date(msg.timestamp),
+        hashtag: msg.hashtag,
+        type: msg.type as "text" | "email",
+        emailData: msg.emailData as Message["emailData"],
+      })),
+      hasMore: data.hasMore,
+      total: data.total,
+    };
+  }
+
+  async clearChatHistory(): Promise<void> {
+    const response = await this.fetch(`${this.apiUrl}/chat/messages`, {
+      method: "DELETE",
+    });
+    if (!response.ok) throw new Error("Failed to clear chat history");
+  }
+
+  // Email History API Methods
+  async saveEmail(
+    emailId: string,
+    toEmail: string,
+    subject: string,
+    body: string,
+    timestamp: Date,
+    tone?: string,
+    prompt?: string,
+    status: string = "unsent"
+  ): Promise<void> {
+    await this.fetch(`${this.apiUrl}/emails`, {
+      method: "POST",
+      body: JSON.stringify({
+        email_id: emailId,
+        to_email: toEmail,
+        subject: subject,
+        body: body,
+        tone: tone,
+        prompt: prompt,
+        timestamp: timestamp.toISOString(),
+        status: status,
+      }),
+    });
+  }
+
+  async getEmailHistory(
+    limit: number = 50,
+    beforeTimestamp?: string
+  ): Promise<EmailHistoryResponse> {
+    const params = new URLSearchParams({
+      limit: limit.toString(),
+      ...(beforeTimestamp && { before: beforeTimestamp }),
+    });
+
+    const response = await this.fetch(`${this.apiUrl}/emails?${params}`);
+    if (!response.ok) throw new Error("Failed to fetch email history");
+
+    const data = (await response.json()) as {
+      emails: Array<{
+        id: string;
+        to_email: string;
+        subject: string;
+        body: string;
+        tone?: string;
+        prompt?: string;
+        status: string;
+        sent_at?: string;
+        regeneration_count: number;
+        version: number;
+        timestamp: string;
+      }>;
+      hasMore: boolean;
+      total: number;
+    };
+
+    return {
+      emails: data.emails.map((email) => ({
+        id: email.id,
+        to_email: email.to_email,
+        subject: email.subject,
+        body: email.body,
+        tone: email.tone,
+        prompt: email.prompt,
+        status: email.status,
+        sent_at: email.sent_at,
+        regeneration_count: email.regeneration_count,
+        version: email.version,
+        timestamp: new Date(email.timestamp),
+      })),
+      hasMore: data.hasMore,
+      total: data.total,
+    };
+  }
+
+  async updateEmail(
+    emailId: string,
+    updates: {
+      status?: string;
+      body?: string;
+      subject?: string;
+      to_email?: string;
+    }
+  ): Promise<void> {
+    const response = await this.fetch(`${this.apiUrl}/emails/${emailId}`, {
+      method: "PATCH",
+      body: JSON.stringify(updates),
+    });
+    if (!response.ok) throw new Error("Failed to update email");
+  }
+
+  async regenerateEmail(emailId: string): Promise<void> {
+    const response = await this.fetch(
+      `${this.apiUrl}/emails/${emailId}/regenerate`,
+      {
+        method: "POST",
+      }
+    );
+    if (!response.ok) throw new Error("Failed to regenerate email");
+  }
+
+  async clearEmailHistory(): Promise<void> {
+    const response = await this.fetch(`${this.apiUrl}/emails`, {
+      method: "DELETE",
+    });
+    if (!response.ok) throw new Error("Failed to clear email history");
+  }
+
+  async getUsageStats(): Promise<UsageStats> {
+    const response = await this.fetch(`${this.apiUrl}/usage-stats`);
+    if (!response.ok) throw new Error("Failed to fetch usage stats");
+    return response.json();
+  }
 }
 
 export const apiService = new ApiService();

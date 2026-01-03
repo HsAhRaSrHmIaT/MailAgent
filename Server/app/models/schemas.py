@@ -20,7 +20,10 @@ class UserLogin(BaseModel):
 class UserUpdate(BaseModel):
     username: Optional[str] = None
     email: Optional[EmailStr] = None
-    profile_picture: Optional[str] = None
+    profile_picture: Optional[str] = Field(None, alias='profilePicture')
+    
+    class Config:
+        populate_by_name = True  # Allow both profile_picture and profilePicture
 
 class UserResponse(BaseModel):
     id: str
@@ -185,3 +188,45 @@ class EmailConfigWithPassword(BaseModel):
 
     class Config:
         from_attributes = True
+
+# Email History Schemas
+class SaveEmailRequest(BaseModel):
+    email_id: str
+    to_email: str
+    subject: str
+    body: str
+    tone: str | None = None
+    prompt: str | None = None
+    timestamp: str  # ISO format
+    status: str = "unsent"
+
+class UpdateEmailRequest(BaseModel):
+    status: str | None = None
+    body: str | None = None
+    subject: str | None = None
+    to_email: str | None = None
+
+class EmailHistoryResponse(BaseModel):
+    id: str
+    to_email: str
+    subject: str
+    body: str
+    tone: str | None = None
+    prompt: str | None = None
+    status: str
+    sent_at: str | None = None
+    regeneration_count: int
+    version: int
+    timestamp: str
+
+class PaginatedEmailsResponse(BaseModel):
+    emails: list[EmailHistoryResponse]
+    hasMore: bool
+    total: int
+
+class UsageStatsResponse(BaseModel):
+    total_emails: int
+    success_rate: float
+    time_saved_hours: float
+    recent_activity: List[dict]
+

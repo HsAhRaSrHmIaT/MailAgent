@@ -26,6 +26,35 @@ export interface Message {
         subject: string;
         body: string;
       };
+  emailId?: string;
+  tone?: string;
+  prompt?: string;
+}
+
+export interface ChatHistoryResponse {
+  messages: Message[];
+  hasMore: boolean;
+  total: number;
+}
+
+export interface EmailHistory {
+  id: string;
+  to_email: string;
+  subject: string;
+  body: string;
+  tone?: string;
+  prompt?: string;
+  status: string;
+  sent_at?: string;
+  regeneration_count: number;
+  version: number;
+  timestamp: Date;
+}
+
+export interface EmailHistoryResponse {
+  emails: EmailHistory[];
+  hasMore: boolean;
+  total: number;
 }
 
 export interface ChatAreaProps {
@@ -33,6 +62,8 @@ export interface ChatAreaProps {
   isLoading?: boolean;
   isAIThinking?: boolean;
   isEmailGenerating?: boolean;
+  onScrollToTop?: () => void;
+  onUpdateMessage?: (messageId: string, updatedEmailData: EmailData) => void;
 }
 
 export interface CommandStatusBarProps {
@@ -66,7 +97,7 @@ export interface HeaderProps {
 }
 
 export interface LoaderProps {
-  variant?: "chat" | "email" | "circle";
+  variant?: "chat" | "email" | "circle" | "list";
   size?: "sm" | "md" | "lg";
 }
 
@@ -111,6 +142,11 @@ export interface HashTagProps {
 
 export interface EmailPreviewBoxProps {
   emailData: EmailData | null;
+  emailId?: string;
+  tone?: string;
+  prompt?: string;
+  onRegenerate?: (newEmailData: EmailData) => void;
+  onUpdate?: (updatedEmailData: EmailData) => void;
 }
 export interface Variable {
   key: string;
@@ -254,4 +290,28 @@ export interface EmailConfig {
 export interface EmailConfigResponse {
   email: string;
   password: string;
+}
+
+export interface ChatHistoryResponse {
+  messages: Message[];
+  hasMore: boolean;
+  total: number;
+}
+
+export interface UsageStats {
+  total_emails: number;
+  success_rate: number;
+  time_saved_hours: number;
+  recent_activity: Array<{
+    action: string;
+    time: string;
+    status: string;
+    tone?: string;
+  }>;
+}
+
+export interface CustomCheckboxProps {
+  checked: boolean;
+  onChange: () => void;
+  label: string;
 }

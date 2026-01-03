@@ -40,8 +40,8 @@ const AvatarUpload = ({
   };
 
   return (
-    <div className="flex justify-start items-start gap-4">
-      <div className="relative group">
+    <div className="flex flex-col sm:flex-row justify-start items-center sm:items-start gap-4">
+      <div className="relative group flex-shrink-0">
         <Avatar
           name={user?.username}
           email={user?.email}
@@ -53,7 +53,7 @@ const AvatarUpload = ({
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="absolute -bottom-1 -right-1 p-1 rounded-full shadow-lg transition-all hover:scale-110 active:scale-95 cursor-pointer"
+          className="absolute -bottom-1 -right-1 p-1.5 sm:p-2 rounded-full shadow-lg transition-all hover:scale-110 active:scale-95 cursor-pointer"
           style={{
             backgroundColor: currentPalette.primary,
             color: "white",
@@ -64,20 +64,21 @@ const AvatarUpload = ({
         </button>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 w-full sm:w-auto items-center sm:items-start">
         {/* Remove button when there's an avatar */}
         {getCurrentAvatarUrl() && (
           <button
             type="button"
             onClick={onRemove}
-            className="flex items-center gap-1 px-2 py-1 rounded-md shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer border border-transparent hover:border-red-500"
+            className="text-xs sm:text-sm font-medium cursor-pointer flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all hover:opacity-80 w-fit"
             style={{
-              backgroundColor: currentColors.surface,
-              color: currentColors.textSecondary,
+              color: currentPalette.primary,
+              backgroundColor: `${currentPalette.primary}10`,
+              border: `1px solid ${currentPalette.primary}30`,
             }}
             title="Remove profile picture"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3 h-3 sm:w-4 sm:h-4" />
             Remove
           </button>
         )}
@@ -91,10 +92,10 @@ const AvatarUpload = ({
         />
 
         {/* File info and status */}
-        <div className="text-center space-y-2">
+        <div className="text-center sm:text-left space-y-2">
           {pendingAvatar && (
             <div
-              className="flex items-center gap-2 text-sm animate-in slide-in-from-top duration-300"
+              className="flex items-center justify-center sm:justify-start gap-2 text-xs sm:text-sm animate-in slide-in-from-top duration-300"
               style={{ color: currentColors.textSecondary }}
             >
               <div
@@ -107,7 +108,7 @@ const AvatarUpload = ({
 
           {removeAvatar && (
             <div
-              className="flex items-center gap-2 text-sm animate-in slide-in-from-top duration-300"
+              className="flex items-center justify-center sm:justify-start gap-2 text-xs sm:text-sm animate-in slide-in-from-top duration-300"
               style={{ color: "#EF4444" }}
             >
               <div className="w-2 h-2 rounded-full animate-pulse bg-red-500" />
@@ -119,8 +120,8 @@ const AvatarUpload = ({
             className="text-xs max-w-xs"
             style={{ color: currentColors.textSecondary }}
           >
-            <FileArchive className="inline w-3 h-3 mr-1" />
-            Max 5MB • <ImageIcon className="inline w-3 h-3 mr-1" />
+            <FileArchive className="inline w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+            Max 5MB • <ImageIcon className="inline w-3 h-3 sm:w-4 sm:h-4 mr-1" />
             JPEG, PNG, GIF, WebP
           </p>
         </div>

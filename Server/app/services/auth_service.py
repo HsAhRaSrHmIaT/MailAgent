@@ -79,25 +79,32 @@ class AuthService:
         if not user:
             return None
         
-        # Update fields if provided
-        if user_data.email is not None:
+        # Get only the fields that were actually set in the request
+        update_data = user_data.model_dump(exclude_unset=True)
+        
+        # Update email if provided
+        if 'email' in update_data:
             # Check if email is already taken by another user
-            existing_user = await self.get_user_by_email(db, user_data.email)
+            existing_user = await self.get_user_by_email(db, update_data['email'])
             if existing_user and existing_user.id != user_id:
                 raise ValueError("Email already taken")
-            user.email = user_data.email
+            user.email = update_data['email']
         
-        if user_data.username is not None:
+        # Update username if provided
+        if 'username' in update_data:
             # Check if username is already taken by another user
-            existing_user = await self.get_user_by_username(db, user_data.username)
+            existing_user = await self.get_user_by_username(db, update_data['username'])
             if existing_user and existing_user.id != user_id:
                 raise ValueError("Username already taken")
-            user.username = user_data.username
+            user.username = update_data['username']
         
-        if user_data.profile_picture is not None:
-            user.profile_picture = user_data.profile_picture
+        # Update profile picture if provided
+        # Empty string means remove (set to NULL)
+        if 'profile_picture' in update_data:
+            profile_pic_value = update_data['profile_picture']
+            user.profile_picture = None if profile_pic_value == "" else profile_pic_value
         
-        user.updated_at = datetime.utcnow()
+        user.updated_at = datetime.now()
         
         await db.commit()
         await db.refresh(user)

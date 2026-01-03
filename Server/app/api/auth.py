@@ -181,7 +181,7 @@ async def update_profile(
     - **username**: New username (optional)
     - **email**: New email (optional)
     """
-    try:
+    try:      
         user = await auth_service.update_user(db, current_user["id"], user_data)
         
         if not user:

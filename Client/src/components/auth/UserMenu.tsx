@@ -131,6 +131,23 @@ const UserMenu = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    // Only fetch once when user is available
+    if (!user) return;
+
+    apiService
+      .getActiveEmail()
+      .then((response) => {
+        // If the active email is the user's primary email, show it as "default"
+        const activeEmail =
+          response.email === user.email ? "default" : response.email;
+        setSelectedEmail(activeEmail);
+      })
+      .catch(() => {
+        setSelectedEmail("default");
+      });
+  }, [user]);
+
   if (!user) return null;
 
   return (
