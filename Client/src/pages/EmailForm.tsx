@@ -44,7 +44,10 @@ const EmailForm = () => {
     sender: "user" | "assistant",
     hashtag?: string,
     type: "text" | "email" = "text",
-    emailData?: EmailData
+    emailData?: EmailData,
+    emailId?: string,
+    tone?: string,
+    prompt?: string
   ) => {
     const newMessage: Message = {
       id: Date.now().toString(),
@@ -54,10 +57,13 @@ const EmailForm = () => {
       hashtag,
       type,
       emailData,
+      emailId,
+      tone,
+      prompt,
     };
     setMessages((prev) => [...prev, newMessage]);
 
-    // Save to database in background (skip emails as requested)
+    // Save text messages to database (emails are saved separately with full context)
     if (type === "text") {
       try {
         await apiService.saveMessage(newMessage);
@@ -104,11 +110,38 @@ const EmailForm = () => {
     const loadChatHistory = async () => {
       setIsLoading(true);
       try {
-        const { messages: history, hasMore } = await apiService.getChatHistory(
-          50
+        // Load both chat messages and emails
+        const [chatResult, emailResult] = await Promise.all([
+          apiService.getChatHistory(50),
+          apiService.getEmailHistory(50),
+        ]);
+
+        // Convert emails to Message format
+        const emailMessages: Message[] = emailResult.emails.map((email) => ({
+          id: email.id,
+          content: "",
+          sender: "assistant" as const,
+          timestamp: new Date(email.timestamp),
+          hashtag: email.tone ? `#${email.tone}` : undefined,
+          type: "email" as const,
+          emailData: {
+            to: email.to_email,
+            subject: email.subject,
+            body: email.body,
+          },
+          emailId: email.id,
+          tone: email.tone,
+          prompt: email.prompt,
+        }));
+
+        // Merge and sort by timestamp
+        const allMessages = [...chatResult.messages, ...emailMessages].sort(
+          (a, b) =>
+            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
         );
-        setMessages(history);
-        setHasMoreMessages(hasMore);
+
+        setMessages(allMessages);
+        setHasMoreMessages(chatResult.hasMore || emailResult.hasMore);
       } catch (error) {
         console.error("Failed to load chat history:", error);
       } finally {
@@ -126,14 +159,40 @@ const EmailForm = () => {
     setIsLoadingOlder(true);
     try {
       const oldestMessage = messages[0];
-      const { messages: olderMessages, hasMore } =
-        await apiService.getChatHistory(
-          50,
-          oldestMessage.timestamp.toISOString()
-        );
+      const beforeTimestamp = oldestMessage.timestamp.toISOString();
+
+      // Load both older chat messages and emails
+      const [chatResult, emailResult] = await Promise.all([
+        apiService.getChatHistory(50, beforeTimestamp),
+        apiService.getEmailHistory(50, beforeTimestamp),
+      ]);
+
+      // Convert emails to Message format
+      const emailMessages: Message[] = emailResult.emails.map((email) => ({
+        id: email.id,
+        content: "",
+        sender: "assistant" as const,
+        timestamp: new Date(email.timestamp),
+        hashtag: email.tone ? `#${email.tone}` : undefined,
+        type: "email" as const,
+        emailData: {
+          to: email.to_email,
+          subject: email.subject,
+          body: email.body,
+        },
+        emailId: email.id,
+        tone: email.tone,
+        prompt: email.prompt,
+      }));
+
+      // Merge and sort older messages
+      const olderMessages = [...chatResult.messages, ...emailMessages].sort(
+        (a, b) =>
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      );
 
       setMessages((prev) => [...olderMessages, ...prev]);
-      setHasMoreMessages(hasMore);
+      setHasMoreMessages(chatResult.hasMore || emailResult.hasMore);
     } catch (error) {
       console.error("Failed to load older messages:", error);
     } finally {
@@ -156,9 +215,12 @@ const EmailForm = () => {
             console.log("Chat history cleared!");
             setMessages([]);
 
-            // Clear from database
-            apiService.clearChatHistory().catch((err) => {
-              console.error("Failed to clear chat history:", err);
+            // Clear both chat messages and emails from database
+            Promise.all([
+              apiService.clearChatHistory(),
+              apiService.clearEmailHistory(),
+            ]).catch((err) => {
+              console.error("Failed to clear history:", err);
             });
 
             // Reset command state
@@ -300,11 +362,39 @@ const EmailForm = () => {
               tone: hashTag.replace("#", "") || undefined,
             });
             if (response.success && response.email) {
-              addMessage("", "assistant", undefined, "email", {
-                to: response.email.to,
-                subject: response.email.subject,
-                body: response.email.body,
-              });
+              const emailId = Date.now().toString();
+
+              // Add email message to chat
+              addMessage(
+                "",
+                "assistant",
+                hashTag || undefined,
+                "email",
+                {
+                  to: response.email.to,
+                  subject: response.email.subject,
+                  body: response.email.body,
+                },
+                emailId,
+                hashTag.replace("#", "") || undefined,
+                newData.prompt
+              );
+
+              // Save email to database with prompt
+              try {
+                await apiService.saveEmail(
+                  emailId,
+                  response.email.to,
+                  response.email.subject,
+                  response.email.body,
+                  new Date(),
+                  hashTag.replace("#", "") || undefined,
+                  newData.prompt,
+                  "unsent"
+                );
+              } catch (error) {
+                console.error("Failed to save email to database:", error);
+              }
             } else {
               addMessage(
                 `❌Failed to generate email: ${
@@ -421,6 +511,18 @@ const EmailForm = () => {
     setMessage("");
   };
 
+  // Handle email message updates (for Edit and Regenerate)
+  const handleUpdateMessage = (
+    messageId: string,
+    updatedEmailData: EmailData
+  ) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === messageId ? { ...msg, emailData: updatedEmailData } : msg
+      )
+    );
+  };
+
   // Get current placeholder text
   const getPlaceholder = () => {
     if (commandState.isActive) {
@@ -455,6 +557,7 @@ const EmailForm = () => {
             isAIThinking={isAIThinking}
             isEmailGenerating={isEmailGenerating}
             onScrollToTop={loadOlderMessages}
+            onUpdateMessage={handleUpdateMessage}
           />
 
           {/* Command Status Bar */}

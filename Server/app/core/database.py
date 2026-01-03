@@ -70,6 +70,28 @@ class ChatMessageModel(Base):
     email_data = Column(JSON, nullable=True)  # Store email data if type is 'email'
     timestamp = Column(DateTime(timezone=True), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class EmailMessageModel(Base):
+    __tablename__ = "email_messages"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String, nullable=False, index=True)
+    email_id = Column(String, unique=True, nullable=False)
+    to_email = Column(String, nullable=False)
+    subject = Column(Text, nullable=False)
+    body = Column(Text, nullable=False)
+    tone = Column(String, nullable=True)
+    prompt = Column(Text, nullable=True)
+
+    # New fields for actions:
+    status = Column(String, default="draft")  # "draft", "sent", "unsent"
+    sent_at = Column(DateTime(timezone=True), nullable=True)  # When email was sent
+    regeneration_count = Column(Integer, default=0)  # How many times regenerated
+    version = Column(Integer, default=1)  # Track email versions after edits
+    
+    timestamp = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 class DatabaseManager:
     def __init__(self):
         self.engine = None

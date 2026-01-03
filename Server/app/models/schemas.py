@@ -188,3 +188,39 @@ class EmailConfigWithPassword(BaseModel):
 
     class Config:
         from_attributes = True
+
+# Email History Schemas
+class SaveEmailRequest(BaseModel):
+    email_id: str
+    to_email: str
+    subject: str
+    body: str
+    tone: str | None = None
+    prompt: str | None = None
+    timestamp: str  # ISO format
+    status: str = "unsent"
+
+class UpdateEmailRequest(BaseModel):
+    status: str | None = None
+    body: str | None = None
+    subject: str | None = None
+    to_email: str | None = None
+
+class EmailHistoryResponse(BaseModel):
+    id: str
+    to_email: str
+    subject: str
+    body: str
+    tone: str | None = None
+    prompt: str | None = None
+    status: str
+    sent_at: str | None = None
+    regeneration_count: int
+    version: int
+    timestamp: str
+
+class PaginatedEmailsResponse(BaseModel):
+    emails: list[EmailHistoryResponse]
+    hasMore: bool
+    total: int
+

@@ -26,10 +26,33 @@ export interface Message {
         subject: string;
         body: string;
       };
+  emailId?: string;
+  tone?: string;
+  prompt?: string;
 }
 
 export interface ChatHistoryResponse {
   messages: Message[];
+  hasMore: boolean;
+  total: number;
+}
+
+export interface EmailHistory {
+  id: string;
+  to_email: string;
+  subject: string;
+  body: string;
+  tone?: string;
+  prompt?: string;
+  status: string;
+  sent_at?: string;
+  regeneration_count: number;
+  version: number;
+  timestamp: Date;
+}
+
+export interface EmailHistoryResponse {
+  emails: EmailHistory[];
   hasMore: boolean;
   total: number;
 }
@@ -40,6 +63,7 @@ export interface ChatAreaProps {
   isAIThinking?: boolean;
   isEmailGenerating?: boolean;
   onScrollToTop?: () => void;
+  onUpdateMessage?: (messageId: string, updatedEmailData: EmailData) => void;
 }
 
 export interface CommandStatusBarProps {
@@ -118,6 +142,11 @@ export interface HashTagProps {
 
 export interface EmailPreviewBoxProps {
   emailData: EmailData | null;
+  emailId?: string;
+  tone?: string;
+  prompt?: string;
+  onRegenerate?: (newEmailData: EmailData) => void;
+  onUpdate?: (updatedEmailData: EmailData) => void;
 }
 export interface Variable {
   key: string;

@@ -12,6 +12,7 @@ const ChatArea = ({
   isAIThinking = false,
   isEmailGenerating = false,
   onScrollToTop,
+  onUpdateMessage,
 }: ChatAreaProps) => {
   const chatAreaRef = useRef<HTMLDivElement>(null);
   const { currentColors, currentPalette } = useTheme();
@@ -72,7 +73,22 @@ const ChatArea = ({
               <div className="flex flex-col">
                 {message.type === "email" ? (
                   <div className="max-w-xs sm:max-w-sm lg:max-w-md">
-                    <EmailPreviewBox emailData={message.emailData || null} />
+                    <EmailPreviewBox
+                      emailData={message.emailData || null}
+                      emailId={message.emailId}
+                      tone={message.tone}
+                      prompt={message.prompt}
+                      onRegenerate={(newEmailData) => {
+                        if (onUpdateMessage) {
+                          onUpdateMessage(message.id, newEmailData);
+                        }
+                      }}
+                      onUpdate={(updatedEmailData) => {
+                        if (onUpdateMessage) {
+                          onUpdateMessage(message.id, updatedEmailData);
+                        }
+                      }}
+                    />
                   </div>
                 ) : (
                   <div
