@@ -309,3 +309,9 @@ export interface UsageStats {
     tone?: string;
   }>;
 }
+
+export interface CustomCheckboxProps {
+  checked: boolean;
+  onChange: () => void;
+  label: string;
+}
