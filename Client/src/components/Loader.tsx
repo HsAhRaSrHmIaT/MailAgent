@@ -14,6 +14,7 @@ const Loader = ({ variant = "chat", size = "sm" }: LoaderProps) => {
         chat: "flex justify-center space-x-1 p-2 rounded items-center",
         email: "flex justify-center space-x-1 my-4 items-center p-2 rounded h-72 sm:w-80 sm:h-72",
         circle: "flex justify-center space-x-1",
+        list: "flex flex-col space-y-2 w-full",
     };
  
     const renderChatLoader = () => (
@@ -59,8 +60,20 @@ const Loader = ({ variant = "chat", size = "sm" }: LoaderProps) => {
     const renderCircleLoader = () => (
         <div
             className={`${sizeClasses[size]} border-3 rounded-full animate-spin`}
-            style={{ borderTopColor: currentColors.text }}
+            style={{ borderTopColor: currentColors.text, borderRightColor: currentColors.text + "33", borderBottomColor: currentColors.text + "33", borderLeftColor: currentColors.text + "33" }}
         />
+    );
+
+    const renderListLoader = () => (
+        <div className="flex flex-col space-y-2 w-full animate-pulse">
+            {[...Array(3)].map((_, index) => (
+                <div
+                    key={index}
+                    className="h-12 rounded"
+                    style={{ backgroundColor: currentColors.bg }}
+                />
+            ))}
+        </div>
     );
 
     const renderLoader = () => {
@@ -71,6 +84,8 @@ const Loader = ({ variant = "chat", size = "sm" }: LoaderProps) => {
                 return renderEmailLoader();
             case "circle":
                 return renderCircleLoader();
+            case "list":
+                return renderListLoader();
             default:
                 return renderChatLoader();
         }
@@ -89,6 +104,7 @@ const Loader = ({ variant = "chat", size = "sm" }: LoaderProps) => {
 // Named exports for convenience
 export const ChatLoader = () => <Loader variant="chat" />;
 export const EmailGenerateLoader = () => <Loader variant="email" />;
+export const ListLoader = () => <Loader variant="list" />;
 export const CircleLoader = (props?: Partial<LoaderProps>) => (
     <Loader variant="circle" {...props} />
 );

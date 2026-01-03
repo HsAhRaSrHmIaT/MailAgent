@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete, func
+from sqlalchemy import select, delete, func, or_
 from app.core.database import EmailMessageModel
 from datetime import datetime
 from typing import List, Optional
@@ -128,6 +128,60 @@ class EmailService:
         )
         result = await db.execute(query)
         return result.scalar() or 0
+    
+    async def get_usage_stats(
+        self,
+        db: AsyncSession,
+        user_id: str
+    ) -> dict:
+        """Get user usage statistics"""
+        # Total emails count
+        total_emails = await self.get_email_count(db, user_id)
+        
+        # Count successful emails (sent or low regeneration count)
+        success_query = select(func.count(EmailMessageModel.id)).where(
+            EmailMessageModel.user_id == user_id,
+            or_(
+                EmailMessageModel.status == "sent",
+                EmailMessageModel.regeneration_count <= 1
+            )
+        )
+        result = await db.execute(success_query)
+        successful_emails = result.scalar() or 0
+        
+        # Calculate success rate
+        success_rate = round((successful_emails / total_emails * 100), 1) if total_emails > 0 else 0
+        
+        # Calculate time saved (assume 10 minutes per email)
+        minutes_per_email = 10
+        total_minutes_saved = total_emails * minutes_per_email
+        hours_saved = round(total_minutes_saved / 60, 1)
+        
+        # Get recent 10 activities (emails)
+        query = select(EmailMessageModel).where(
+            EmailMessageModel.user_id == user_id
+        ).order_by(EmailMessageModel.timestamp.desc()).limit(10)
+        
+        result = await db.execute(query)
+        recent_emails = result.scalars().all()
+        
+        # Format recent activities
+        recent_activity = [
+            {
+                "action": f"Generated email to {email.to_email}",
+                "time": email.timestamp,  # Frontend will format this
+                "status": email.status,
+                "tone": email.tone
+            }
+            for email in recent_emails
+        ]
+        
+        return {
+            "total_emails": total_emails,
+            "success_rate": success_rate,
+            "time_saved_hours": hours_saved,
+            "recent_activity": recent_activity
+        }
     
     async def clear_user_emails(
         self,

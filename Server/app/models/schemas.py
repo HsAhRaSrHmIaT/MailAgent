@@ -224,3 +224,9 @@ class PaginatedEmailsResponse(BaseModel):
     hasMore: bool
     total: int
 
+class UsageStatsResponse(BaseModel):
+    total_emails: int
+    success_rate: float
+    time_saved_hours: float
+    recent_activity: List[dict]
+

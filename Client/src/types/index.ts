@@ -97,7 +97,7 @@ export interface HeaderProps {
 }
 
 export interface LoaderProps {
-  variant?: "chat" | "email" | "circle";
+  variant?: "chat" | "email" | "circle" | "list";
   size?: "sm" | "md" | "lg";
 }
 
@@ -292,9 +292,20 @@ export interface EmailConfigResponse {
   password: string;
 }
 
-// Add to Client/src/types/index.ts
 export interface ChatHistoryResponse {
   messages: Message[];
   hasMore: boolean;
   total: number;
+}
+
+export interface UsageStats {
+  total_emails: number;
+  success_rate: number;
+  time_saved_hours: number;
+  recent_activity: Array<{
+    action: string;
+    time: string;
+    status: string;
+    tone?: string;
+  }>;
 }

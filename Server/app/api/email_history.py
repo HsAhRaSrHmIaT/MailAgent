@@ -8,7 +8,8 @@ from app.models.schemas import (
     SaveEmailRequest,
     UpdateEmailRequest,
     EmailHistoryResponse,
-    PaginatedEmailsResponse
+    PaginatedEmailsResponse,
+    UsageStatsResponse
 )
 from datetime import datetime
 
@@ -155,3 +156,15 @@ async def clear_emails(
         user_id=current_user["id"]
     )
     return {"success": True, "message": "Email history cleared"}
+
+@router.get("/usage-stats", response_model=UsageStatsResponse)
+async def get_usage_stats(
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user_from_token)
+):
+    """Get user usage statistics"""
+    stats = await email_service.get_usage_stats(
+        db=db,
+        user_id=current_user["id"]
+    )
+    return stats

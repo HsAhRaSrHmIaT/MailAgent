@@ -21,6 +21,7 @@ const EmailPreviewBox = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [actionInProgress, setActionInProgress] = useState<string | null>(null);
   const [editedSubject, setEditedSubject] = useState(emailData?.subject || "");
   const [editedBody, setEditedBody] = useState(emailData?.body || "");
   const [editedTo, setEditedTo] = useState(emailData?.to || "");
@@ -43,6 +44,7 @@ const EmailPreviewBox = ({
     }
 
     setIsLoading(true);
+    setActionInProgress("sending");
     try {
       // Update email status to "sent" in database
       await apiService.updateEmail(emailId, {
@@ -61,6 +63,7 @@ const EmailPreviewBox = ({
       toast.error("Failed to mark email as sent");
     } finally {
       setIsLoading(false);
+      setActionInProgress(null);
     }
   };
 
@@ -70,12 +73,15 @@ const EmailPreviewBox = ({
       return;
     }
 
+    setActionInProgress("draft");
     try {
       await apiService.updateEmail(emailId, { status: "draft" });
       toast.success("Saved as draft");
     } catch (error) {
       console.error("Failed to save draft:", error);
       toast.error("Failed to save draft");
+    } finally {
+      setActionInProgress(null);
     }
   };
 
@@ -98,6 +104,7 @@ const EmailPreviewBox = ({
       return;
     }
 
+    setActionInProgress("editing");
     try {
       await apiService.updateEmail(emailId, {
         subject: editedSubject,
@@ -119,6 +126,8 @@ const EmailPreviewBox = ({
     } catch (error) {
       console.error("Failed to save edits:", error);
       toast.error("Failed to save changes");
+    } finally {
+      setActionInProgress(null);
     }
   };
 
@@ -136,6 +145,7 @@ const EmailPreviewBox = ({
     }
 
     setIsRegenerating(true);
+    setActionInProgress("regenerating");
     try {
       const response = await apiService.generateEmail({
         receiverEmail: emailData?.to || "",
@@ -175,6 +185,7 @@ const EmailPreviewBox = ({
       toast.error("Failed to regenerate email");
     } finally {
       setIsRegenerating(false);
+      setActionInProgress(null);
     }
   };
 
@@ -183,6 +194,8 @@ const EmailPreviewBox = ({
     if (sent) return "Sent";
     return "Send";
   };
+
+  const isAnyActionInProgress = actionInProgress !== null;
 
   return (
     <div
@@ -280,41 +293,47 @@ const EmailPreviewBox = ({
         {!isEditing ? (
           <>
             <button
-              className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm w-14 sm:w-16 shadow-sm"
+              className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm w-14 sm:w-16 shadow-sm cursor-pointer hover:opacity-60 flex-shrink-0 disabled:cursor-not-allowed"
               style={{
                 borderColor: currentColors.border,
                 color: currentColors.text,
               }}
               onClick={sendEmail}
-              disabled={isLoading}
+              disabled={isLoading || sent || isAnyActionInProgress}
             >
               {getButtonText()}
             </button>
             <button
-              className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm flex-shrink-0"
+              className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm cursor-pointer hover:opacity-60 flex-shrink-0 disabled:cursor-not-allowed"
               style={{
                 borderColor: currentColors.border,
               }}
               onClick={saveAsDraft}
+              disabled={isAnyActionInProgress}
             >
-              Save as Draft
+              {actionInProgress === "draft" ? (
+                <CircleLoader size="sm" />
+              ) : (
+                "Save as Draft"
+              )}
             </button>
             <button
-              className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm flex-shrink-0"
+              className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm cursor-pointer hover:opacity-60 flex-shrink-0 disabled:cursor-not-allowed"
               style={{
                 borderColor: currentColors.border,
               }}
               onClick={handleEdit}
+              disabled={isAnyActionInProgress}
             >
               Edit
             </button>
             <button
-              className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm flex-shrink-0"
+              className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm cursor-pointer hover:opacity-60 flex-shrink-0 disabled:cursor-not-allowed"
               style={{
                 borderColor: currentColors.border,
               }}
               onClick={handleRegenerate}
-              disabled={isRegenerating || !prompt}
+              disabled={isRegenerating || !prompt || isAnyActionInProgress}
             >
               {isRegenerating ? <CircleLoader size="sm" /> : "Regenerate"}
             </button>
@@ -322,29 +341,35 @@ const EmailPreviewBox = ({
         ) : (
           <>
             <button
-              className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm flex-shrink-0"
+              className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm cursor-pointer hover:opacity-60 flex-shrink-0 disabled:cursor-not-allowed"
               style={{
                 borderColor: currentColors.border,
                 backgroundColor: currentPalette.primary,
                 color: "white",
               }}
               onClick={handleEdit}
+              disabled={isAnyActionInProgress}
             >
-              Save Changes
+              {actionInProgress === "saving" ? (
+                <CircleLoader size="sm" />
+              ) : (
+                "Save Changes"
+              )}
             </button>
             <button
-              className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm flex-shrink-0"
+              className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm cursor-pointer hover:opacity-60 flex-shrink-0 disabled:cursor-not-allowed"
               style={{
                 borderColor: currentColors.border,
               }}
               onClick={cancelEdit}
+              disabled={isAnyActionInProgress}
             >
               Cancel
             </button>
           </>
         )}
         <button
-          className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm flex-shrink-0"
+          className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm cursor-pointer hover:opacity-60 flex-shrink-0"
           style={{
             borderColor: currentColors.border,
           }}
@@ -357,7 +382,7 @@ const EmailPreviewBox = ({
           )}
         </button>
         <button
-          className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm flex-shrink-0"
+          className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm cursor-not-allowed hover:opacity-60 flex-shrink-0"
           style={{
             borderColor: currentColors.border,
             color: currentColors.textSecondary,

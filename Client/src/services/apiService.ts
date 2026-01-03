@@ -9,8 +9,8 @@ import type {
   EmailConfigResponse,
   Message,
   ChatHistoryResponse,
-  EmailHistory,
   EmailHistoryResponse,
+  UsageStats,
 } from "../types";
 import { getToken } from "./authService";
 
@@ -493,6 +493,12 @@ class ApiService {
       method: "DELETE",
     });
     if (!response.ok) throw new Error("Failed to clear email history");
+  }
+
+  async getUsageStats(): Promise<UsageStats> {
+    const response = await this.fetch(`${this.apiUrl}/usage-stats`);
+    if (!response.ok) throw new Error("Failed to fetch usage stats");
+    return response.json();
   }
 }
 

@@ -69,7 +69,7 @@ const ProfileSection = () => {
     setIsLoading(true);
 
     try {
-      const updatedData: any = { ...formData };
+      const updatedData: any = { ...formData }; /* eslint-disable-line */
 
       // Handle avatar upload if there's a pending file
       if (pendingAvatar) {
