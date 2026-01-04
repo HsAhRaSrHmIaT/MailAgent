@@ -16,6 +16,8 @@ class UserModel(Base):
     password_hash = Column(String, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     profile_picture = Column(String, nullable=True)
+    reset_token = Column(String, nullable=True)
+    reset_token_expires = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     last_login = Column(DateTime(timezone=True), nullable=True)

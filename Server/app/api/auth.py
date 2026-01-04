@@ -2,9 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 import cloudinary
 import cloudinary.uploader
-from typing import Optional
+# from typing import Optional
+from app.core.config import settings
 
-from app.models.schemas import UserCreate, UserLogin, UserUpdate, UserResponse, Token
+from app.models.schemas import UserCreate, UserLogin, UserUpdate, UserResponse, Token, ForgotPasswordRequest, VerifyResetTokenRequest, ResetPasswordRequest, MessageResponse
 from app.services.auth_service import auth_service
 from app.core.security import get_current_user_from_token
 from app.core.database import DatabaseManager
@@ -299,3 +300,77 @@ async def upload_avatar(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to upload avatar: {str(e)}"
         )
+
+
+@router.post("/forgot-password", response_model=MessageResponse)
+async def forgot_password(request: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Request a password reset token.
+    
+    - **email**: User's email address
+    
+    Returns success even if email doesn't exist (security best practice).
+    """
+    try:
+        reset_token = await auth_service.create_password_reset_token(db, request.email)
+        
+        if reset_token:
+            # TODO: Send email with reset link
+            # For now, we'll just log it (in production, send an email)
+            reset_link = f"{settings.client_url}/reset-password?token={reset_token}"
+            print(f"Password reset link: {reset_link}")
+            # In production: send_reset_email(request.email, reset_link)
+        
+        # Always return success to prevent email enumeration
+        return MessageResponse(
+            message="If the email exists, a password reset link has been sent",
+            success=True
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to process request: {str(e)}"
+        )
+
+
+@router.post("/verify-reset-token", response_model=MessageResponse)
+async def verify_reset_token(request: VerifyResetTokenRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Verify if a password reset token is valid.
+    
+    - **token**: The reset token to verify
+    """
+    user = await auth_service.verify_reset_token(db, request.token)
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token"
+        )
+    
+    return MessageResponse(
+        message="Token is valid",
+        success=True
+    )
+
+
+@router.post("/reset-password", response_model=MessageResponse)
+async def reset_password(request: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Reset password using a valid reset token.
+    
+    - **token**: The password reset token
+    - **new_password**: The new password
+    """
+    success = await auth_service.reset_password(db, request.token, request.new_password)
+    
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token"
+        )
+    
+    return MessageResponse(
+        message="Password reset successfully",
+        success=True
+    )

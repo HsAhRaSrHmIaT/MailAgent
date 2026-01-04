@@ -1,8 +1,9 @@
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 import uuid
+import secrets
 
 from app.core.database import UserModel
 from app.core.security import get_password_hash, verify_password, create_access_token
@@ -51,7 +52,7 @@ class AuthService:
             return None
         
         # Update last login
-        user.last_login = datetime.utcnow()
+        user.last_login = datetime.now()
         await db.commit()
         await db.refresh(user)
         
@@ -121,6 +122,58 @@ class AuthService:
             }
         )
         return Token(access_token=access_token)
+    
+    async def create_password_reset_token(self, db: AsyncSession, email: str) -> Optional[str]:
+        """Generate a password reset token for a user."""
+        user = await self.get_user_by_email(db, email)
+        
+        if not user:
+            return None
+        
+        # Generate a secure random token
+        reset_token = secrets.token_urlsafe(32)
+        
+        # Set token expiration (1 hour from now)
+        user.reset_token = reset_token
+        user.reset_token_expires = datetime.now(timezone.utc) + timedelta(hours=1)
+        
+        await db.commit()
+        await db.refresh(user)
+        
+        return reset_token
+    
+    async def verify_reset_token(self, db: AsyncSession, token: str) -> Optional[UserModel]:
+        """Verify a password reset token and return the user if valid."""
+        query = select(UserModel).where(UserModel.reset_token == token)
+        result = await db.execute(query)
+        user = result.scalar_one_or_none()
+        
+        if not user:
+            return None
+        
+        # Check if token has expired
+        if user.reset_token_expires and user.reset_token_expires < datetime.now(timezone.utc):
+            return None
+        
+        return user
+    
+    async def reset_password(self, db: AsyncSession, token: str, new_password: str) -> bool:
+        """Reset user password using a valid reset token."""
+        user = await self.verify_reset_token(db, token)
+        
+        if not user:
+            return False
+        
+        # Update password
+        user.password_hash = get_password_hash(new_password)
+        
+        # Clear reset token
+        user.reset_token = None
+        user.reset_token_expires = None
+        
+        await db.commit()
+        
+        return True
 
 
 auth_service = AuthService()

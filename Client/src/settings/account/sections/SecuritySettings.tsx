@@ -1,6 +1,6 @@
 import { useTheme } from "../../../contexts/ThemeContext";
 import { useState, useEffect } from "react";
-import CustomCheckbox from "../../../hooks/customCheckbox";
+import CustomCheckbox from "../../../hooks/Checkbox";
 
 const SecuritySettings = () => {
   const { currentColors } = useTheme();

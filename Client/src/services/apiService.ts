@@ -500,6 +500,49 @@ class ApiService {
     if (!response.ok) throw new Error("Failed to fetch usage stats");
     return response.json();
   }
+
+  async forgotPassword(
+    email: string
+  ): Promise<{ message: string; success: boolean }> {
+    const response = await fetch(`${this.apiUrl}/auth/forgot-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
+    if (!response.ok) throw new Error("Failed to send reset link");
+    return response.json();
+  }
+
+  async verifyResetToken(
+    token: string
+  ): Promise<{ message: string; success: boolean }> {
+    const response = await fetch(`${this.apiUrl}/auth/verify-reset-token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ token }),
+    });
+    if (!response.ok) throw new Error("Invalid or expired token");
+    return response.json();
+  }
+
+  async resetPassword(
+    token: string,
+    newPassword: string
+  ): Promise<{ message: string; success: boolean }> {
+    const response = await fetch(`${this.apiUrl}/auth/reset-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ token, new_password: newPassword }),
+    });
+    if (!response.ok) throw new Error("Failed to reset password");
+    return response.json();
+  }
 }
 
 export const apiService = new ApiService();

@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     db_ssl_mode: str = os.getenv("DB_SSL_MODE", "require")
 
     # Server Settings
+    client_url: str = os.getenv("CLIENT_URL", "http://localhost:5173")
     host: str = os.getenv("HOST", "localhost")
     port: int = os.getenv("PORT", 8000)
     debug: bool = False
