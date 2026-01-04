@@ -60,6 +60,13 @@ class MessageResponse(BaseModel):
     message: str
     success: bool = True
 
+class VerifyOTPRequest(BaseModel):
+    email: EmailStr
+    otp: str
+
+class ResendOTPRequest(BaseModel):
+    email: EmailStr
+
 
 class LogLevel(str, Enum):
     DEBUG = "DEBUG"

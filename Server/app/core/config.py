@@ -11,8 +11,10 @@ class Settings(BaseSettings):
     # murf_api_key: Optional[str] = os.getenv("MURF_API_KEY")
     # murf_api_url: Optional[str] = os.getenv("MURF_API_URL")
     # assemblyai_api_key: Optional[str] = os.getenv("ASSEMBLYAI_API_KEY")
-    sender_email: Optional[str] = os.getenv("SENDER_EMAIL")
-    email_password: Optional[str] = os.getenv("EMAIL_PASSWORD")
+    # sender_email: Optional[str] = os.getenv("SENDER_EMAIL")
+    # email_password: Optional[str] = os.getenv("EMAIL_PASSWORD")
+    agent_email: Optional[str] = os.getenv("AGENT_EMAIL")
+    agent_email_password: Optional[str] = os.getenv("AGENT_EMAIL_PASSWORD")
 
     # Database Settings (NeonDB PostgreSQL)
     database_url: Optional[str] = os.getenv("DATABASE_URL")

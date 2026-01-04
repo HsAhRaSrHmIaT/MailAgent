@@ -103,8 +103,17 @@ const Register = () => {
       });
 
       if (response.success) {
-        toast.success("Account created successfully! Welcome aboard.");
-        navigate("/email-form");
+        if (response.requiresVerification) {
+          // Redirect to OTP verification page
+          toast.success(
+            "Registration successful! Please check your email for verification code."
+          );
+          navigate("/verify-email", { state: { email: formData.email } });
+        } else {
+          // Old flow (shouldn't happen with new implementation)
+          toast.success("Account created successfully! Welcome aboard.");
+          navigate("/email-form");
+        }
       } else {
         toast.error(response.error || "Registration failed. Please try again.");
       }
@@ -494,10 +503,12 @@ const Register = () => {
         </div>
 
         {/* Back to Home */}
-        <div className="mt-6 text-center border rounded-4xl p-3 w-fit mx-auto hover:opacity-80 transition-opacity duration-300 cursor-pointer"
-            style={{ borderColor: currentColors.border,
-                backgroundColor: currentColors.surface
-             }}
+        <div
+          className="mt-6 text-center border rounded-4xl p-3 w-fit mx-auto hover:opacity-80 transition-opacity duration-300 cursor-pointer"
+          style={{
+            borderColor: currentColors.border,
+            backgroundColor: currentColors.surface,
+          }}
         >
           <Link
             to="/"

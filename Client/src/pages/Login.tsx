@@ -56,7 +56,22 @@ const Login = () => {
         toast.success("Login successful! Welcome back.");
         navigate("/email-form");
       } else {
-        toast.error(response.error || "Login failed. Please try again.");
+        const errorMessage =
+          response.error || "Login failed. Please try again.";
+
+        // Check if error is about email verification
+        if (
+          errorMessage.includes("verify your email") ||
+          errorMessage.includes("verification")
+        ) {
+          toast.error("Please verify your email before logging in.");
+          // Redirect to verify-email page
+          setTimeout(() => {
+            navigate("/verify-email", { state: { email: formData.email } });
+          }, 2000);
+        } else {
+          toast.error(errorMessage);
+        }
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "An error occurred");

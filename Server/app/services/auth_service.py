@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 import uuid
 import secrets
+import random
 
 from app.core.database import UserModel
 from app.core.security import get_password_hash, verify_password, create_access_token
@@ -170,6 +171,49 @@ class AuthService:
         # Clear reset token
         user.reset_token = None
         user.reset_token_expires = None
+        
+        await db.commit()
+        
+        return True
+    
+    async def generate_otp(self, db: AsyncSession, email: str) -> Optional[str]:
+        """Generate a 6-digit OTP for email verification."""
+        user = await self.get_user_by_email(db, email)
+        
+        if not user:
+            return None
+        
+        # Generate a 6-digit OTP
+        otp = str(random.randint(100000, 999999))
+        
+        # Set OTP expiration (10 minutes from now)
+        user.otp_code = otp
+        user.otp_expires = datetime.now(timezone.utc) + timedelta(minutes=10)
+        
+        await db.commit()
+        await db.refresh(user)
+        
+        return otp
+    
+    async def verify_otp(self, db: AsyncSession, email: str, otp: str) -> bool:
+        """Verify the OTP and mark user as verified."""
+        user = await self.get_user_by_email(db, email)
+        
+        if not user:
+            return False
+        
+        # Check if OTP matches
+        if user.otp_code != otp:
+            return False
+        
+        # Check if OTP has expired
+        if user.otp_expires and user.otp_expires < datetime.now(timezone.utc):
+            return False
+        
+        # Mark user as verified and clear OTP
+        user.is_verified = True
+        user.otp_code = None
+        user.otp_expires = None
         
         await db.commit()
         
