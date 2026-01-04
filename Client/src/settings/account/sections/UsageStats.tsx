@@ -115,6 +115,13 @@ const UsageStats = () => {
         <div className="space-y-2 overflow-y-auto max-h-48 pr-2">
           {isLoading ? (
             <ListLoader />
+          ) : recentActivity.length === 0 ? (
+            <div
+              className="flex items-center justify-center p-4 text-md border rounded-lg"
+              style={{ color: currentColors.textSecondary }}
+            >
+              <p className="text-center">No recent activity</p>
+            </div>
           ) : (
             recentActivity.map((activity, i) => (
               <div

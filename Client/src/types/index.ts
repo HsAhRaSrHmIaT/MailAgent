@@ -237,6 +237,7 @@ export interface AuthResponse {
   token?: string;
   message?: string;
   error?: string;
+  requiresVerification?: boolean;
 }
 
 export interface AuthContextType {
@@ -248,6 +249,7 @@ export interface AuthContextType {
   login: (credentials: LoginCredentials) => Promise<AuthResponse>;
   register: (data: RegisterData) => Promise<AuthResponse>;
   logout: () => void;
+  setUserDirectly: (user: User, token: string) => Promise<void>;
   updateUser: (userData: Partial<User>) => Promise<void>;
   refreshEmailConfigs: () => Promise<void>;
 }

@@ -81,6 +81,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const setUserDirectly = async (user: User, token: string) => {
+    setToken(token);
+    setUser(user);
+    authService.setToken(token);
+    await fetchEmailConfigs();
+  };
+
   const register = async (data: RegisterData): Promise<AuthResponse> => {
     try {
       const response = await authService.register(data);
@@ -123,6 +130,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     login,
     register,
     logout,
+    setUserDirectly,
     updateUser,
     refreshEmailConfigs: fetchEmailConfigs,
   };

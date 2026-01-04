@@ -1,8 +1,10 @@
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 import uuid
+import secrets
+import random
 
 from app.core.database import UserModel
 from app.core.security import get_password_hash, verify_password, create_access_token
@@ -51,7 +53,7 @@ class AuthService:
             return None
         
         # Update last login
-        user.last_login = datetime.utcnow()
+        user.last_login = datetime.now()
         await db.commit()
         await db.refresh(user)
         
@@ -121,6 +123,101 @@ class AuthService:
             }
         )
         return Token(access_token=access_token)
+    
+    async def create_password_reset_token(self, db: AsyncSession, email: str) -> Optional[str]:
+        """Generate a password reset token for a user."""
+        user = await self.get_user_by_email(db, email)
+        
+        if not user:
+            return None
+        
+        # Generate a secure random token
+        reset_token = secrets.token_urlsafe(32)
+        
+        # Set token expiration (1 hour from now)
+        user.reset_token = reset_token
+        user.reset_token_expires = datetime.now(timezone.utc) + timedelta(hours=1)
+        
+        await db.commit()
+        await db.refresh(user)
+        
+        return reset_token
+    
+    async def verify_reset_token(self, db: AsyncSession, token: str) -> Optional[UserModel]:
+        """Verify a password reset token and return the user if valid."""
+        query = select(UserModel).where(UserModel.reset_token == token)
+        result = await db.execute(query)
+        user = result.scalar_one_or_none()
+        
+        if not user:
+            return None
+        
+        # Check if token has expired
+        if user.reset_token_expires and user.reset_token_expires < datetime.now(timezone.utc):
+            return None
+        
+        return user
+    
+    async def reset_password(self, db: AsyncSession, token: str, new_password: str) -> bool:
+        """Reset user password using a valid reset token."""
+        user = await self.verify_reset_token(db, token)
+        
+        if not user:
+            return False
+        
+        # Update password
+        user.password_hash = get_password_hash(new_password)
+        
+        # Clear reset token
+        user.reset_token = None
+        user.reset_token_expires = None
+        
+        await db.commit()
+        
+        return True
+    
+    async def generate_otp(self, db: AsyncSession, email: str) -> Optional[str]:
+        """Generate a 6-digit OTP for email verification."""
+        user = await self.get_user_by_email(db, email)
+        
+        if not user:
+            return None
+        
+        # Generate a 6-digit OTP
+        otp = str(random.randint(100000, 999999))
+        
+        # Set OTP expiration (10 minutes from now)
+        user.otp_code = otp
+        user.otp_expires = datetime.now(timezone.utc) + timedelta(minutes=10)
+        
+        await db.commit()
+        await db.refresh(user)
+        
+        return otp
+    
+    async def verify_otp(self, db: AsyncSession, email: str, otp: str) -> bool:
+        """Verify the OTP and mark user as verified."""
+        user = await self.get_user_by_email(db, email)
+        
+        if not user:
+            return False
+        
+        # Check if OTP matches
+        if user.otp_code != otp:
+            return False
+        
+        # Check if OTP has expired
+        if user.otp_expires and user.otp_expires < datetime.now(timezone.utc):
+            return False
+        
+        # Mark user as verified and clear OTP
+        user.is_verified = True
+        user.otp_code = None
+        user.otp_expires = None
+        
+        await db.commit()
+        
+        return True
 
 
 auth_service = AuthService()
