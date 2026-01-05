@@ -20,6 +20,10 @@ class UserLogin(BaseModel):
 class UserUpdate(BaseModel):
     username: Optional[str] = None
     email: Optional[EmailStr] = None
+    profile_picture: Optional[str] = Field(None, alias='profilePicture')
+    
+    class Config:
+        populate_by_name = True  # Allow both profile_picture and profilePicture
 
 class UserResponse(BaseModel):
     id: str
@@ -41,6 +45,27 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     user_id: Optional[str] = None
     email: Optional[str] = None
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class VerifyResetTokenRequest(BaseModel):
+    token: str
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+class MessageResponse(BaseModel):
+    message: str
+    success: bool = True
+
+class VerifyOTPRequest(BaseModel):
+    email: EmailStr
+    otp: str
+
+class ResendOTPRequest(BaseModel):
+    email: EmailStr
 
 
 class LogLevel(str, Enum):
@@ -127,4 +152,102 @@ class ErrorResponse(BaseModel):
     llm_test: str = Field(..., description="LLM test error message")
     tts_test: str = Field(..., description="TTS test error message")
     overall_status: str = Field(..., description="Overall status of the service")
+
+
+# Environment Variables Schemas
+class EnvironmentVariableCreate(BaseModel):
+    key: str = Field(..., description="Environment variable key")
+    value: str = Field(default="", description="Environment variable value")
+
+class EnvironmentVariableUpdate(BaseModel):
+    value: str = Field(default="", description="Updated environment variable value")
+
+class EnvironmentVariableResponse(BaseModel):
+    id: int
+    key: str
+    value: str  # Decrypted value, sent only when requested
+    created_at: str
+    updated_at: str
+
+    class Config:
+        from_attributes = True
+
+class EnvironmentVariableListItem(BaseModel):
+    id: int
+    key: str
+    value: str  # Decrypted value for display
+    created_at: str
+    updated_at: str
+
+    class Config:
+        from_attributes = True
+
+
+# Email Configuration Schemas
+class EmailConfigCreate(BaseModel):
+    email: str = Field(..., description="Email address")
+    password: str = Field(default="", description="Email password (optional)")
+
+class EmailConfigUpdate(BaseModel):
+    password: str = Field(..., description="Updated email password")
+
+class EmailConfigResponse(BaseModel):
+    id: int
+    email: str
+    created_at: str
+    updated_at: str
+
+    class Config:
+        from_attributes = True
+
+class EmailConfigWithPassword(BaseModel):
+    id: int
+    email: str
+    password: str  # Decrypted password
+    created_at: str
+    updated_at: str
+
+    class Config:
+        from_attributes = True
+
+# Email History Schemas
+class SaveEmailRequest(BaseModel):
+    email_id: str
+    to_email: str
+    subject: str
+    body: str
+    tone: str | None = None
+    prompt: str | None = None
+    timestamp: str  # ISO format
+    status: str = "unsent"
+
+class UpdateEmailRequest(BaseModel):
+    status: str | None = None
+    body: str | None = None
+    subject: str | None = None
+    to_email: str | None = None
+
+class EmailHistoryResponse(BaseModel):
+    id: str
+    to_email: str
+    subject: str
+    body: str
+    tone: str | None = None
+    prompt: str | None = None
+    status: str
+    sent_at: str | None = None
+    regeneration_count: int
+    version: int
+    timestamp: str
+
+class PaginatedEmailsResponse(BaseModel):
+    emails: list[EmailHistoryResponse]
+    hasMore: bool
+    total: int
+
+class UsageStatsResponse(BaseModel):
+    total_emails: int
+    success_rate: float
+    time_saved_hours: float
+    recent_activity: List[dict]
 

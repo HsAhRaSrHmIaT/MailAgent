@@ -7,7 +7,7 @@ from websocket import websocket_endpoint
 import time
 
 from app.core.config import settings
-from app.api import logs, auth
+from app.api import logs, auth, env_vars, email_configs, chat_history, email_history
 from app.services.logger_service import logger_service, LogCategory
 
 app = FastAPI(
@@ -63,6 +63,10 @@ async def log_requests(request: Request, call_next):
 # Include routers
 app.include_router(auth.router, prefix="/api", tags=["auth"])
 app.include_router(logs.router, prefix="/api", tags=["logs"])
+app.include_router(env_vars.router, prefix="/api", tags=["env-vars"])
+app.include_router(email_configs.router, prefix="/api", tags=["email-configs"])
+app.include_router(chat_history.router, prefix="/api", tags=["chat-history"])
+app.include_router(email_history.router, prefix="/api", tags=["email-history"])
 
 app.add_api_websocket_route("/api", websocket_endpoint)
 

@@ -11,8 +11,10 @@ class Settings(BaseSettings):
     # murf_api_key: Optional[str] = os.getenv("MURF_API_KEY")
     # murf_api_url: Optional[str] = os.getenv("MURF_API_URL")
     # assemblyai_api_key: Optional[str] = os.getenv("ASSEMBLYAI_API_KEY")
-    sender_email: Optional[str] = os.getenv("SENDER_EMAIL")
-    email_password: Optional[str] = os.getenv("EMAIL_PASSWORD")
+    # sender_email: Optional[str] = os.getenv("SENDER_EMAIL")
+    # email_password: Optional[str] = os.getenv("EMAIL_PASSWORD")
+    agent_email: Optional[str] = os.getenv("AGENT_EMAIL")
+    agent_email_password: Optional[str] = os.getenv("AGENT_EMAIL_PASSWORD")
 
     # Database Settings (NeonDB PostgreSQL)
     database_url: Optional[str] = os.getenv("DATABASE_URL")
@@ -25,6 +27,7 @@ class Settings(BaseSettings):
     db_ssl_mode: str = os.getenv("DB_SSL_MODE", "require")
 
     # Server Settings
+    client_url: str = os.getenv("CLIENT_URL", "http://localhost:5173")
     host: str = os.getenv("HOST", "localhost")
     port: int = os.getenv("PORT", 8000)
     debug: bool = False
@@ -49,6 +52,11 @@ class Settings(BaseSettings):
     secret_key: str = os.getenv("SECRET_KEY", "your-secret-key-change-this-in-production")
     algorithm: str = os.getenv("ALGORITHM", "HS256")
     access_token_expire_minutes: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "10080"))  # 7 days default
+
+    # Cloudinary Settings
+    cloudinary_cloud_name: Optional[str] = os.getenv("CLOUDINARY_CLOUD_NAME")
+    cloudinary_api_key: Optional[str] = os.getenv("CLOUDINARY_API_KEY")
+    cloudinary_api_secret: Optional[str] = os.getenv("CLOUDINARY_API_SECRET")
 
     @property
     def database_connection_url(self) -> str:

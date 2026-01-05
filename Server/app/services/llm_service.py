@@ -1,6 +1,6 @@
 import asyncio
 import google.generativeai as genai
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Optional
 from app.core.config import settings
 
 PERSONA = {
@@ -25,18 +25,32 @@ PERSONA = {
 }
 
 class LLMService:
-    def __init__(self):
+    def __init__(self, api_key: Optional[str] = None):
         self.model = None
+        self.api_key = api_key or settings.google_api_key
 
         try:
-            genai.configure(api_key=settings.google_api_key)
-            self.model = genai.GenerativeModel("gemini-2.5-flash")
-            self.max_tokens = settings.max_response_tokens
+            if self.api_key:
+                genai.configure(api_key=self.api_key)
+                self.model = genai.GenerativeModel("gemini-2.5-flash")
+                self.max_tokens = settings.max_response_tokens
         except Exception as e:
             print(f"Error initializing model: {e}")
 
     def is_available(self) -> bool:
         return self.model is not None
+    
+    def reconfigure(self, api_key: str):
+        """Reconfigure the LLM service with a new API key."""
+        try:
+            self.api_key = api_key
+            genai.configure(api_key=api_key)
+            self.model = genai.GenerativeModel("gemini-2.5-flash")
+            self.max_tokens = settings.max_response_tokens
+            return True
+        except Exception as e:
+            print(f"Error reconfiguring model: {e}")
+            return False
 
     async def chat_with_gemini(self, message: str, tone: str, is_email: bool = False, recipient: str = "") -> AsyncGenerator[str, None]:
         if not self.is_available():
