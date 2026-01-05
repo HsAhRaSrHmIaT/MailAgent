@@ -1,5 +1,5 @@
 // Type definitions
-export type ThemeMode = "light" | "dark";
+export type ThemeMode = "light" | "dark" | "system";
 export type PaletteKey =
   | "default"
   | "pink"
