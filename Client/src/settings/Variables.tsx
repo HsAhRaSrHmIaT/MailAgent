@@ -159,7 +159,7 @@ const Variables = () => {
             <div
               className="p-2 sm:p-3 px-2 sm:px-2.5 rounded-xl"
               style={{
-                backgroundColor: `${currentPalette.primary}20`,
+                backgroundColor: `${currentPalette.primary}50`,
               }}
             >
               <span

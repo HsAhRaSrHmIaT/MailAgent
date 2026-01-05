@@ -2,10 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 import cloudinary
 import cloudinary.uploader
-from typing import Optional
+# from typing import Optional
+from app.core.config import settings
 
-from app.models.schemas import UserCreate, UserLogin, UserUpdate, UserResponse, Token
+from app.models.schemas import UserCreate, UserLogin, UserUpdate, UserResponse, Token, ForgotPasswordRequest, VerifyResetTokenRequest, ResetPasswordRequest, MessageResponse, VerifyOTPRequest, ResendOTPRequest
 from app.services.auth_service import auth_service
+from app.services.email_sending_service import email_sending_service
 from app.core.security import get_current_user_from_token
 from app.core.database import DatabaseManager
 from app.core.config import settings
@@ -37,27 +39,39 @@ async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
     - **password**: User's password (required, min 8 characters)
     """
     try:
-        # Create user
+        # Create user (not verified yet)
         user = await auth_service.create_user(db, user_data)
         
-        # Generate token
-        token = auth_service.create_token_for_user(user)
+        # Generate OTP for email verification
+        otp = await auth_service.generate_otp(db, user.email)
         
-        # Return user data and token
+        # Send OTP email
+        try:
+            email_sending_service.send_otp_email(
+                recipient_email=user.email,
+                username=user.username or user.email.split('@')[0],
+                otp=otp
+            )
+        except Exception as e:
+            print(f"Failed to send OTP email: {str(e)}")
+            # Don't fail registration if email fails, user can resend
+        
+        # Return user data without token (user needs to verify email first)
         return {
             "success": True,
-            "message": "User registered successfully",
+            "message": "Registration successful. Please check your email for verification code.",
             "user": {
                 "id": user.id,
                 "email": user.email,
                 "username": user.username,
                 "isActive": user.is_active,
+                "isVerified": user.is_verified,
                 "createdAt": user.created_at.isoformat() if user.created_at else None,
                 "updatedAt": user.updated_at.isoformat() if user.updated_at else None,
                 "lastLogin": user.last_login.isoformat() if user.last_login else None,
                 "profilePicture": user.profile_picture
             },
-            "token": token.access_token
+            "requiresVerification": True
         }
     except ValueError as e:
         raise HTTPException(
@@ -96,6 +110,14 @@ async def login(credentials: UserLogin, db: AsyncSession = Depends(get_db)):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Account is inactive"
+            )
+        
+        # Check if user is verified
+        if not user.is_verified:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Please verify your email before logging in",
+                headers={"X-Requires-Verification": "true"}
             )
         
         # Generate token
@@ -298,4 +320,190 @@ async def upload_avatar(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to upload avatar: {str(e)}"
+        )
+
+
+@router.post("/forgot-password", response_model=MessageResponse)
+async def forgot_password(request: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Request a password reset token.
+    
+    - **email**: User's email address
+    
+    Returns success even if email doesn't exist (security best practice).
+    """
+    try:
+        reset_token = await auth_service.create_password_reset_token(db, request.email)
+        
+        if reset_token:
+            # Send email with reset link
+            email_sent = email_sending_service.send_password_reset_email(
+                recipient_email=request.email,
+                reset_token=reset_token
+            )
+            
+            if email_sent:
+                print(f"Password reset email sent to {request.email}")
+            else:
+                print(f"Failed to send email to {request.email}, but token created")
+                # Still log the reset link for debugging
+                reset_link = f"{settings.client_url}/reset-password?token={reset_token}"
+                print(f"Password reset link: {reset_link}")
+        
+        # Always return success to prevent email enumeration
+        return MessageResponse(
+            message="If the email exists, a password reset link has been sent",
+            success=True
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to process request: {str(e)}"
+        )
+
+
+@router.post("/verify-reset-token", response_model=MessageResponse)
+async def verify_reset_token(request: VerifyResetTokenRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Verify if a password reset token is valid.
+    
+    - **token**: The reset token to verify
+    """
+    user = await auth_service.verify_reset_token(db, request.token)
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token"
+        )
+    
+    return MessageResponse(
+        message="Token is valid",
+        success=True
+    )
+
+
+@router.post("/reset-password", response_model=MessageResponse)
+async def reset_password(request: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Reset password using a valid reset token.
+    
+    - **token**: The password reset token
+    - **new_password**: The new password
+    """
+    success = await auth_service.reset_password(db, request.token, request.new_password)
+    
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token"
+        )
+    
+    return MessageResponse(
+        message="Password reset successfully",
+        success=True
+    )
+
+
+@router.post("/verify-otp", response_model=dict)
+async def verify_otp(request: VerifyOTPRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Verify OTP code for email verification.
+    
+    - **email**: User's email address
+    - **otp**: 6-digit OTP code
+    """
+    try:
+        # Verify OTP
+        success = await auth_service.verify_otp(db, request.email, request.otp)
+        
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid or expired OTP code"
+            )
+        
+        # Get the verified user
+        user = await auth_service.get_user_by_email(db, request.email)
+        
+        # Send welcome email now that user is verified
+        try:
+            email_sending_service.send_welcome_email(
+                recipient_email=user.email,
+                username=user.username or user.email.split('@')[0]
+            )
+        except Exception as e:
+            print(f"Failed to send welcome email: {str(e)}")
+        
+        # Generate token for auto-login
+        token = auth_service.create_token_for_user(user)
+        
+        return {
+            "success": True,
+            "message": "Email verified successfully",
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "username": user.username,
+                "isActive": user.is_active,
+                "isVerified": user.is_verified,
+                "createdAt": user.created_at.isoformat() if user.created_at else None,
+                "updatedAt": user.updated_at.isoformat() if user.updated_at else None,
+                "lastLogin": user.last_login.isoformat() if user.last_login else None,
+                "profilePicture": user.profile_picture
+            },
+            "token": token.access_token
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Verification failed: {str(e)}"
+        )
+
+
+@router.post("/resend-otp", response_model=MessageResponse)
+async def resend_otp(request: ResendOTPRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Resend OTP code to user's email.
+    
+    - **email**: User's email address
+    """
+    try:
+        # Check if user exists and is not already verified
+        user = await auth_service.get_user_by_email(db, request.email)
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        if user.is_verified:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email is already verified"
+            )
+        
+        # Generate new OTP
+        otp = await auth_service.generate_otp(db, request.email)
+        
+        # Send OTP email
+        email_sending_service.send_otp_email(
+            recipient_email=user.email,
+            username=user.username or user.email.split('@')[0],
+            otp=otp
+        )
+        
+        return MessageResponse(
+            message="OTP has been sent to your email",
+            success=True
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to resend OTP: {str(e)}"
         )

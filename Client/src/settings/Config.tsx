@@ -224,12 +224,12 @@ const Config = () => {
             <div
               className="p-2 sm:p-3 rounded-xl"
               style={{
-                backgroundColor: `${currentPalette.primary}20`,
+                backgroundColor: `${currentPalette.primary}50`,
               }}
             >
               <span
                 className="text-md font-mono font-bold"
-                style={{ color: currentPalette.primary }}
+                style={{ color: currentColors.text }}
               >
                 <SlWrench size={24} />
               </span>

@@ -90,6 +90,7 @@ export const register = async (data: RegisterData): Promise<AuthResponse> => {
       user: responseData.user,
       token: responseData.token,
       message: responseData.message,
+      requiresVerification: responseData.requiresVerification,
     };
   } catch (error) {
     return {
@@ -97,6 +98,62 @@ export const register = async (data: RegisterData): Promise<AuthResponse> => {
       error: error instanceof Error ? error.message : "Network error",
     };
   }
+};
+
+// Verify OTP
+export const verifyOTP = async (
+  email: string,
+  otp: string
+): Promise<AuthResponse> => {
+  const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email,
+      otp,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.detail || "OTP verification failed");
+  }
+
+  return {
+    success: true,
+    user: data.user,
+    token: data.token,
+    message: data.message,
+  };
+};
+
+// Resend OTP
+export const resendOTP = async (
+  email: string
+): Promise<{ success: boolean; message: string }> => {
+  const response = await fetch(`${API_BASE_URL}/auth/resend-otp`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.detail || "Failed to resend OTP");
+  }
+
+  return {
+    success: true,
+    message: data.message,
+  };
 };
 
 // Get current user

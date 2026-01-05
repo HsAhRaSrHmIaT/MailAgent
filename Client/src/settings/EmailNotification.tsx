@@ -13,7 +13,7 @@ const EmailNotification = () => {
                         <div
                             className="p-2 sm:p-3 rounded-xl"
                             style={{
-                                backgroundColor: `${currentPalette.primary}20`,
+                                backgroundColor: `${currentPalette.primary}50`,
                             }}
                         >
                             <span
