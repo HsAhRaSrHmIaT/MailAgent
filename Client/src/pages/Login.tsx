@@ -112,7 +112,7 @@ const Login = () => {
                 >
                   <HiSparkles size={16} color="#FFFFFF" />
                 </div>
-                <FiLogIn size={40} style={{ color: currentPalette.primary }} />
+                <FiLogIn size={40} style={{ color: currentColors.text }} />
               </div>
             </div>
             <div>
@@ -136,7 +136,7 @@ const Login = () => {
               <div
                 className="p-4 rounded-lg text-sm"
                 style={{
-                  backgroundColor: "#FEE2E2",
+                  backgroundColor: currentPalette.primary + "20",
                   color: "#991B1B",
                   border: "1px solid #FCA5A5",
                 }}
@@ -265,12 +265,11 @@ const Login = () => {
               <Link
                 to="/forgot-password"
                 className="text-sm font-medium transition-opacity hover:opacity-80"
-                style={{ color: currentPalette.primary }}
+                style={{ color: currentColors.text }}
               >
                 Forgot password?
               </Link>
             </div>
-
             {/* Submit Button */}
             <button
               type="submit"
@@ -303,7 +302,7 @@ const Login = () => {
               <Link
                 to="/register"
                 className="font-semibold transition-opacity hover:opacity-80"
-                style={{ color: currentPalette.primary }}
+                style={{ color: currentColors.text }}
               >
                 Sign up
               </Link>

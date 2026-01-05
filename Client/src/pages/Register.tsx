@@ -157,7 +157,7 @@ const Register = () => {
                 </div>
                 <FiUserPlus
                   size={40}
-                  style={{ color: currentPalette.primary }}
+                  style={{ color: currentColors.text }}
                 />
               </div>
             </div>
@@ -447,7 +447,7 @@ const Register = () => {
                 <Link
                   to="/terms"
                   className="font-medium transition-opacity hover:opacity-80"
-                  style={{ color: currentPalette.primary }}
+                  style={{ color: currentColors.text }}
                 >
                   Terms & Conditions
                 </Link>{" "}
@@ -455,7 +455,7 @@ const Register = () => {
                 <Link
                   to="/privacy"
                   className="font-medium transition-opacity hover:opacity-80"
-                  style={{ color: currentPalette.primary }}
+                  style={{ color: currentColors.text }}
                 >
                   Privacy Policy
                 </Link>
@@ -494,7 +494,7 @@ const Register = () => {
               <Link
                 to="/login"
                 className="font-semibold transition-opacity hover:opacity-80"
-                style={{ color: currentPalette.primary }}
+                style={{ color: currentColors.text }}
               >
                 Sign in
               </Link>

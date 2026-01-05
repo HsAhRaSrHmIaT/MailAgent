@@ -45,6 +45,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
         root.style.setProperty("--color-surface", currentColors.surface);
         root.style.setProperty("--color-border", currentColors.border);
         root.style.setProperty("--color-text", currentColors.text);
+        root.style.setProperty("--color-text-secondary", currentColors.textSecondary);
+        root.style.setProperty("--color-hover-bg", currentColors.hoverBg);
         root.style.setProperty(
             "--color-text-secondary",
             currentColors.textSecondary
