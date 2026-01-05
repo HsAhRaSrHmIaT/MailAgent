@@ -18,16 +18,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
     return "system";
   };
 
-  // Get the actual theme to apply (resolve system to light/dark)
-  const getResolvedTheme = (themeMode: ThemeMode): "light" | "dark" => {
-    if (themeMode === "system") {
-      return window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
-    }
-    return themeMode;
-  };
-
   // Initialize palette from localStorage
   const getInitialPalette = (): PaletteKey => {
     const saved = localStorage.getItem("colorPalette");

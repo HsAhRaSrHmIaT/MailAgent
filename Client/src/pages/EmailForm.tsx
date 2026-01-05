@@ -13,6 +13,7 @@ import { apiService } from "../services/apiService";
 import { useTheme } from "../contexts/ThemeContext";
 
 import { IoSettingsOutline } from "react-icons/io5";
+import { MdOutlineDesktopWindows } from "react-icons/md";
 import { Link } from "react-router-dom";
 import type { Message, CommandState, EmailData } from "../types";
 
@@ -38,6 +39,7 @@ const EmailForm = () => {
   const emailLength = 50;
   const maxMessageLength = 300;
   const { currentColors } = useTheme();
+  const theme = localStorage.getItem("theme") || "light";
 
   const addMessage = async (
     content: string,
@@ -651,16 +653,28 @@ const EmailForm = () => {
       </div>
 
       {/* Desktop Side Action Bar */}
-      <div className="hidden lg:flex flex-col items-center justify-start space-y-4 py-4 pr-4 absolute right-0 top-0 bottom-0 z-10">
-        <ToggleTheme />
-        <Link to="/settings">
-          <div className="hover:rotate-180 transition-transform duration-200 cursor-pointer">
-            <IoSettingsOutline
-              size={24}
-              style={{ color: currentColors.text }}
-            />
-          </div>
-        </Link>
+      <div className="hidden lg:flex flex-col items-center justify-start space-y-4 py-8 pr-4 absolute right-0 top-0 bottom-0 z-10">
+        <div className="flex items-center justify-center gap-2">
+          {theme !== "system" && <ToggleTheme />}
+          <Link to="/settings">
+            <div className="flex items-center justify-center gap-2 cursor-pointer hover:scale-110 transition-transform duration-200">
+              {theme === "system" && (
+                <span
+                  className="font-medium text-sm mb-1"
+                  style={{ color: currentColors.textSecondary }}
+                >
+                  Settings
+                </span>
+              )}
+              <div className="hover:rotate-180 transition-transform duration-200 cursor-pointer">
+                <IoSettingsOutline
+                  size={24}
+                  style={{ color: currentColors.text }}
+                />
+              </div>
+            </div>
+          </Link>
+        </div>
       </div>
 
       {/* Mobile Bottom Action Bar */}
@@ -671,7 +685,22 @@ const EmailForm = () => {
           borderColor: currentColors.border,
         }}
       >
-        <ToggleTheme />
+        {theme !== "system" ? (
+          <ToggleTheme />
+        ) : (
+          <div className="flex items-center gap-2 select-none">
+            <MdOutlineDesktopWindows
+              size={20}
+              style={{ color: currentColors.textSecondary }}
+            />
+            <span
+              className="font-medium text-sm"
+              style={{ color: currentColors.textSecondary }}
+            >
+              Auto
+            </span>
+          </div>
+        )}
 
         <div
           className="h-6 w-px"
