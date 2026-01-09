@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { Variable } from "../types";
 import { useTheme } from "../contexts/ThemeContext";
 import { apiService } from "../services/apiService";
@@ -11,6 +11,7 @@ const Variables = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const hasLoadedRef = useRef(false);
   const [showValues, setShowValues] = useState<{ [key: number]: boolean }>({});
 
   const [savedVariables, setSavedVariables] = useState<Variable[]>([]);
@@ -31,6 +32,10 @@ const Variables = () => {
 
   // Fetch variables on component mount
   useEffect(() => {
+    // Only load once
+    if (hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
+
     const loadVariables = async () => {
       await fetchVariables();
     };
@@ -303,7 +308,7 @@ const Variables = () => {
                     <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-slate-700">
                       <button
                         onClick={handleCancel}
-                        className="px-6 py-3 border rounded-sm transition-colors cursor-pointer"
+                        className="px-6 py-3 border rounded-lg hover:shadow-md transition-colors cursor-pointer"
                         style={{
                           borderColor: currentColors.border,
                           color: currentColors.text,
@@ -314,7 +319,7 @@ const Variables = () => {
                       </button>
                       <button
                         onClick={handleSave}
-                        className="inline-flex items-center gap-2 px-8 py-3 text-white font-medium rounded-sm transition-colors shadow-lg cursor-pointer"
+                        className="inline-flex items-center gap-2 px-8 py-3 text-white font-medium rounded-lg transition-colors shadow-lg cursor-pointer hover:opacity-90 active:scale-95"
                         style={{
                           backgroundColor: currentPalette.primary,
                         }}
@@ -465,7 +470,7 @@ const Variables = () => {
                     >
                       <button
                         onClick={startEditing}
-                        className="inline-flex items-center gap-2 px-6 py-3 text-white font-medium rounded-sm transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-2 px-6 py-3 text-white font-medium rounded-lg transition-colors cursor-pointer hover:opacity-90 active:scale-95 shadow-lg"
                         style={{
                           backgroundColor: currentPalette.primary,
                         }}

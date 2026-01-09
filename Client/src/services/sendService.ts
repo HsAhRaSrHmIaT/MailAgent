@@ -11,13 +11,13 @@ export interface SendEmailResponse {
 }
 
 // async sendEmail(data: SendEmail): Promise<SendEmailResponse> {
-    //     const requestBody = {
-    //         receiver_email: data.receiverEmail,
-    //         email_message: data.emailMessage,
-    //         subject: data.subject,
-    //     };
-    //     return this.makeRequest<SendEmailResponse>("/send-email", {
-    //         method: "POST",
-    //         body: JSON.stringify(requestBody),
-    //     });
-    // }
+//     const requestBody = {
+//         receiver_email: data.receiverEmail,
+//         email_message: data.emailMessage,
+//         subject: data.subject,
+//     };
+//     return this.makeRequest<SendEmailResponse>("/send-email", {
+//         method: "POST",
+//         body: JSON.stringify(requestBody),
+//     });
+// }

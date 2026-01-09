@@ -8,7 +8,7 @@ const Welcome = () => {
 
     return (
         <div
-            className="min-h-screen flex items-center justify-center transition-colors duration-300 px-4 py-12"
+            className="min-h-screen flex items-center justify-center transition-colors duration-300 px-4 py-12 select-none"
             style={{ backgroundColor: currentColors.bg }}
         >
             <div className="max-w-6xl mx-auto w-full">
@@ -23,7 +23,7 @@ const Welcome = () => {
                             }}
                         >
                             <div
-                                className="absolute -top-2 -right-2 p-2 rounded-full animate-bounce"
+                                className="absolute -top-2 -right-2 p-2 rounded-full"
                                 style={{
                                     backgroundColor: currentPalette.primary,
                                 }}

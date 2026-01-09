@@ -45,7 +45,7 @@ class LogsService {
             const response = await fetch(`${this.baseUrl}/stats`);
             if (!response.ok) {
                 throw new Error(
-                    `Failed to fetch stats: ${response.statusText}`
+                    `Failed to fetch stats: ${response.statusText}`,
                 );
             }
             return await response.json();
@@ -60,7 +60,7 @@ class LogsService {
             const response = await fetch(`${this.baseUrl}/status`);
             if (!response.ok) {
                 throw new Error(
-                    `Failed to fetch status: ${response.statusText}`
+                    `Failed to fetch status: ${response.statusText}`,
                 );
             }
             return await response.json();

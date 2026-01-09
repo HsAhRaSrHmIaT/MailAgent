@@ -106,6 +106,19 @@ class AuthService:
             profile_pic_value = update_data['profile_picture']
             user.profile_picture = None if profile_pic_value == "" else profile_pic_value
         
+        # Update preferences if provided
+        if 'language' in update_data:
+            user.language = update_data['language']
+        
+        if 'default_tone' in update_data:
+            user.default_tone = update_data['default_tone']
+        
+        if 'ai_learning' in update_data:
+            user.ai_learning = update_data['ai_learning']
+        
+        if 'save_history' in update_data:
+            user.save_history = update_data['save_history']
+        
         user.updated_at = datetime.now()
         
         await db.commit()

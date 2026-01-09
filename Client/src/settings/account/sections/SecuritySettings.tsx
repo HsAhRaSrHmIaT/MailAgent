@@ -1,130 +1,287 @@
 import { useTheme } from "../../../contexts/ThemeContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import CustomCheckbox from "../../../hooks/Checkbox";
+import { IoChevronDownOutline } from "react-icons/io5";
+import { apiService } from "../../../services/apiService";
+import { toast } from "react-toastify";
 
 const SecuritySettings = () => {
-  const { currentColors } = useTheme();
-  const [aiLearning, setAiLearning] = useState(false);
-  const [saveHistory, setSaveHistory] = useState(false);
-  const [sessionInfo, setSessionInfo] = useState({
-    os: "Unknown",
-    browser: "Unknown",
-    location: "Unknown",
-  });
-
-  useEffect(() => {
-    // Get browser info
-    const getBrowser = () => {
-      const ua = navigator.userAgent;
-      if (ua.includes("Edg")) return "Edge";
-      if (ua.includes("Chrome") && !ua.includes("Edg")) return "Chrome";
-      if (ua.includes("Firefox")) return "Firefox";
-      if (ua.includes("Safari") && !ua.includes("Chrome")) return "Safari";
-      if (ua.includes("Opera") || ua.includes("OPR")) return "Opera";
-      if (ua.includes("Brave")) return "Brave";
-      return "Unknown";
-    };
-
-    // Get OS info
-    const getOS = () => {
-      const ua = navigator.userAgent;
-      if (ua.includes("Win")) return "Windows";
-      if (ua.includes("Mac")) return "macOS";
-      if (ua.includes("Linux")) return "Linux";
-      if (ua.includes("Android")) return "Android";
-      if (ua.includes("iOS") || ua.includes("iPhone")) return "iOS";
-      return "Unknown";
-    };
-
-    // Get location (using timezone as fallback)
-    const getLocation = () => {
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      if (
-        timezone.includes("Asia/Kolkata") ||
-        timezone.includes("Asia/Calcutta")
-      )
-        return "India";
-      if (timezone.includes("America/New_York")) return "United States";
-      if (timezone.includes("Europe/London")) return "United Kingdom";
-      if (timezone.includes("Asia/Tokyo")) return "Japan";
-      return timezone.split("/")[1]?.replace("_", " ") || "Unknown";
-    };
-
-    setSessionInfo({
-      os: getOS(),
-      browser: getBrowser(),
-      location: getLocation(),
+    const { currentColors } = useTheme();
+    const [aiLearning, setAiLearning] = useState(false);
+    const [saveHistory, setSaveHistory] = useState(false);
+    const [language, setLanguage] = useState("English");
+    const [defaultTone, setDefaultTone] = useState("Professional");
+    const [isLoading, setIsLoading] = useState(true);
+    const hasLoadedRef = useRef(false);
+    const [sessionInfo, setSessionInfo] = useState({
+        os: "Unknown",
+        browser: "Unknown",
+        location: "Unknown",
     });
-  }, []);
 
+    useEffect(() => {
+        // Only load once
+        if (hasLoadedRef.current) return;
+        hasLoadedRef.current = true;
 
-  return (
-    <div className="space-y-2">
-      <h3 className="text-lg font-semibold">Security & Privacy</h3>
-      {/* Preferences */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">AI Language</label>
-          <select className="w-full p-2 border rounded-lg">
-            <option>English</option>
-            <option>Hindi</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            System Language
-          </label>
-          <select className="w-full p-2 border rounded-lg">
-            <option>English</option>
-            <option>Hindi</option>
-          </select>
-        </div>
-      </div>
+        // Get browser info
+        const getBrowser = () => {
+            const ua = navigator.userAgent;
+            if (ua.includes("Edg")) return "Edge";
+            if (ua.includes("Chrome") && !ua.includes("Edg")) return "Chrome";
+            if (ua.includes("Firefox")) return "Firefox";
+            if (ua.includes("Safari") && !ua.includes("Chrome"))
+                return "Safari";
+            if (ua.includes("Opera") || ua.includes("OPR")) return "Opera";
+            if (ua.includes("Brave")) return "Brave";
+            return "Unknown";
+        };
 
-      {/* Active Sessions */}
-      <div>
-        <h4 className="font-medium mb-2">Active Sessions</h4>
-        <div className="space-y-2">
-          <div
-            className="flex items-center justify-between p-3 rounded-lg"
-            style={{ backgroundColor: `${currentColors.bg}` }}
-          >
+        // Get OS info
+        const getOS = () => {
+            const ua = navigator.userAgent;
+            if (ua.includes("Win")) return "Windows";
+            if (ua.includes("Mac")) return "macOS";
+            if (ua.includes("Linux")) return "Linux";
+            if (ua.includes("Android")) return "Android";
+            if (ua.includes("iOS") || ua.includes("iPhone")) return "iOS";
+            return "Unknown";
+        };
+
+        // Get location (using timezone as fallback)
+        const getLocation = () => {
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            if (
+                timezone.includes("Asia/Kolkata") ||
+                timezone.includes("Asia/Calcutta")
+            )
+                return "India";
+            if (timezone.includes("America/New_York")) return "United States";
+            if (timezone.includes("Europe/London")) return "United Kingdom";
+            if (timezone.includes("Asia/Tokyo")) return "Japan";
+            return timezone.split("/")[1]?.replace("_", " ") || "Unknown";
+        };
+
+        setSessionInfo({
+            os: getOS(),
+            browser: getBrowser(),
+            location: getLocation(),
+        });
+
+        const fetchSettings = async () => {
+            try {
+                const settings = await apiService.getPreferences();
+                setLanguage(settings.language || "English");
+                setDefaultTone(settings.default_tone || "Professional");
+                setAiLearning(settings.ai_learning || false);
+                setSaveHistory(settings.save_history || false);
+            } catch (error) {
+                console.error("Failed to fetch user settings:", error);
+                toast.error(
+                    error instanceof Error
+                        ? error.message
+                        : "Failed to fetch user settings",
+                );
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchSettings();
+    }, []);
+
+    // Auto-save preferences when they change
+    useEffect(() => {
+        // Skip auto-save during initial load
+        if (isLoading) return;
+
+        const savePreferences = async () => {
+            try {
+                await apiService.updatePreferences({
+                    language,
+                    default_tone: defaultTone,
+                    ai_learning: aiLearning,
+                    save_history: saveHistory,
+                });
+            } catch (error) {
+                console.error("Failed to save preferences:", error);
+                // Silent fail - don't show toast for auto-save errors
+            }
+        };
+
+        // Debounce for 500ms
+        const timeoutId = setTimeout(() => {
+            savePreferences();
+        }, 500);
+
+        return () => clearTimeout(timeoutId);
+    }, [language, defaultTone, aiLearning, saveHistory, isLoading]);
+
+    return (
+        <div className="space-y-6">
             <div>
-              <div className="font-medium">Current Session</div>
-              <div
-                className="text-sm"
-                style={{ color: currentColors.textSecondary }}
-              >
-                {sessionInfo.os} • {sessionInfo.browser} •{" "}
-                {sessionInfo.location}
-              </div>
-            </div>
-            <span className="text-green-600 text-sm">Active</span>
-          </div>
-        </div>
-      </div>
+                {/* Preferences */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Language Selection */}
+                    <div>
+                        <label
+                            className="block text-sm font-medium mb-2"
+                            style={{ color: currentColors.text }}
+                        >
+                            Language
+                        </label>
+                        <div className="relative">
+                            <select
+                                value={language}
+                                onChange={(e) => setLanguage(e.target.value)}
+                                className="w-full p-2.5 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 transition-all"
+                                style={{
+                                    backgroundColor: currentColors.surface,
+                                    color: currentColors.text,
+                                    border: `1px solid ${currentColors.border}`,
+                                    paddingRight: "2.5rem",
+                                }}
+                            >
+                                <option value="English">English</option>
+                                <option value="Hindi">हिंदी (Hindi)</option>
+                            </select>
+                            <IoChevronDownOutline
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+                                style={{ color: currentColors.textSecondary }}
+                            />
+                        </div>
+                        <p
+                            className="text-xs mt-1"
+                            style={{ color: currentColors.textSecondary }}
+                        >
+                            Chat conversations and voice responses
+                        </p>
+                    </div>
 
-      {/* Data Privacy */}
-      <div className="space-y-2">
-        <h4 className="font-medium" style={{ color: currentColors.text }}>
-          Data & Privacy
-        </h4>
-        <CustomCheckbox
-          checked={aiLearning}
-          onChange={() => setAiLearning(!aiLearning)}
-          label="Allow AI to learn from my email patterns"
-        />
-        <CustomCheckbox
-          checked={saveHistory}
-          onChange={() => setSaveHistory(!saveHistory)}
-          label="Save conversation history for 30 days"
-        />
-        <button className="text-red-600 hover:text-red-700 text-sm hover:underline cursor-pointer">
-          Delete All My Data
-        </button>
-      </div>
-    </div>
-  );
+                    {/* Default Email Tone */}
+                    <div>
+                        <label
+                            className="block text-sm font-medium mb-2"
+                            style={{ color: currentColors.text }}
+                        >
+                            Default Email Tone
+                        </label>
+                        <div className="relative">
+                            <select
+                                value={defaultTone}
+                                onChange={(e) => setDefaultTone(e.target.value)}
+                                className="w-full p-2.5 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 transition-all"
+                                style={{
+                                    backgroundColor: currentColors.surface,
+                                    color: currentColors.text,
+                                    border: `1px solid ${currentColors.border}`,
+                                    paddingRight: "2.5rem",
+                                }}
+                            >
+                                <option value="Professional">
+                                    Professional
+                                </option>
+                                <option value="Friendly">Friendly</option>
+                                <option value="Casual">Casual</option>
+                                <option value="Formal">Formal</option>
+                                <option value="Confident">Confident</option>
+                            </select>
+                            <IoChevronDownOutline
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+                                style={{ color: currentColors.textSecondary }}
+                            />
+                        </div>
+                        <p
+                            className="text-xs mt-1"
+                            style={{ color: currentColors.textSecondary }}
+                        >
+                            Your preferred tone for generated emails
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Security & Privacy Section */}
+            <div>
+                {/* Active Sessions */}
+                <div>
+                    <h4
+                        className="font-medium mb-3 text-sm"
+                        style={{ color: currentColors.text }}
+                    >
+                        Active Sessions
+                    </h4>
+                    <div className="space-y-2">
+                        <div
+                            className="flex items-center justify-between p-3 rounded-lg border"
+                            style={{
+                                backgroundColor: currentColors.surface,
+                                borderColor: currentColors.border,
+                            }}
+                        >
+                            <div>
+                                <div
+                                    className="font-medium"
+                                    style={{ color: currentColors.text }}
+                                >
+                                    Current Session
+                                </div>
+                                <div
+                                    className="text-sm"
+                                    style={{
+                                        color: currentColors.textSecondary,
+                                    }}
+                                >
+                                    {sessionInfo.os} • {sessionInfo.browser} •{" "}
+                                    {sessionInfo.location}
+                                </div>
+                            </div>
+                            <span
+                                className="text-sm font-medium px-2 py-1 rounded-full"
+                                style={{
+                                    backgroundColor: "#10B98115",
+                                    color: "#10B981",
+                                }}
+                            >
+                                Active
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Data Privacy */}
+                <div className="space-y-3">
+                    <h4
+                        className="font-medium text-sm mt-4"
+                        style={{ color: currentColors.text }}
+                    >
+                        Data & Privacy
+                    </h4>
+                    <CustomCheckbox
+                        checked={aiLearning}
+                        onChange={() => setAiLearning(!aiLearning)}
+                        label="Allow AI to learn from my email patterns"
+                    />
+                    <CustomCheckbox
+                        checked={saveHistory}
+                        onChange={() => setSaveHistory(!saveHistory)}
+                        label="Save conversation history for 7 days"
+                    />
+                    <button
+                        className="text-sm hover:underline cursor-pointer mt-2 font-medium transition-colors"
+                        style={{ color: "#EF4444" }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.color = "#DC2626";
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.color = "#EF4444";
+                        }}
+                    >
+                        Delete All My Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
 };
 
 export default SecuritySettings;

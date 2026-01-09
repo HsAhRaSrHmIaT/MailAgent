@@ -14,12 +14,10 @@ const SendButtons = ({ onSubmit, disabled = false }: SendButtonsProps) => {
                 disabled={disabled}
                 className="p-3 rounded-lg transition-all duration-200 hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 style={{
-                    backgroundColor: disabled 
-                        ? currentColors.border 
+                    backgroundColor: disabled
+                        ? currentColors.border
                         : currentColors.text,
-                    color: disabled 
-                        ? currentColors.text 
-                        : currentColors.bg,
+                    color: disabled ? currentColors.text : currentColors.bg,
                 }}
             >
                 <BsFillSendFill className="w-4 h-4 sm:w-5 sm:h-5" />

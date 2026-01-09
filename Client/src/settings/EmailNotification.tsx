@@ -39,7 +39,7 @@ const EmailNotification = () => {
                         </div>
                     </div>
                 </div>
-                 <div
+                <div
                     className="h-160 sm:h-142 border rounded-xl p-6 flex items-center justify-center"
                     style={{
                         borderColor: currentColors.border,

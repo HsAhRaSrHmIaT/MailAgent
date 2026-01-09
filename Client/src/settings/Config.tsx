@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { SlWrench, SlPlus, SlTrash, SlSettings } from "react-icons/sl";
 import { Lightbulb, Save, Maximize2, Eye, EyeOff } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
@@ -25,6 +25,7 @@ const Config = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const hasLoadedRef = useRef(false);
   const [savedConfigs, setSavedConfigs] = useState<EmailConfig[]>([
     { email: DEFAULT_EMAIL, password: "" },
   ]);
@@ -37,6 +38,10 @@ const Config = () => {
 
   // Fetch email configs on component mount
   useEffect(() => {
+    // Only load once
+    if (hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
+
     const loadEmailConfigs = async () => {
       await fetchEmailConfigs();
     };
@@ -479,7 +484,7 @@ const Config = () => {
                       >
                         <button
                           onClick={handleCancel}
-                          className="px-6 py-3 border rounded-sm transition-colors cursor-pointer"
+                          className="px-6 py-3 border rounded-lg hover:shadow-md transition-colors cursor-pointer"
                           style={{
                             borderColor: currentColors.border,
                             color: currentColors.text,
@@ -490,7 +495,7 @@ const Config = () => {
                         </button>
                         <button
                           onClick={handleSave}
-                          className="inline-flex items-center gap-2 px-8 py-3 text-white font-medium rounded-sm transition-colors shadow-lg cursor-pointer"
+                          className="inline-flex items-center gap-2 px-8 py-3 text-white font-medium rounded-lg transition-colors shadow-lg cursor-pointer hover:opacity-90 active:scale-95"
                           style={{
                             backgroundColor: currentPalette.primary,
                           }}
@@ -502,9 +507,7 @@ const Config = () => {
                           ) : (
                             <Save className="w-5 h-5" />
                           )}
-                          <span>
-                            {isSaving ? "Saving..." : "Save Configs"}
-                          </span>
+                          <span>{isSaving ? "Saving..." : "Save Configs"}</span>
                         </button>
                       </div>
                     </div>
@@ -644,7 +647,9 @@ const Config = () => {
                                             deletingIndex === index ||
                                             deletedIndex === index
                                           }
-                                          className={`p-2.5 transition-all cursor-pointer ${config.password ? "border-l" : ""}`}
+                                          className={`p-2.5 transition-all cursor-pointer ${
+                                            config.password ? "border-l" : ""
+                                          }`}
                                           style={{
                                             backgroundColor: currentColors.bg,
                                             borderColor: currentColors.border,
@@ -700,7 +705,7 @@ const Config = () => {
                       >
                         <button
                           onClick={startEditing}
-                          className="inline-flex items-center gap-2 px-6 py-3 text-white font-medium rounded-sm transition-colors cursor-pointer"
+                          className="inline-flex items-center gap-2 px-6 py-3 text-white font-medium rounded-lg transition-colors cursor-pointer hover:opacity-90 active:scale-95 shadow-lg"
                           style={{
                             backgroundColor: currentPalette.primary,
                           }}

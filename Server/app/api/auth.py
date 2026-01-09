@@ -507,3 +507,87 @@ async def resend_otp(request: ResendOTPRequest, db: AsyncSession = Depends(get_d
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to resend OTP: {str(e)}"
         )
+
+@router.get("/preferences")
+async def get_preferences(
+    current_user: dict = Depends(get_current_user_from_token),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get current user's preferences.
+    
+    Requires authentication (Bearer token).
+    """
+    try:
+        user = await auth_service.get_user_by_id(db, current_user["id"])
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        return {
+            "success": True,
+            "preferences": {
+                "language": user.language,
+                "default_tone": user.default_tone,
+                "ai_learning": user.ai_learning,
+                "save_history": user.save_history
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get preferences: {str(e)}"
+        )
+    
+@router.put("/preferences", response_model=dict)
+async def update_preferences(
+    preferences: UserUpdate,
+    current_user: dict = Depends(get_current_user_from_token),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Update current user's preferences.
+    
+    Requires authentication (Bearer token).
+    
+    - **language**: Preferred language (optional)
+    - **defaultTone**: Default tone for messages (optional)
+    - **aiLearning**: Enable/disable AI learning (optional)
+    - **saveHistory**: Enable/disable saving chat history (optional)
+    """
+    try:      
+        user = await auth_service.update_user(db, current_user["id"], preferences)
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        return {
+            "success": True,
+            "message": "Preferences updated successfully",
+            "preferences": {
+                "language": user.language,
+                "default_tone": user.default_tone,
+                "ai_learning": user.ai_learning,
+                "save_history": user.save_history
+            }
+        }
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update preferences: {str(e)}"
+        )

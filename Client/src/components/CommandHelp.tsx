@@ -4,8 +4,17 @@ const CommandHelp = () => {
     const { currentColors, currentPalette } = useTheme();
 
     return (
-        <div className="mt-2 p-2" style={{ backgroundColor: currentColors.bg + "90", color: currentColors.text }}>
-            <div className="font-medium" style={{ color: currentPalette.primary }}>
+        <div
+            className="mt-2 p-2"
+            style={{
+                backgroundColor: currentColors.bg + "90",
+                color: currentColors.text,
+            }}
+        >
+            <div
+                className="font-medium"
+                style={{ color: currentPalette.primary }}
+            >
                 Available Commands:
             </div>
             <div className="">
