@@ -6,52 +6,49 @@ const QuickActions = ({
     setHashTag,
     hashTag,
 }: QuickActionsProps) => {
-    const { currentColors } = useTheme();
+    const { currentColors, currentPalette } = useTheme();
+
+    const buttonStyles = (isActive: boolean = false) => ({
+        backgroundColor: isActive
+            ? currentPalette.primary + "20"
+            : currentColors.surface,
+        color: isActive ? currentPalette.primary : currentColors.text,
+        borderColor: isActive ? currentPalette.primary : currentColors.border,
+    });
+
     return (
-        <div className="flex flex-wrap gap-2 mt-2 justify-start sm:justify-start">
+        <div className="flex flex-wrap gap-2 mt-3 mb-1">
             <button
                 onClick={() => setMessage("/")}
-                className="px-3 py-1 rounded-full text-sm cursor-pointer shadow-sm dark:shadow-gray-900/30 flex-shrink-0"
-                style={{
-                    backgroundColor: currentColors.textSecondary + "33",
-                    color: currentColors.text,
-                }}
+                className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95 border flex-shrink-0"
+                style={buttonStyles()}
             >
-                /commands
+                <span className="font-mono">/</span>commands
             </button>
             <button
                 onClick={() => setHashTag("#confident")}
-                className={`px-3 py-1 rounded-full text-sm cursor-pointer shadow-sm dark:shadow-gray-900/30 flex-shrink-0 ${
+                className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95 border flex-shrink-0 ${
                     hashTag === "#confident" ? "hidden" : ""
                 }`}
-                style={{
-                    backgroundColor: currentColors.textSecondary + "33",
-                    color: currentColors.text,
-                }}
+                style={buttonStyles()}
             >
                 confident
             </button>
             <button
                 onClick={() => setHashTag("#formal")}
-                className={`px-3 py-1 rounded-full text-sm cursor-pointer shadow-sm dark:shadow-gray-900/30 flex-shrink-0 ${
+                className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95 border flex-shrink-0 ${
                     hashTag === "#formal" ? "hidden" : ""
                 }`}
-                style={{
-                    backgroundColor: currentColors.textSecondary + "33",
-                    color: currentColors.text,
-                }}
+                style={buttonStyles()}
             >
                 formal
             </button>
             <button
                 onClick={() => setHashTag("#casual")}
-                className={`px-3 py-1 rounded-full text-sm cursor-pointer shadow-sm dark:shadow-gray-900/30 flex-shrink-0 ${
+                className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95 border flex-shrink-0 ${
                     hashTag === "#casual" ? "hidden" : ""
                 }`}
-                style={{
-                    backgroundColor: currentColors.textSecondary + "33",
-                    color: currentColors.text,
-                }}
+                style={buttonStyles()}
             >
                 casual
             </button>

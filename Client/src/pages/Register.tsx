@@ -138,7 +138,7 @@ const Register = () => {
 
     return (
         <div
-            className="min-h-screen flex items-center justify-center transition-colors duration-300 px-4 py-12"
+            className="min-h-screen flex items-center justify-center transition-colors duration-300 px-4 py-12 select-none"
             style={{ backgroundColor: currentColors.bg }}
         >
             <div className="w-full max-w-md">

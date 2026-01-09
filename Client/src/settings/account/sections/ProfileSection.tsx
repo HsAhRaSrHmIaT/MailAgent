@@ -297,10 +297,10 @@ const ProfileSection = () => {
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full sm:w-auto px-6 py-2.5 text-white rounded-lg font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
+                                className="w-full sm:w-auto px-6 py-2.5 text-white rounded-lg font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 text-sm sm:text-base hover:opacity-90 active:scale-95"
                                 style={{
                                     backgroundColor: `${currentPalette.primary}`,
-                                    boxShadow: `0 2px 8px ${currentPalette.primary}30`,
+                                    // boxShadow: `0 2px 8px ${currentPalette.primary}30`,
                                 }}
                             >
                                 {isLoading && (
