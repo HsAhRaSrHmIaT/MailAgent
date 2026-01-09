@@ -4,7 +4,6 @@ import { useState } from "react";
 import { User, BarChart3, Shield } from "lucide-react";
 
 import ProfileSection from "./sections/ProfileSection";
-// import AIPreferences from "./sections/AIPreferences";
 import UsageStats from "./sections/UsageStats";
 import SecuritySettings from "./sections/SecuritySettings";
 
@@ -14,10 +13,27 @@ const Account = () => {
 
     const tabs = [
         { id: "profile", label: "Profile", icon: User },
-        // { id: "ai-settings", label: "AI Settings", icon: Bot },
         { id: "usage", label: "Usage", icon: BarChart3 },
         { id: "security", label: "Security", icon: Shield },
     ];
+
+    const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>): void => {
+        const target = e.currentTarget;
+        target.style.backgroundColor = currentColors.border;
+    };
+
+    const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>): void => {
+        const target = e.currentTarget;
+        const isActive =
+            activeTab ===
+            tabs.find((tab) =>
+                target.textContent?.toLowerCase().includes(tab.id),
+            )?.id;
+
+        if (!isActive) {
+            target.style.backgroundColor = "transparent";
+        }
+    };
 
     return (
         <div className="max-w-6xl mx-auto select-none">
@@ -97,6 +113,8 @@ const Account = () => {
                                             : "transparent",
                                     color: currentColors.text,
                                 }}
+                                onMouseEnter={handleMouseEnter}
+                                onMouseLeave={handleMouseLeave}
                             >
                                 <tab.icon className="w-5 h-5" />
                                 <span className="hidden sm:inline">

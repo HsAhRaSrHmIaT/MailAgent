@@ -197,7 +197,7 @@ const Themes: React.FC = () => {
                     </div>
 
                     <div
-                        className="flex flex-col justify-center gap-4 sm:gap-6 p-4 sm:p-6 rounded-lg w-full"
+                        className="flex flex-col justify-center gap-4 p-4 rounded-lg w-full"
                         style={{ backgroundColor: currentColors.surface }}
                     >
                         {/* Preview Area */}

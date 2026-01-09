@@ -307,27 +307,45 @@ const Settings = () => {
                     border: `2px solid ${currentColors.border}`,
                 }}
             >
-                {/* Main Area */}
-                {(() => {
-                    switch (state.activeTab) {
-                        case "account":
-                            return <Account />;
-                        // case "notifications":
-                        //     return <EmailNotification />;
-                        case "config":
-                            return <Config />;
-                        case "env":
-                            return <Variables />;
-                        case "theme":
-                            return <Themes />;
-                        // case "logs":
-                        //   return <Logs />;
-                        case "export":
-                            return <ExportData />;
-                        default:
-                            return <Account />;
-                    }
-                })()}
+                {/* Main Area - Keep all mounted but toggle display */}
+                <div
+                    style={{
+                        display:
+                            state.activeTab === "account" ? "block" : "none",
+                    }}
+                >
+                    <Account />
+                </div>
+                <div
+                    style={{
+                        display:
+                            state.activeTab === "config" ? "block" : "none",
+                    }}
+                >
+                    <Config />
+                </div>
+                <div
+                    style={{
+                        display: state.activeTab === "env" ? "block" : "none",
+                    }}
+                >
+                    <Variables />
+                </div>
+                <div
+                    style={{
+                        display: state.activeTab === "theme" ? "block" : "none",
+                    }}
+                >
+                    <Themes />
+                </div>
+                <div
+                    style={{
+                        display:
+                            state.activeTab === "export" ? "block" : "none",
+                    }}
+                >
+                    <ExportData />
+                </div>
             </div>
         </div>
     );
