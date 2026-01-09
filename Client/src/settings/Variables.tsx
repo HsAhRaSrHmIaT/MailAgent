@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { Variable } from "../types";
 import { useTheme } from "../contexts/ThemeContext";
 import { apiService } from "../services/apiService";
@@ -11,6 +11,7 @@ const Variables = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const hasLoadedRef = useRef(false);
   const [showValues, setShowValues] = useState<{ [key: number]: boolean }>({});
 
   const [savedVariables, setSavedVariables] = useState<Variable[]>([]);
@@ -31,6 +32,10 @@ const Variables = () => {
 
   // Fetch variables on component mount
   useEffect(() => {
+    // Only load once
+    if (hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
+
     const loadVariables = async () => {
       await fetchVariables();
     };

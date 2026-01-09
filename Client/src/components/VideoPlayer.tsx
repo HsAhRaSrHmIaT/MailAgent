@@ -1,11 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import {
-    X,
-    Play,
-    Pause,
-    Maximize,
-    Minimize,
-} from "lucide-react";
+import { X, Play, Pause, Maximize, Minimize } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 
 interface VideoPlayerProps {

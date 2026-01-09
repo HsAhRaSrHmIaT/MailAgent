@@ -21,9 +21,13 @@ class UserUpdate(BaseModel):
     username: Optional[str] = None
     email: Optional[EmailStr] = None
     profile_picture: Optional[str] = Field(None, alias='profilePicture')
+    language: Optional[str] = None
+    default_tone: Optional[str] = Field(None, alias='defaultTone')
+    ai_learning: Optional[bool] = Field(None, alias='aiLearning')
+    save_history: Optional[bool] = Field(None, alias='saveHistory')
     
     class Config:
-        populate_by_name = True  # Allow both profile_picture and profilePicture
+        populate_by_name = True  # Allow both snake_case and camelCase
 
 class UserResponse(BaseModel):
     id: str
@@ -68,6 +72,23 @@ class ResendOTPRequest(BaseModel):
     email: EmailStr
 
 
+# User Preferences Schemas
+class UserPreferencesUpdate(BaseModel):
+    language: Optional[str] = None
+    default_tone: Optional[str] = None
+    ai_learning: Optional[bool] = None
+    save_history: Optional[bool] = None
+
+class UserPreferencesResponse(BaseModel):
+    language: str
+    default_tone: str
+    ai_learning: bool
+    save_history: bool
+
+    class Config:
+        from_attributes = True
+
+
 class LogLevel(str, Enum):
     DEBUG = "DEBUG"
     INFO = "INFO"
@@ -109,23 +130,6 @@ class LogStats(BaseModel):
     debug_count: int = 0
     critical_count: int = 0
     category_breakdown: Dict[str, int] = Field(default_factory=dict)
-
-
-# class VoiceID(str, Enum):
-#     EN_IN_AROHI = "en-IN-Arohi"
-#     EN_IN_ALIA = "en-IN-Alia"
-
-
-# class Language(str, Enum):
-#     EN_IN = "en-IN"
-#     ES_US = "es-US"
-
-
-# class LLMResponse(BaseModel):
-#     prompt: str = Field(..., description="The prompt sent to the LLM")
-#     response: str = Field(..., description="The response from the LLM")
-#     input_type: str = Field(..., description="The type of input (text/audio)")
-#     transcription: Optional[str] = Field(None, description="Transcription of the audio input if applicable")
 
 
 class ChatMessage(BaseModel):

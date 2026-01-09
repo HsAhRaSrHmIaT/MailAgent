@@ -16,20 +16,29 @@ const Loader = ({ variant = "chat", size = "sm" }: LoaderProps) => {
         circle: "flex justify-center space-x-1",
         list: "flex flex-col space-y-2 w-full",
     };
- 
+
     const renderChatLoader = () => (
         <>
             <div
                 className="w-2 h-2 rounded-full animate-bounce"
-                style={{ animationDelay: "0ms", backgroundColor: currentColors.text }}
+                style={{
+                    animationDelay: "0ms",
+                    backgroundColor: currentColors.text,
+                }}
             />
             <div
                 className="w-2 h-2 rounded-full animate-bounce"
-                style={{ animationDelay: "150ms", backgroundColor: currentColors.text }}
+                style={{
+                    animationDelay: "150ms",
+                    backgroundColor: currentColors.text,
+                }}
             />
             <div
                 className="w-2 h-2 rounded-full animate-bounce"
-                style={{ animationDelay: "300ms", backgroundColor: currentColors.text }}
+                style={{
+                    animationDelay: "300ms",
+                    backgroundColor: currentColors.text,
+                }}
             />
         </>
     );
@@ -47,7 +56,7 @@ const Loader = ({ variant = "chat", size = "sm" }: LoaderProps) => {
                 />
                 <div
                     className="rounded w-64 sm:w-72 h-48 mb-2"
-                    style={{ backgroundColor: currentColors.bg}}
+                    style={{ backgroundColor: currentColors.bg }}
                 />
                 <div
                     className="rounded h-4"
@@ -60,7 +69,12 @@ const Loader = ({ variant = "chat", size = "sm" }: LoaderProps) => {
     const renderCircleLoader = () => (
         <div
             className={`${sizeClasses[size]} border-3 rounded-full animate-spin`}
-            style={{ borderTopColor: currentColors.text, borderRightColor: currentColors.text + "33", borderBottomColor: currentColors.text + "33", borderLeftColor: currentColors.text + "33" }}
+            style={{
+                borderTopColor: currentColors.text,
+                borderRightColor: currentColors.text + "33",
+                borderBottomColor: currentColors.text + "33",
+                borderLeftColor: currentColors.text + "33",
+            }}
         />
     );
 
@@ -94,7 +108,9 @@ const Loader = ({ variant = "chat", size = "sm" }: LoaderProps) => {
     return (
         <div
             className={containerClasses[variant]}
-            {...(variant === "email" ? { style: { backgroundColor: currentColors.surface } } : {})}
+            {...(variant === "email"
+                ? { style: { backgroundColor: currentColors.surface } }
+                : {})}
         >
             {renderLoader()}
         </div>
