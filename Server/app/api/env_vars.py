@@ -109,18 +109,27 @@ async def create_or_update_variable(
     try:
         # Check if variable exists
         existing = await env_vars_service.get_variable_by_key(db, current_user["id"], var_data.key)
-        is_update = existing is not None
+        is_new = existing is None
+
+        variable_changed = True
+        if existing:
+            try:
+                decrypted_existing_value = env_vars_service._decrypt_value(existing.encrypted_value)
+                variable_changed = decrypted_existing_value != var_data.value
+            except Exception:
+                variable_changed = True
         
         var = await env_vars_service.create_or_update_variable(db, current_user["id"], var_data)
         
         # Log activity
-        await user_activity_service.log_activity(
-            user_id=current_user["id"],
-            action=ActivityAction.VARIABLE_UPDATED if is_update else ActivityAction.VARIABLE_ADDED,
-            status=ActivityStatus.SUCCESS,
-            message=f"Variable '{var.key}' {'updated' if is_update else 'added'} successfully",
-            details={"key": var.key}
-        )
+        if is_new or variable_changed:
+            await user_activity_service.log_activity(
+                user_id=current_user["id"],
+                action=ActivityAction.VARIABLE_ADDED if is_new else ActivityAction.VARIABLE_UPDATED,
+                status=ActivityStatus.SUCCESS,
+                message=f"Variable '{var.key}' {'added' if is_new else 'updated'} successfully",
+                details={"key": var.key}
+            )
         
         return {
             "success": True,

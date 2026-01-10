@@ -134,20 +134,30 @@ async def create_or_update_email_config(
     Create or update an email configuration for the current user.
     """
     try:
-        # Check if config exists
+        # Check if config exists and if password changed
         existing = await email_config_service.get_email_config_by_email(db, current_user["id"], config_data.email)
-        is_update = existing is not None
+        is_new = existing is None
+        
+        # Check if password actually changed
+        password_changed = True
+        if existing:
+            try:
+                old_password = email_config_service._decrypt_password(existing.encrypted_password)
+                password_changed = old_password != config_data.password
+            except:
+                password_changed = True  # If decryption fails, assume it changed
         
         config = await email_config_service.create_or_update_email_config(db, current_user["id"], config_data)
         
-        # Log activity
-        await user_activity_service.log_activity(
-            user_id=current_user["id"],
-            action=ActivityAction.CONFIG_UPDATED if is_update else ActivityAction.CONFIG_ADDED,
-            status=ActivityStatus.SUCCESS,
-            message=f"Email config for '{config.email}' {'updated' if is_update else 'added'} successfully",
-            details={"email": config.email}
-        )
+        # Only log activity if it's new or password actually changed
+        if is_new or password_changed:
+            await user_activity_service.log_activity(
+                user_id=current_user["id"],
+                action=ActivityAction.CONFIG_ADDED if is_new else ActivityAction.CONFIG_UPDATED,
+                status=ActivityStatus.SUCCESS,
+                message=f"Email config for '{config.email}' {'added' if is_new else 'updated'} successfully",
+                details={"email": config.email}
+            )
         
         return {
             "success": True,

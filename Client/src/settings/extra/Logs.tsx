@@ -3,6 +3,7 @@ import {
     LuRefreshCw,
     LuTrash2,
     LuFilter,
+    LuChevronDown,
 } from "react-icons/lu";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useAuth } from "../../contexts/AuthContext";
@@ -58,11 +59,14 @@ const Logs = () => {
 
     const fetchStats = useCallback(async () => {
         if (!token) return;
+        setLoading(true);
         try {
             const data = await activityLogsService.fetchStats(token);
             setStats(data);
         } catch (error) {
             console.error("Error fetching stats:", error);
+        } finally {
+            setLoading(false);
         }
     }, [token]);
 
@@ -113,8 +117,13 @@ const Logs = () => {
         return new Date(timestamp).toLocaleString();
     };
 
+    const handleRefresh = () => {
+        fetchActivities();
+        fetchStats();
+    };
+
     return (
-        <div className="min-h-screen">
+        <div>
             <div className="max-w-6xl mx-auto select-none">
                 {/* Header */}
                 <div className="mb-6 sm:mb-8">
@@ -150,7 +159,7 @@ const Logs = () => {
                         </div>
                         <div className="flex flex-col sm:flex-row gap-2">
                             <button
-                                onClick={fetchActivities}
+                                onClick={handleRefresh}
                                 className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
                                 style={{
                                     backgroundColor: currentPalette.primary,
@@ -276,11 +285,15 @@ const Logs = () => {
                             borderColor: currentColors.border,
                         }}
                     >
-                        <div className="flex items-center gap-4 flex-wrap">
-                            <LuFilter
-                                size={20}
-                                style={{ color: currentColors.text }}
-                            />
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-wrap">
+                            <div className="flex items-center font-medium gap-2">
+                                <LuFilter
+                                    size={20}
+                                    style={{ color: currentColors.text }}
+                                    className=""
+                                />
+                                <span className="">Filters</span>
+                            </div>
 
                             <select
                                 value={filters.action}
@@ -349,11 +362,14 @@ const Logs = () => {
                             </p>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto max-h-80">
                             <table className="w-full">
                                 <thead
                                     style={{
-                                        backgroundColor: currentColors.surface,
+                                        backgroundColor: currentColors.bg,
+                                        position: "sticky",
+                                        top: 0,
+                                        borderBottom: `1px solid ${currentColors.border}`,
                                     }}
                                 >
                                     <tr>
@@ -396,10 +412,15 @@ const Logs = () => {
                                         <>
                                             <tr
                                                 key={activity.id}
-                                                className="border-t cursor-pointer hover:opacity-80"
+                                                className="border-t cursor-pointer hover:bg-opacity-50 transition-all"
                                                 style={{
                                                     borderColor:
                                                         currentColors.border,
+                                                    backgroundColor:
+                                                        expandedLog ===
+                                                        activity.id
+                                                            ? `${currentPalette.primary}15`
+                                                            : "transparent",
                                                 }}
                                                 onClick={() =>
                                                     setExpandedLog(
@@ -409,6 +430,7 @@ const Logs = () => {
                                                             : activity.id,
                                                     )
                                                 }
+                                                title="Click to view details"
                                             >
                                                 <td
                                                     className="px-4 py-3 text-sm"
@@ -416,9 +438,23 @@ const Logs = () => {
                                                         color: currentColors.textSecondary,
                                                     }}
                                                 >
-                                                    {formatTimestamp(
-                                                        activity.created_at,
-                                                    )}
+                                                    <div className="flex items-center gap-2">
+                                                        <LuChevronDown
+                                                            size={16}
+                                                            className="transition-transform duration-200 flex-shrink-0"
+                                                            style={{
+                                                                transform:
+                                                                    expandedLog ===
+                                                                    activity.id
+                                                                        ? "rotate(180deg)"
+                                                                        : "rotate(0deg)",
+                                                                color: currentPalette.primary,
+                                                            }}
+                                                        />
+                                                        {formatTimestamp(
+                                                            activity.created_at,
+                                                        )}
+                                                    </div>
                                                 </td>
                                                 <td
                                                     className="px-4 py-3 text-sm"
@@ -451,13 +487,31 @@ const Logs = () => {
                                                         color: currentColors.text,
                                                     }}
                                                 >
-                                                    {activity.message.length >
-                                                    80
-                                                        ? `${activity.message.substring(
-                                                              0,
-                                                              80,
-                                                          )}...`
-                                                        : activity.message}
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <span>
+                                                            {activity.message
+                                                                .length > 80
+                                                                ? `${activity.message.substring(
+                                                                      0,
+                                                                      80,
+                                                                  )}...`
+                                                                : activity.message}
+                                                        </span>
+                                                        <span
+                                                            className="text-xs px-2 py-0.5 rounded"
+                                                            style={{
+                                                                color: currentColors.text,
+                                                                backgroundColor: `${currentPalette.primary}20`,
+                                                                whiteSpace:
+                                                                    "nowrap",
+                                                            }}
+                                                        >
+                                                            {expandedLog ===
+                                                            activity.id
+                                                                ? "Hide"
+                                                                : "Click to View"}
+                                                        </span>
+                                                    </div>
                                                 </td>
                                             </tr>
                                             {expandedLog === activity.id && (

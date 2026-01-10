@@ -165,12 +165,23 @@ const Config = () => {
         return;
       }
 
+      const currentEmails = new Set(configsToSave.map((c) => c.email));
+      const deletedConfigs = savedConfigs.filter(
+        (saved) => !currentEmails.has(saved.email) && saved.email !== DEFAULT_EMAIL
+      );
+
+      // Delete removed configurations
+      const deletePromises = deletedConfigs.map((config) =>
+        apiService.deleteEmailConfig(config.email)
+      );
+
       // Save each configuration (password can be empty)
       const savePromises = configsToSave.map((config) =>
         apiService.saveEmailConfig(config.email, config.password || "")
       );
 
-      await Promise.all(savePromises);
+      // Execute all operations in parallel
+      await Promise.all([...deletePromises, ...savePromises]);
 
       // Refresh the list from server
       await fetchEmailConfigs();
@@ -484,21 +495,23 @@ const Config = () => {
                       >
                         <button
                           onClick={handleCancel}
-                          className="px-6 py-3 border rounded-lg hover:shadow-md transition-colors cursor-pointer"
+                          className="px-6 py-3 border rounded-lg hover:shadow-md transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                           style={{
                             borderColor: currentColors.border,
                             color: currentColors.text,
                             backgroundColor: currentColors.surface,
                           }}
+                          disabled={isSaving}
                         >
                           Cancel
                         </button>
                         <button
                           onClick={handleSave}
-                          className="inline-flex items-center gap-2 px-8 py-3 text-white font-medium rounded-lg transition-colors shadow-lg cursor-pointer hover:opacity-90 active:scale-95"
+                          className="inline-flex items-center gap-2 px-8 py-3 text-white font-medium rounded-lg transition-colors shadow-lg cursor-pointer hover:opacity-90 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
                           style={{
                             backgroundColor: currentPalette.primary,
                           }}
+                          disabled={isSaving}
                         >
                           {isSaving ? (
                             <span className="animate-spin">

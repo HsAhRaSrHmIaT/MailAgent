@@ -308,21 +308,23 @@ const Variables = () => {
                     <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-slate-700">
                       <button
                         onClick={handleCancel}
-                        className="px-6 py-3 border rounded-lg hover:shadow-md transition-colors cursor-pointer"
+                        className="px-6 py-3 border rounded-lg hover:shadow-md transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-none"
                         style={{
                           borderColor: currentColors.border,
                           color: currentColors.text,
                           backgroundColor: currentColors.surface,
                         }}
+                        disabled={isSaving}
                       >
                         Cancel
                       </button>
                       <button
                         onClick={handleSave}
-                        className="inline-flex items-center gap-2 px-8 py-3 text-white font-medium rounded-lg transition-colors shadow-lg cursor-pointer hover:opacity-90 active:scale-95"
+                        className="inline-flex items-center gap-2 px-8 py-3 text-white font-medium rounded-lg transition-colors shadow-lg cursor-pointer hover:opacity-90 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
                         style={{
                           backgroundColor: currentPalette.primary,
                         }}
+                        disabled={isSaving}
                       >
                         {isSaving ? (
                           <span className="animate-spin">
