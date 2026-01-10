@@ -153,30 +153,29 @@ export interface Variable {
     value: string;
 }
 
-// Logs Service Types
-export interface LogEntry {
+// User Activity Logs Types
+export interface UserActivityLog {
     id: number;
-    timestamp: string;
-    level: string;
-    category: string;
+    user_id: string;
+    action: string;
+    status: string;
     message: string;
-    details?: string;
-    source?: string;
-    user_id?: string;
-    session_id?: string;
-    ip_address?: string;
-    user_agent?: string;
+    details?: Record<string, any>; /* eslint-disable-line @typescript-eslint/no-explicit-any */
     created_at: string;
 }
 
-export interface LogStats {
-    total_logs: number;
+export interface ActivityStats {
+    total_activities: number;
+    success_count: number;
     error_count: number;
     warning_count: number;
-    info_count: number;
-    debug_count: number;
-    critical_count: number;
-    category_breakdown: Record<string, number>;
+    action_breakdown: Record<string, number>;
+    recent_activities: Array<{
+        action: string;
+        status: string;
+        message: string;
+        time: string;
+    }>;
 }
 
 // API Service Types
