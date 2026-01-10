@@ -5,9 +5,10 @@ import cloudinary.uploader
 # from typing import Optional
 from app.core.config import settings
 
-from app.models.schemas import UserCreate, UserLogin, UserUpdate, UserResponse, Token, ForgotPasswordRequest, VerifyResetTokenRequest, ResetPasswordRequest, MessageResponse, VerifyOTPRequest, ResendOTPRequest
+from app.models.schemas import UserCreate, UserLogin, UserUpdate, UserResponse, Token, ForgotPasswordRequest, VerifyResetTokenRequest, ResetPasswordRequest, MessageResponse, VerifyOTPRequest, ResendOTPRequest, ActivityAction, ActivityStatus
 from app.services.auth_service import auth_service
 from app.services.email_sending_service import email_sending_service
+from app.services.user_activity_service import user_activity_service
 from app.core.security import get_current_user_from_token
 from app.core.database import DatabaseManager
 from app.core.config import settings
@@ -123,6 +124,15 @@ async def login(credentials: UserLogin, db: AsyncSession = Depends(get_db)):
         # Generate token
         token = auth_service.create_token_for_user(user)
         
+        # Log successful login
+        await user_activity_service.log_activity(
+            user_id=user.id,
+            action=ActivityAction.LOGIN,
+            status=ActivityStatus.SUCCESS,
+            message=f"User logged in successfully",
+            details={"email": user.email}
+        )
+        
         # Return user data and token
         return {
             "success": True,
@@ -212,6 +222,17 @@ async def update_profile(
                 detail="User not found"
             )
         
+        # Log profile update
+        await user_activity_service.log_activity(
+            user_id=user.id,
+            action=ActivityAction.PROFILE_UPDATED,
+            status=ActivityStatus.SUCCESS,
+            message="Profile updated successfully",
+            details={
+                "updated_fields": [k for k, v in user_data.dict(exclude_unset=True).items() if v is not None]
+            }
+        )
+        
         return {
             "success": True,
             "message": "Profile updated successfully",
@@ -248,6 +269,15 @@ async def logout(current_user: dict = Depends(get_current_user_from_token)):
     Requires authentication (Bearer token).
     Note: This is a placeholder. Token invalidation should be handled client-side.
     """
+    # Log logout activity
+    await user_activity_service.log_activity(
+        user_id=current_user["id"],
+        action=ActivityAction.LOGOUT,
+        status=ActivityStatus.SUCCESS,
+        message="User logged out",
+        details={"email": current_user.get("email")}
+    )
+    
     return {
         "success": True,
         "message": "Logged out successfully"

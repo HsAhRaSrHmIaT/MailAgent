@@ -16,7 +16,7 @@ import { MdDataObject, MdLogout } from "react-icons/md";
 import Config from "../settings/Config";
 import Themes from "../settings/Themes";
 import Account from "../settings/account/Account";
-// import Logs from "../settings/extra/Logs";
+import Logs from "../settings/extra/Logs";
 import ExportData from "../settings/extra/ExportData";
 
 type State = {
@@ -337,6 +337,13 @@ const Settings = () => {
                     }}
                 >
                     <Themes />
+                </div>
+                <div
+                    style={{
+                        display: state.activeTab === "logs" ? "block" : "none",
+                    }}
+                >
+                    <Logs />
                 </div>
                 <div
                     style={{

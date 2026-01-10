@@ -89,47 +89,45 @@ class UserPreferencesResponse(BaseModel):
         from_attributes = True
 
 
-class LogLevel(str, Enum):
-    DEBUG = "DEBUG"
-    INFO = "INFO"
-    WARNING = "WARNING"
-    ERROR = "ERROR"
-    CRITICAL = "CRITICAL"
+class ActivityAction(str, Enum):
+    LOGIN = "login"
+    LOGOUT = "logout"
+    EMAIL_GENERATED = "email_generated"
+    EMAIL_SENT = "email_sent"
+    EMAIL_FAILED = "email_failed"
+    VARIABLE_ADDED = "variable_added"
+    VARIABLE_UPDATED = "variable_updated"
+    VARIABLE_DELETED = "variable_deleted"
+    CONFIG_ADDED = "config_added"
+    CONFIG_UPDATED = "config_updated"
+    CONFIG_DELETED = "config_deleted"
+    PROFILE_UPDATED = "profile_updated"
+    PASSWORD_CHANGED = "password_changed"
 
+class ActivityStatus(str, Enum):
+    SUCCESS = "success"
+    ERROR = "error"
+    WARNING = "warning"
 
-class LogCategory(str, Enum):
-    GENERAL = "GENERAL"
-    API = "API"
-    WEBSOCKET = "WEBSOCKET"
-    EMAIL = "EMAIL"
-    LLM = "LLM"
-    AUTH = "AUTH"
-    DATABASE = "DATABASE"
-
-
-class LogEntry(BaseModel):
+class UserActivityLog(BaseModel):
     id: int
-    timestamp: str
-    level: str
-    category: str
+    user_id: str
+    action: str
+    status: str
     message: str
     details: Optional[Dict[str, Any]] = None
-    source: Optional[str] = None
-    user_id: Optional[str] = None
-    session_id: Optional[str] = None
-    ip_address: Optional[str] = None
-    user_agent: Optional[str] = None
     created_at: str
 
+    class Config:
+        from_attributes = True
 
-class LogStats(BaseModel):
-    total_logs: int = 0
+class ActivityStats(BaseModel):
+    total_activities: int = 0
+    success_count: int = 0
     error_count: int = 0
     warning_count: int = 0
-    info_count: int = 0
-    debug_count: int = 0
-    critical_count: int = 0
-    category_breakdown: Dict[str, int] = Field(default_factory=dict)
+    action_breakdown: Dict[str, int] = Field(default_factory=dict)
+    recent_activities: List[Dict[str, Any]] = Field(default_factory=list)
 
 
 class ChatMessage(BaseModel):

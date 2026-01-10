@@ -6,9 +6,12 @@ from app.models.schemas import (
     EmailConfigCreate,
     EmailConfigUpdate,
     EmailConfigResponse,
-    EmailConfigWithPassword
+    EmailConfigWithPassword,
+    ActivityAction,
+    ActivityStatus
 )
 from app.services.email_config_service import email_config_service
+from app.services.user_activity_service import user_activity_service
 from app.core.security import get_current_user_from_token
 from app.core.database import DatabaseManager
 
@@ -131,7 +134,20 @@ async def create_or_update_email_config(
     Create or update an email configuration for the current user.
     """
     try:
+        # Check if config exists
+        existing = await email_config_service.get_email_config_by_email(db, current_user["id"], config_data.email)
+        is_update = existing is not None
+        
         config = await email_config_service.create_or_update_email_config(db, current_user["id"], config_data)
+        
+        # Log activity
+        await user_activity_service.log_activity(
+            user_id=current_user["id"],
+            action=ActivityAction.CONFIG_UPDATED if is_update else ActivityAction.CONFIG_ADDED,
+            status=ActivityStatus.SUCCESS,
+            message=f"Email config for '{config.email}' {'updated' if is_update else 'added'} successfully",
+            details={"email": config.email}
+        )
         
         return {
             "success": True,
@@ -205,6 +221,15 @@ async def delete_email_config(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Email configuration for '{email}' not found"
             )
+        
+        # Log activity
+        await user_activity_service.log_activity(
+            user_id=current_user["id"],
+            action=ActivityAction.CONFIG_DELETED,
+            status=ActivityStatus.SUCCESS,
+            message=f"Email config for '{email}' deleted successfully",
+            details={"email": email}
+        )
         
         return {
             "success": True,

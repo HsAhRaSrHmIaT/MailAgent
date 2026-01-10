@@ -29,21 +29,16 @@ class UserModel(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     last_login = Column(DateTime(timezone=True), nullable=True)
 
-class LogEntryModel(Base):
-    __tablename__ = "logs"
+class UserActivityLogModel(Base):
+    __tablename__ = "user_activity_logs"
     
     id = Column(Integer, primary_key=True, index=True)
-    timestamp = Column(String, nullable=False, index=True)
-    level = Column(String, nullable=False, index=True)
-    category = Column(String, nullable=False, index=True)
+    user_id = Column(String, nullable=False, index=True)
+    action = Column(String, nullable=False, index=True)  # login, logout, email_sent, email_generated, etc.
+    status = Column(String, nullable=False, index=True)  # success, error, warning
     message = Column(Text, nullable=False)
-    details = Column(JSON, nullable=True)
-    source = Column(String, nullable=True)
-    user_id = Column(String, nullable=True)
-    session_id = Column(String, nullable=True)
-    ip_address = Column(String, nullable=True)
-    user_agent = Column(Text, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    details = Column(JSON, nullable=True)  # Additional context
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
 class UserEnvironmentVariablesModel(Base):
     __tablename__ = "user_environment_variables"

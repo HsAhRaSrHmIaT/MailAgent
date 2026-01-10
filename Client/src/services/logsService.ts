@@ -1,48 +1,52 @@
-import type { LogEntry, LogStats } from "../types";
+import type { UserActivityLog, ActivityStats } from "../types";
 
-export interface LogFilters {
-    level?: string;
-    category?: string;
+export interface ActivityFilters {
+    action?: string;
+    status?: string;
     search_term?: string;
     limit?: number;
-}
-
-export interface LogStatus {
-    database_available: boolean;
-    file_logging: boolean;
-    database_error?: string;
 }
 
 export interface CleanupResponse {
     deleted_count: number;
 }
 
-class LogsService {
-    private baseUrl = "http://localhost:8000/api/logs";
+class ActivityLogsService {
+    private baseUrl = "http://localhost:8000/api/activity-logs";
 
-    async fetchLogs(filters: LogFilters = {}): Promise<LogEntry[]> {
+    async fetchActivities(
+        filters: ActivityFilters = {},
+        token: string,
+    ): Promise<UserActivityLog[]> {
         try {
             const params = new URLSearchParams();
-            if (filters.level) params.append("level", filters.level);
-            if (filters.category) params.append("category", filters.category);
-            if (filters.search_term)
-                params.append("search_term", filters.search_term);
-            params.append("limit", (filters.limit || 100).toString());
+            if (filters.action) params.append("action", filters.action);
+            if (filters.status) params.append("status", filters.status);
 
-            const response = await fetch(`${this.baseUrl}?${params}`);
+            const response = await fetch(`${this.baseUrl}?${params}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             if (!response.ok) {
-                throw new Error(`Failed to fetch logs: ${response.statusText}`);
+                throw new Error(
+                    `Failed to fetch activities: ${response.statusText}`,
+                );
             }
             return await response.json();
         } catch (error) {
-            console.error("Error fetching logs:", error);
+            console.error("Error fetching activities:", error);
             throw error;
         }
     }
 
-    async fetchStats(): Promise<LogStats> {
+    async fetchStats(token: string): Promise<ActivityStats> {
         try {
-            const response = await fetch(`${this.baseUrl}/stats`);
+            const response = await fetch(`${this.baseUrl}/stats`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             if (!response.ok) {
                 throw new Error(
                     `Failed to fetch stats: ${response.statusText}`,
@@ -55,39 +59,31 @@ class LogsService {
         }
     }
 
-    async fetchStatus(): Promise<LogStatus> {
+    async clearOldActivities(
+        token: string,
+        days: number = 30,
+    ): Promise<CleanupResponse> {
         try {
-            const response = await fetch(`${this.baseUrl}/status`);
+            const response = await fetch(
+                `${this.baseUrl}/cleanup?days=${days}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                },
+            );
             if (!response.ok) {
                 throw new Error(
-                    `Failed to fetch status: ${response.statusText}`,
+                    `Failed to clear activities: ${response.statusText}`,
                 );
             }
             return await response.json();
         } catch (error) {
-            console.error("Error fetching status:", error);
-            return {
-                database_available: false,
-                file_logging: true,
-                database_error: "Could not connect to server",
-            };
-        }
-    }
-
-    async clearOldLogs(): Promise<CleanupResponse> {
-        try {
-            const response = await fetch(`${this.baseUrl}/cleanup`, {
-                method: "DELETE",
-            });
-            if (!response.ok) {
-                throw new Error(`Failed to clear logs: ${response.statusText}`);
-            }
-            return await response.json();
-        } catch (error) {
-            console.error("Error clearing logs:", error);
+            console.error("Error clearing activities:", error);
             throw error;
         }
     }
 }
 
-export const logsService = new LogsService();
+export const activityLogsService = new ActivityLogsService();

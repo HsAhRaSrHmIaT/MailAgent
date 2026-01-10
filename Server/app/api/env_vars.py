@@ -6,9 +6,12 @@ from app.models.schemas import (
     EnvironmentVariableCreate, 
     EnvironmentVariableUpdate,
     EnvironmentVariableResponse,
-    EnvironmentVariableListItem
+    EnvironmentVariableListItem,
+    ActivityAction,
+    ActivityStatus
 )
 from app.services.env_vars_service import env_vars_service
+from app.services.user_activity_service import user_activity_service
 from app.core.security import get_current_user_from_token
 from app.core.database import DatabaseManager
 from typing import Dict, Any
@@ -104,7 +107,20 @@ async def create_or_update_variable(
     Create or update an environment variable for the current user.
     """
     try:
+        # Check if variable exists
+        existing = await env_vars_service.get_variable_by_key(db, current_user["id"], var_data.key)
+        is_update = existing is not None
+        
         var = await env_vars_service.create_or_update_variable(db, current_user["id"], var_data)
+        
+        # Log activity
+        await user_activity_service.log_activity(
+            user_id=current_user["id"],
+            action=ActivityAction.VARIABLE_UPDATED if is_update else ActivityAction.VARIABLE_ADDED,
+            status=ActivityStatus.SUCCESS,
+            message=f"Variable '{var.key}' {'updated' if is_update else 'added'} successfully",
+            details={"key": var.key}
+        )
         
         return {
             "success": True,
