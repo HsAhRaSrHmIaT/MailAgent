@@ -19,7 +19,6 @@ const ACTIVITY_ACTIONS = [
     "email_failed",
     "variable_added",
     "variable_updated",
-    "variable_deleted",
     "config_added",
     "config_updated",
     "config_deleted",
@@ -347,7 +346,7 @@ const Logs = () => {
 
                 {/* Activities Table */}
                 <div
-                    className="border rounded-xl overflow-y-auto max-h-96"
+                    className="border rounded-xl overflow-y-auto max-h-96 shadow-lg"
                     style={{
                         borderColor: currentColors.border,
                         background: currentColors.surface,
@@ -370,6 +369,7 @@ const Logs = () => {
                                         position: "sticky",
                                         top: 0,
                                         borderBottom: `1px solid ${currentColors.border}`,
+                                        zIndex: 1,
                                     }}
                                 >
                                     <tr>
