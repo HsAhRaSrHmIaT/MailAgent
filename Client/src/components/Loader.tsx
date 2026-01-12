@@ -68,7 +68,7 @@ const Loader = ({ variant = "chat", size = "sm" }: LoaderProps) => {
 
     const renderCircleLoader = () => (
         <div
-            className={`${sizeClasses[size]} border-3 rounded-full animate-spin`}
+            className={`${sizeClasses[size]} border-4 rounded-full animate-spin`}
             style={{
                 borderTopColor: currentColors.text,
                 borderRightColor: currentColors.text + "33",

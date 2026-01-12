@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { apiService } from "../services/apiService";
 import { sendService } from "../services/sendService";
 import { useTheme } from "../contexts/ThemeContext";
 import { toast } from "react-toastify";
-import Header from "../components/Header";
+import DraftsHeader from "../components/DraftsHeader";
 import { CircleLoader } from "../components/Loader";
-import { MdDelete, MdEdit, MdSend } from "react-icons/md";
+import { MdDelete, MdEdit, MdSend, MdSave, MdClose } from "react-icons/md";
 
 interface Draft {
     id: string;
@@ -23,9 +22,15 @@ const Drafts = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [sendingId, setSendingId] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [savingId, setSavingId] = useState<string | null>(null);
     const [expandedId, setExpandedId] = useState<string | null>(null);
+    const [editForm, setEditForm] = useState<{
+        to_email: string;
+        subject: string;
+        body: string;
+    }>({ to_email: "", subject: "", body: "" });
     const { currentColors, currentPalette } = useTheme();
-    const navigate = useNavigate();
 
     useEffect(() => {
         loadDrafts();
@@ -84,9 +89,38 @@ const Drafts = () => {
         }
     };
 
-    const handleEdit = (draft: Draft) => {
-        // Navigate back to chat with draft data for editing
-        navigate("/", { state: { editDraft: draft } });
+    const handleEdit = async (draft: Draft) => {
+        setEditingId(draft.id);
+        setExpandedId(draft.id);
+        setEditForm({
+            to_email: draft.to_email,
+            subject: draft.subject,
+            body: draft.body,
+        });
+    };
+
+    const handleCancelEdit = () => {
+        setEditingId(null);
+        setEditForm({ to_email: "", subject: "", body: "" });
+    };
+
+    const handleSaveEdit = async (draftId: string) => {
+        setSavingId(draftId);
+        try {
+            await apiService.updateEmail(draftId, {
+                to_email: editForm.to_email,
+                subject: editForm.subject,
+                body: editForm.body,
+            });
+            toast.success("Draft updated successfully!");
+            setEditingId(null);
+            loadDrafts(); // Refresh list
+        } catch (error) {
+            console.error("Failed to update draft:", error);
+            toast.error("Failed to update draft");
+        } finally {
+            setSavingId(null);
+        }
     };
 
     const toggleExpand = (draftId: string) => {
@@ -98,7 +132,7 @@ const Drafts = () => {
             className="flex flex-col h-screen"
             style={{ backgroundColor: currentColors.bg }}
         >
-            <Header setMessages={() => {}} />
+            <DraftsHeader />
 
             <div className="flex-1 overflow-y-auto p-4 sm:p-6">
                 <div className="max-w-4xl mx-auto">
@@ -109,16 +143,6 @@ const Drafts = () => {
                         >
                             Drafts
                         </h1>
-                        <button
-                            onClick={() => navigate("/")}
-                            className="px-4 py-2 rounded text-sm hover:opacity-80"
-                            style={{
-                                backgroundColor: currentPalette.primary,
-                                color: "white",
-                            }}
-                        >
-                            Back to Chat
-                        </button>
                     </div>
 
                     {isLoading ? (
@@ -281,43 +305,160 @@ const Drafts = () => {
                                                     currentColors.border,
                                             }}
                                         >
-                                            <div className="space-y-3">
-                                                <div>
-                                                    <label
-                                                        className="text-sm font-medium block mb-1"
-                                                        style={{
-                                                            color: currentColors.textSecondary,
-                                                        }}
-                                                    >
-                                                        Subject:
-                                                    </label>
-                                                    <p
-                                                        style={{
-                                                            color: currentColors.text,
-                                                        }}
-                                                    >
-                                                        {draft.subject}
-                                                    </p>
+                                            {editingId === draft.id ? (
+                                                <div className="space-y-4">
+                                                    <div>
+                                                        <label
+                                                            className="text-sm font-medium block mb-2"
+                                                            style={{
+                                                                color: currentColors.text,
+                                                            }}
+                                                        >
+                                                            To:
+                                                        </label>
+                                                        <input
+                                                            type="email"
+                                                            value={
+                                                                editForm.to_email
+                                                            }
+                                                            onChange={(e) =>
+                                                                setEditForm({
+                                                                    ...editForm,
+                                                                    to_email:
+                                                                        e.target
+                                                                            .value,
+                                                                })
+                                                            }
+                                                            className="w-full px-3 py-2 rounded border"
+                                                            style={{
+                                                                backgroundColor:
+                                                                    currentColors.bg,
+                                                                color: currentColors.text,
+                                                                borderColor:
+                                                                    currentColors.border,
+                                                            }}
+                                                            placeholder="recipient@example.com"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label
+                                                            className="text-sm font-medium block mb-2"
+                                                            style={{
+                                                                color: currentColors.text,
+                                                            }}
+                                                        >
+                                                            Subject:
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={
+                                                                editForm.subject
+                                                            }
+                                                            onChange={(e) =>
+                                                                setEditForm({
+                                                                    ...editForm,
+                                                                    subject:
+                                                                        e.target
+                                                                            .value,
+                                                                })
+                                                            }
+                                                            className="w-full px-3 py-2 rounded border"
+                                                            style={{
+                                                                backgroundColor:
+                                                                    currentColors.bg,
+                                                                color: currentColors.text,
+                                                                borderColor:
+                                                                    currentColors.border,
+                                                            }}
+                                                            placeholder="Email subject"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label
+                                                            className="text-sm font-medium block mb-2"
+                                                            style={{
+                                                                color: currentColors.text,
+                                                            }}
+                                                        >
+                                                            Body:
+                                                        </label>
+                                                        <textarea
+                                                            value={
+                                                                editForm.body
+                                                            }
+                                                            onChange={(e) =>
+                                                                setEditForm({
+                                                                    ...editForm,
+                                                                    body: e
+                                                                        .target
+                                                                        .value,
+                                                                })
+                                                            }
+                                                            rows={8}
+                                                            className="w-full px-3 py-2 rounded border resize-none"
+                                                            style={{
+                                                                backgroundColor:
+                                                                    currentColors.bg,
+                                                                color: currentColors.text,
+                                                                borderColor:
+                                                                    currentColors.border,
+                                                            }}
+                                                            placeholder="Email content"
+                                                        />
+                                                    </div>
+                                                    <div className="flex gap-2 justify-end">
+                                                        <button
+                                                            onClick={
+                                                                handleCancelEdit
+                                                            }
+                                                            className="px-4 py-2 rounded flex items-center gap-2 hover:opacity-80"
+                                                            style={{
+                                                                backgroundColor:
+                                                                    currentColors.textSecondary +
+                                                                    "20",
+                                                                color: currentColors.text,
+                                                            }}
+                                                        >
+                                                            <MdClose
+                                                                size={18}
+                                                            />
+                                                            Cancel
+                                                        </button>
+                                                        <button
+                                                            onClick={() =>
+                                                                handleSaveEdit(
+                                                                    draft.id,
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                savingId ===
+                                                                draft.id
+                                                            }
+                                                            className="px-4 py-2 rounded flex items-center gap-2 hover:opacity-80 disabled:opacity-50"
+                                                            style={{
+                                                                backgroundColor:
+                                                                    currentPalette.primary,
+                                                                color: "white",
+                                                            }}
+                                                        >
+                                                            {savingId ===
+                                                            draft.id ? (
+                                                                <CircleLoader size="sm" />
+                                                            ) : (
+                                                                <>
+                                                                    <MdSave
+                                                                        size={
+                                                                            18
+                                                                        }
+                                                                    />
+                                                                    Save Changes
+                                                                </>
+                                                            )}
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <label
-                                                        className="text-sm font-medium block mb-1"
-                                                        style={{
-                                                            color: currentColors.textSecondary,
-                                                        }}
-                                                    >
-                                                        Body:
-                                                    </label>
-                                                    <p
-                                                        className="whitespace-pre-wrap"
-                                                        style={{
-                                                            color: currentColors.text,
-                                                        }}
-                                                    >
-                                                        {draft.body}
-                                                    </p>
-                                                </div>
-                                                {draft.prompt && (
+                                            ) : (
+                                                <div className="space-y-3">
                                                     <div>
                                                         <label
                                                             className="text-sm font-medium block mb-1"
@@ -325,19 +466,56 @@ const Drafts = () => {
                                                                 color: currentColors.textSecondary,
                                                             }}
                                                         >
-                                                            Original Prompt:
+                                                            Subject:
                                                         </label>
                                                         <p
-                                                            className="text-sm"
+                                                            style={{
+                                                                color: currentColors.text,
+                                                            }}
+                                                        >
+                                                            {draft.subject}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <label
+                                                            className="text-sm font-medium block mb-1"
                                                             style={{
                                                                 color: currentColors.textSecondary,
                                                             }}
                                                         >
-                                                            {draft.prompt}
+                                                            Body:
+                                                        </label>
+                                                        <p
+                                                            className="whitespace-pre-wrap"
+                                                            style={{
+                                                                color: currentColors.text,
+                                                            }}
+                                                        >
+                                                            {draft.body}
                                                         </p>
                                                     </div>
-                                                )}
-                                            </div>
+                                                    {draft.prompt && (
+                                                        <div>
+                                                            <label
+                                                                className="text-sm font-medium block mb-1"
+                                                                style={{
+                                                                    color: currentColors.textSecondary,
+                                                                }}
+                                                            >
+                                                                Original Prompt:
+                                                            </label>
+                                                            <p
+                                                                className="text-sm"
+                                                                style={{
+                                                                    color: currentColors.textSecondary,
+                                                                }}
+                                                            >
+                                                                {draft.prompt}
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>

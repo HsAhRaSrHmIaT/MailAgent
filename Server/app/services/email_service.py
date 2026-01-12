@@ -41,7 +41,8 @@ class EmailService:
         user_id: str,
         limit: int = 50,
         before_timestamp: Optional[datetime] = None,
-        after_timestamp: Optional[datetime] = None
+        after_timestamp: Optional[datetime] = None,
+        status: Optional[str] = None
     ) -> List[EmailMessageModel]:
         """Get emails with pagination"""
         query = select(EmailMessageModel).where(
@@ -53,6 +54,9 @@ class EmailService:
         
         if after_timestamp:
             query = query.where(EmailMessageModel.timestamp > after_timestamp)
+        
+        if status:
+            query = query.where(EmailMessageModel.status == status)
         
         query = query.order_by(EmailMessageModel.timestamp.desc()).limit(limit)
         
