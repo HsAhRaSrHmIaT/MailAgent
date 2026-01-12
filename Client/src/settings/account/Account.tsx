@@ -44,7 +44,7 @@ const Account = () => {
                         <div
                             className="p-2 sm:p-3 rounded-xl"
                             style={{
-                                backgroundColor: `${currentPalette.primary}50`,
+                                backgroundColor: `${currentPalette.primary}20`,
                             }}
                         >
                             <span
@@ -72,7 +72,7 @@ const Account = () => {
                 </div>
             </div>
             <div
-                className="space-y-6 border rounded-xl p-4"
+                className="space-y-6 border rounded-xl p-4 shadow-lg"
                 style={{
                     borderColor: currentColors.border,
                     minHeight: "500px",

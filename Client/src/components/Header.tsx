@@ -40,10 +40,10 @@ const Header = ({ setMessages }: HeaderProps) => {
         >
             <div className="flex-1 min-w-0">
                 <h1
-                    className="text-base sm:text-lg font-semibold truncate"
+                    className="text-base sm:text-lg font-bold truncate"
                     style={{ color: currentColors.text }}
                 >
-                    Chat & Email Assistant
+                    m<span className="text-blue-500 font-mono">AI</span>lAgent
                 </h1>
                 <div className="flex items-center space-x-1 ml-1">
                     <div

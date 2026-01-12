@@ -45,6 +45,14 @@ async def get_active_email(
         active_config = await email_config_service.get_active_email(db, current_user["id"])
         
         if not active_config:
+            # Log warning for missing email configuration (using fallback)
+            await user_activity_service.log_activity(
+                user_id=current_user["id"],
+                action=ActivityAction.CONFIG_UPDATED,
+                status=ActivityStatus.WARNING,
+                message="No email configuration found, using fallback default",
+                details={"fallback": "default"}
+            )
             return {
                 "email": "default",
                 "password": ""
@@ -55,6 +63,17 @@ async def get_active_email(
             "password": email_config_service._decrypt_password(active_config.encrypted_password)
         }
     except Exception as e:
+        # Log error retrieving active email
+        try:
+            await user_activity_service.log_activity(
+                user_id=current_user["id"],
+                action=ActivityAction.CONFIG_UPDATED,
+                status=ActivityStatus.ERROR,
+                message=f"Failed to retrieve active email: {str(e)}",
+                details={"error": str(e)}
+            )
+        except:
+            pass
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to retrieve active email: {str(e)}"
@@ -168,6 +187,17 @@ async def create_or_update_email_config(
             }
         }
     except Exception as e:
+        # Log error saving email config
+        try:
+            await user_activity_service.log_activity(
+                user_id=current_user["id"],
+                action=ActivityAction.CONFIG_ADDED,
+                status=ActivityStatus.ERROR,
+                message=f"Failed to save email config: {str(e)}",
+                details={"email": config_data.email, "error": str(e)}
+            )
+        except:
+            pass
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to save email configuration: {str(e)}"
@@ -208,6 +238,17 @@ async def update_email_config(
     except HTTPException:
         raise
     except Exception as e:
+        # Log error updating email config
+        try:
+            await user_activity_service.log_activity(
+                user_id=current_user["id"],
+                action=ActivityAction.CONFIG_UPDATED,
+                status=ActivityStatus.ERROR,
+                message=f"Failed to update email config: {str(e)}",
+                details={"email": email, "error": str(e)}
+            )
+        except:
+            pass
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update email configuration: {str(e)}"
@@ -248,6 +289,17 @@ async def delete_email_config(
     except HTTPException:
         raise
     except Exception as e:
+        # Log error deleting email config
+        try:
+            await user_activity_service.log_activity(
+                user_id=current_user["id"],
+                action=ActivityAction.CONFIG_DELETED,
+                status=ActivityStatus.ERROR,
+                message=f"Failed to delete email config: {str(e)}",
+                details={"email": email, "error": str(e)}
+            )
+        except:
+            pass
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete email configuration: {str(e)}"

@@ -44,6 +44,16 @@ async def get_all_variables(
     try:
         variables = await env_vars_service.get_all_user_variables(db, current_user["id"])
         
+        # Log warning if no environment variables configured
+        if not variables:
+            await user_activity_service.log_activity(
+                user_id=current_user["id"],
+                action=ActivityAction.VARIABLE_UPDATED,
+                status=ActivityStatus.WARNING,
+                message="No environment variables configured for user",
+                details={"count": 0}
+            )
+        
         return [
             EnvironmentVariableListItem(
                 id=var.id,
@@ -91,6 +101,17 @@ async def get_variable(
     except HTTPException:
         raise
     except Exception as e:
+        # Log error retrieving environment variable
+        try:
+            await user_activity_service.log_activity(
+                user_id=current_user["id"],
+                action=ActivityAction.VARIABLE_UPDATED,
+                status=ActivityStatus.ERROR,
+                message=f"Failed to retrieve variable '{key}': {str(e)}",
+                details={"key": key, "error": str(e)}
+            )
+        except:
+            pass
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to retrieve environment variable: {str(e)}"
@@ -141,6 +162,17 @@ async def create_or_update_variable(
             }
         }
     except Exception as e:
+        # Log error saving environment variable
+        try:
+            await user_activity_service.log_activity(
+                user_id=current_user["id"],
+                action=ActivityAction.VARIABLE_ADDED,
+                status=ActivityStatus.ERROR,
+                message=f"Failed to save variable '{var_data.key}': {str(e)}",
+                details={"key": var_data.key, "error": str(e)}
+            )
+        except:
+            pass
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to save environment variable: {str(e)}"
@@ -182,61 +214,19 @@ async def update_variable(
     except HTTPException:
         raise
     except Exception as e:
+        # Log error updating environment variable
+        try:
+            await user_activity_service.log_activity(
+                user_id=current_user["id"],
+                action=ActivityAction.VARIABLE_UPDATED,
+                status=ActivityStatus.ERROR,
+                message=f"Failed to update variable '{key}': {str(e)}",
+                details={"key": key, "error": str(e)}
+            )
+        except:
+            pass
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update environment variable: {str(e)}"
         )
 
-
-# @router.delete("/{key}", response_model=dict)
-# async def delete_variable(
-#     key: str,
-#     current_user: Dict[str, Any] = Depends(get_current_user_from_token),
-#     db: AsyncSession = Depends(get_db)
-# ):
-#     """
-#     Delete a specific environment variable.
-#     """
-#     try:
-#         deleted = await env_vars_service.delete_variable(db, current_user["id"], key)
-        
-#         if not deleted:
-#             raise HTTPException(
-#                 status_code=status.HTTP_404_NOT_FOUND,
-#                 detail=f"Environment variable '{key}' not found"
-#             )
-        
-#         return {
-#             "success": True,
-#             "message": f"Environment variable '{key}' deleted successfully"
-#         }
-#     except HTTPException:
-#         raise
-#     except Exception as e:
-#         raise HTTPException(
-#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-#             detail=f"Failed to delete environment variable: {str(e)}"
-#         )
-
-
-# @router.delete("/", response_model=dict)
-# async def delete_all_variables(
-#     current_user: Dict[str, Any] = Depends(get_current_user_from_token),
-#     db: AsyncSession = Depends(get_db)
-# ):
-#     """
-#     Delete all environment variables for the current user.
-#     """
-#     try:
-#         count = await env_vars_service.delete_all_user_variables(db, current_user["id"])
-        
-#         return {
-#             "success": True,
-#             "message": f"Deleted {count} environment variable(s)",
-#             "count": count
-#         }
-#     except Exception as e:
-#         raise HTTPException(
-#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-#             detail=f"Failed to delete environment variables: {str(e)}"
-#         )

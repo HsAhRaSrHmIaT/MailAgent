@@ -22,7 +22,8 @@ body {
 /* Mobile-first responsive adjustments */
 @media (max-width: 1024px) {
     body {
-        padding-bottom: 100px; /* Increased space for enhanced mobile bottom bar */
+        overflow: hidden;
+        height: 100vh;
     }
 }
 

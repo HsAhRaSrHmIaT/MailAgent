@@ -61,14 +61,19 @@ const Settings = () => {
 
     return (
         <div className="flex h-screen relative">
-            {/* Mobile Menu Button */}
+            {/* Mobile Header with Logo and Menu Button */}
             <div
+                className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 shadow-md"
                 style={{
-                    backgroundColor: currentColors.bg + "f0",
+                    backgroundColor: currentColors.bg,
+                    borderBottom: `1px solid ${currentColors.border}`,
                 }}
             >
+                <div className="text-3xl font-bold">
+                    m<span className="font-mono text-blue-600">AI</span>lAgent
+                </div>
                 <button
-                    className="lg:hidden fixed top-4 right-4 z-50 p-3 rounded-xl shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95"
+                    className="p-3 rounded-xl shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95"
                     style={{
                         backgroundColor: currentColors.bg + "f0",
                         color: currentColors.text,
@@ -119,11 +124,11 @@ const Settings = () => {
                 className={`${
                     sidebarOpen ? "translate-x-0" : "-translate-x-full"
                 } 
-                    lg:translate-x-0 fixed lg:relative w-80 lg:w-1/5 h-full p-4 select-none flex flex-col z-40 transition-transform duration-300 ease-in-out`}
+                    lg:translate-x-0 fixed lg:relative w-80 lg:w-1/5 h-full p-4 pt-20 lg:pt-4 select-none flex flex-col z-40 transition-transform duration-300 ease-in-out`}
                 style={{ backgroundColor: currentColors.bg }}
             >
-                <div className="text-4xl font-semibold dark:text-white p-2 italic lg:block hidden">
-                    @Settings
+                <div className="text-4xl font-bold p-2 lg:block hidden">
+                    m<span className="font-mono text-blue-600">AI</span>lAgent
                 </div>
                 {/* Left Side Panel */}
                 <ul className="space-y-3 p-2 mt-4 flex-1 flex flex-col">
