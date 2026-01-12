@@ -324,7 +324,7 @@ const EmailForm = () => {
     };
 
     // Handle command step submission
-    const handleCommandStep = () => {
+    const handleCommandStep = async () => {
         const currentCommand =
             commands[commandState.command as keyof typeof commands];
         const currentStep = currentCommand.steps[commandState.step];
@@ -356,14 +356,14 @@ const EmailForm = () => {
         } else {
             // setIsEmailGenerating(true);
             setIsAIThinking(true);
-            addMessage(
+            await addMessage(
                 `${newData.prompt}\nGenerating email for: **_${newData.receiverEmail}_**`,
                 "user",
             );
 
             try {
-                setTimeout(() => {
-                    addMessage("Generating Email...", "assistant");
+                setTimeout(async () => {
+                    await addMessage("Generating Email...", "assistant");
                     setIsAIThinking(false);
                 }, 1000);
 
@@ -379,7 +379,7 @@ const EmailForm = () => {
                             const emailId = Date.now().toString();
 
                             // Add email message to chat
-                            addMessage(
+                            await addMessage(
                                 "",
                                 "assistant",
                                 hashTag || undefined,
@@ -413,7 +413,7 @@ const EmailForm = () => {
                                 );
                             }
                         } else {
-                            addMessage(
+                            await addMessage(
                                 `❌Failed to generate email: ${
                                     response.error || "Unknown error"
                                 }`,
@@ -422,7 +422,7 @@ const EmailForm = () => {
                         }
                     } catch (error) {
                         console.error("Error generating email:", error);
-                        addMessage(
+                        await addMessage(
                             "❌Something went wrong. Please try again later",
                             "assistant",
                         );
@@ -467,7 +467,7 @@ const EmailForm = () => {
         const userMessage = message.trim();
         const tone = hashTag.replace("#", "") || undefined;
 
-        addMessage(userMessage, "user", hashTag);
+        await addMessage(userMessage, "user", hashTag);
         setMessage("");
         setIsAIThinking(true);
 
@@ -478,9 +478,9 @@ const EmailForm = () => {
             });
 
             if (response.success && response.message) {
-                addMessage(response.message, "assistant");
+                await addMessage(response.message, "assistant");
             } else {
-                addMessage(
+                await addMessage(
                     `❌Failed to get response: ${
                         response.error || "Unknown error"
                     }`,
@@ -489,7 +489,7 @@ const EmailForm = () => {
             }
         } catch (error) {
             console.error("Error handling regular message:", error);
-            addMessage(
+            await addMessage(
                 "❌Something went wrong. Please try again later",
                 "assistant",
             );
@@ -567,7 +567,7 @@ const EmailForm = () => {
             {/* Main Chat Container */}
             <div className="flex-1 flex flex-col relative mx-2">
                 <div
-                    className="flex flex-col h-full max-w-4xl w-full mx-auto border shadow-lg rounded-lg overflow-hidden my-3 mx-3 lg:my-4 lg:mx-auto"
+                    className="flex flex-col h-[calc(100vh-100px)] lg:h-full max-w-4xl w-full mx-auto border shadow-xl rounded-lg overflow-hidden my-3 mx-3 lg:my-4 lg:mx-auto"
                     style={{
                         borderColor: currentColors.border,
                     }}

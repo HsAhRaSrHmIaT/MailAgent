@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 import cloudinary
 import cloudinary.uploader
+from datetime import datetime, timedelta
+from collections import defaultdict
 # from typing import Optional
 from app.core.config import settings
 
@@ -18,6 +20,9 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 # Database dependency
 db_manager = DatabaseManager()
 
+# Simple in-memory rate limiting tracker for failed login attempts
+failed_login_tracker = defaultdict(list)  # {email: [timestamp1, timestamp2, ...]}
+
 async def get_db():
     """Dependency to get database session."""
     if not db_manager._initialized:
@@ -30,6 +35,26 @@ async def get_db():
             await session.close()
 
 
+def check_suspicious_login_activity(email: str) -> tuple[bool, int]:
+    """
+    Check if there are multiple failed login attempts from this email.
+    Returns (is_suspicious, attempt_count)
+    """
+    now = datetime.now()
+    time_window = timedelta(minutes=15)  # 15 minute window
+    
+    # Clean old attempts
+    failed_login_tracker[email] = [
+        timestamp for timestamp in failed_login_tracker[email]
+        if now - timestamp < time_window
+    ]
+    
+    attempt_count = len(failed_login_tracker[email])
+    is_suspicious = attempt_count >= 5  # 5 failed attempts in 15 minutes
+    
+    return is_suspicious, attempt_count
+
+
 @router.post("/register", response_model=dict, status_code=status.HTTP_201_CREATED)
 async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
     """
@@ -40,6 +65,26 @@ async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
     - **password**: User's password (required, min 8 characters)
     """
     try:
+        # Check password strength and log warning if weak
+        if len(user_data.password) < 12:
+            await user_activity_service.log_activity(
+                user_id="unknown",
+                action=ActivityAction.LOGIN,
+                status=ActivityStatus.WARNING,
+                message=f"User registered with weak password (length: {len(user_data.password)})",
+                details={"email": user_data.email, "password_length": len(user_data.password)}
+            )
+        
+        # Log warning if username not provided (missing optional data)
+        if not user_data.username:
+            await user_activity_service.log_activity(
+                user_id="unknown",
+                action=ActivityAction.LOGIN,
+                status=ActivityStatus.WARNING,
+                message="User registered without username (optional field missing)",
+                details={"email": user_data.email}
+            )
+        
         # Create user (not verified yet)
         user = await auth_service.create_user(db, user_data)
         
@@ -55,6 +100,14 @@ async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
             )
         except Exception as e:
             print(f"Failed to send OTP email: {str(e)}")
+            # Log warning for failed email sending
+            await user_activity_service.log_activity(
+                user_id=user.id,
+                action=ActivityAction.LOGIN,
+                status=ActivityStatus.WARNING,
+                message="Registration successful but OTP email failed to send",
+                details={"email": user.email, "error": str(e)}
+            )
             # Don't fail registration if email fails, user can resend
         
         # Return user data without token (user needs to verify email first)
@@ -75,11 +128,33 @@ async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
             "requiresVerification": True
         }
     except ValueError as e:
+        # Log registration error (duplicate email/username)
+        try:
+            await user_activity_service.log_activity(
+                user_id="unknown",
+                action=ActivityAction.LOGIN,  # Using LOGIN as there's no REGISTER action
+                status=ActivityStatus.ERROR,
+                message=f"Registration failed: {str(e)}",
+                details={"email": user_data.email, "error": str(e)}
+            )
+        except:
+            pass
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
+        # Log unexpected registration error
+        try:
+            await user_activity_service.log_activity(
+                user_id="unknown",
+                action=ActivityAction.LOGIN,
+                status=ActivityStatus.ERROR,
+                message=f"Registration error: {str(e)}",
+                details={"email": user_data.email, "error": str(e)}
+            )
+        except:
+            pass
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Registration failed: {str(e)}"
@@ -97,17 +172,53 @@ async def login(credentials: UserLogin, db: AsyncSession = Depends(get_db)):
     Returns a JWT access token on success.
     """
     try:
+        # Check for suspicious login activity
+        is_suspicious, attempt_count = check_suspicious_login_activity(credentials.email)
+        
+        if is_suspicious:
+            # Log warning for suspicious activity (multiple failed attempts)
+            await user_activity_service.log_activity(
+                user_id="unknown",
+                action=ActivityAction.LOGIN,
+                status=ActivityStatus.WARNING,
+                message=f"Suspicious login activity detected: {attempt_count} failed attempts in 15 minutes",
+                details={"email": credentials.email, "attempt_count": attempt_count}
+            )
+        
         # Authenticate user
         user = await auth_service.authenticate_user(db, credentials.email, credentials.password)
         
         if not user:
+            # Track failed login attempt
+            failed_login_tracker[credentials.email].append(datetime.now())
+            
+            # Log failed login attempt
+            await user_activity_service.log_activity(
+                user_id="unknown",
+                action=ActivityAction.LOGIN,
+                status=ActivityStatus.ERROR,
+                message=f"Failed login attempt for email: {credentials.email}",
+                details={"email": credentials.email, "reason": "Invalid credentials"}
+            )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect email or password",
                 headers={"WWW-Authenticate": "Bearer"},
             )
         
+        # Clear failed attempts on successful login
+        if credentials.email in failed_login_tracker:
+            del failed_login_tracker[credentials.email]
+        
         if not user.is_active:
+            # Log inactive account login attempt
+            await user_activity_service.log_activity(
+                user_id=user.id,
+                action=ActivityAction.LOGIN,
+                status=ActivityStatus.ERROR,
+                message=f"Login attempt on inactive account",
+                details={"email": user.email, "reason": "Account inactive"}
+            )
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Account is inactive"
@@ -115,6 +226,14 @@ async def login(credentials: UserLogin, db: AsyncSession = Depends(get_db)):
         
         # Check if user is verified
         if not user.is_verified:
+            # Log warning for unverified user
+            await user_activity_service.log_activity(
+                user_id=user.id,
+                action=ActivityAction.LOGIN,
+                status=ActivityStatus.WARNING,
+                message=f"Login attempt by unverified user",
+                details={"email": user.email, "reason": "Email not verified"}
+            )
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Please verify your email before logging in",
@@ -152,6 +271,17 @@ async def login(credentials: UserLogin, db: AsyncSession = Depends(get_db)):
     except HTTPException:
         raise
     except Exception as e:
+        # Log unexpected login error
+        try:
+            await user_activity_service.log_activity(
+                user_id="unknown",
+                action=ActivityAction.LOGIN,
+                status=ActivityStatus.ERROR,
+                message=f"Login error: {str(e)}",
+                details={"email": credentials.email, "error": str(e)}
+            )
+        except:
+            pass  # Don't fail if logging fails
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Login failed: {str(e)}"
@@ -275,7 +405,10 @@ async def logout(current_user: dict = Depends(get_current_user_from_token)):
         action=ActivityAction.LOGOUT,
         status=ActivityStatus.SUCCESS,
         message="User logged out",
-        details={"email": current_user.get("email")}
+        details={
+            "email": current_user.get("email"), 
+            "username": current_user.get("username"),         
+        }
     )
     
     return {
@@ -347,6 +480,17 @@ async def upload_avatar(
     except HTTPException:
         raise
     except Exception as e:
+        # Log avatar upload error
+        try:
+            await user_activity_service.log_activity(
+                user_id=current_user["id"],
+                action=ActivityAction.PROFILE_UPDATED,
+                status=ActivityStatus.ERROR,
+                message=f"Failed to upload avatar: {str(e)}",
+                details={"error": str(e)}
+            )
+        except:
+            pass
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to upload avatar: {str(e)}"

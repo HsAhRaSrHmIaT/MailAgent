@@ -208,10 +208,24 @@ export const updateProfile = async (userData: Partial<User>): Promise<User> => {
 };
 
 // Logout
-export const logout = (): void => {
+export const logout = async (): Promise<void> => {
+    const token = getToken();
+
+    if (token) {
+        try {
+            await fetch(`${API_BASE_URL}/auth/logout`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+        } catch (error) {
+            console.error("Failed to log logout activity:", error);
+        }
+    }
+
     removeToken();
-    // You can also call a backend logout endpoint here if needed
-    // fetch(`${API_BASE_URL}/auth/logout`, { ... });
 };
 
 // Upload avatar

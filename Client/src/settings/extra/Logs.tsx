@@ -7,7 +7,7 @@ import {
 } from "react-icons/lu";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useAuth } from "../../contexts/AuthContext";
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import type { UserActivityLog, ActivityStats } from "../../types";
 import { activityLogsService } from "../../services/logsService";
 
@@ -409,9 +409,8 @@ const Logs = () => {
                                 </thead>
                                 <tbody>
                                     {activities.map((activity) => (
-                                        <>
+                                        <React.Fragment key={activity.id}>
                                             <tr
-                                                key={activity.id}
                                                 className="border-t cursor-pointer hover:bg-opacity-50 transition-all"
                                                 style={{
                                                     borderColor:
@@ -575,7 +574,7 @@ const Logs = () => {
                                                     </td>
                                                 </tr>
                                             )}
-                                        </>
+                                        </React.Fragment>
                                     ))}
                                 </tbody>
                             </table>

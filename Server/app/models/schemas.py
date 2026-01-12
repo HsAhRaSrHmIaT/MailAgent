@@ -92,6 +92,7 @@ class UserPreferencesResponse(BaseModel):
 class ActivityAction(str, Enum):
     LOGIN = "login"
     LOGOUT = "logout"
+    RESPONSE_GENERATED = "response_generated"
     EMAIL_GENERATED = "email_generated"
     EMAIL_SENT = "email_sent"
     EMAIL_FAILED = "email_failed"
