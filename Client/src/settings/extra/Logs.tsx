@@ -7,7 +7,7 @@ import {
 } from "react-icons/lu";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useAuth } from "../../contexts/AuthContext";
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import type { UserActivityLog, ActivityStats } from "../../types";
 import { activityLogsService } from "../../services/logsService";
 
@@ -19,7 +19,6 @@ const ACTIVITY_ACTIONS = [
     "email_failed",
     "variable_added",
     "variable_updated",
-    "variable_deleted",
     "config_added",
     "config_updated",
     "config_deleted",
@@ -347,7 +346,7 @@ const Logs = () => {
 
                 {/* Activities Table */}
                 <div
-                    className="border rounded-xl overflow-y-auto max-h-96"
+                    className="border rounded-xl overflow-y-auto max-h-96 shadow-lg"
                     style={{
                         borderColor: currentColors.border,
                         background: currentColors.surface,
@@ -370,6 +369,7 @@ const Logs = () => {
                                         position: "sticky",
                                         top: 0,
                                         borderBottom: `1px solid ${currentColors.border}`,
+                                        zIndex: 1,
                                     }}
                                 >
                                     <tr>
@@ -409,9 +409,8 @@ const Logs = () => {
                                 </thead>
                                 <tbody>
                                     {activities.map((activity) => (
-                                        <>
+                                        <React.Fragment key={activity.id}>
                                             <tr
-                                                key={activity.id}
                                                 className="border-t cursor-pointer hover:bg-opacity-50 transition-all"
                                                 style={{
                                                     borderColor:
@@ -575,7 +574,7 @@ const Logs = () => {
                                                     </td>
                                                 </tr>
                                             )}
-                                        </>
+                                        </React.Fragment>
                                     ))}
                                 </tbody>
                             </table>

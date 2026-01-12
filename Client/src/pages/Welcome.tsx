@@ -19,7 +19,7 @@ const Welcome = () => {
                         <div
                             className="p-8 rounded-3xl relative"
                             style={{
-                                backgroundColor: `${currentPalette.primary}15`,
+                                backgroundColor: `${currentColors.border}20`,
                             }}
                         >
                             <div
@@ -42,7 +42,7 @@ const Welcome = () => {
                         className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-current to-current bg-clip-text"
                         style={{ color: currentColors.text }}
                     >
-                        Welcome to MailAgent
+                        Welcome to m<span className="font-mono font-semibold text-blue-600">AI</span>lAgent
                     </h1>
 
                     {/* Subheading */}

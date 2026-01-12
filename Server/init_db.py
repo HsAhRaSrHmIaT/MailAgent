@@ -26,7 +26,6 @@ async def init_database():
         print("✅ Database initialized successfully!")
         print("✅ Tables created:")
         print("   - users (authentication)")
-        print("   - logs (application logs)")
         print("\n🎉 Database setup complete!")
         
     except Exception as e:

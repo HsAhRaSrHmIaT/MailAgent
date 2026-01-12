@@ -110,33 +110,7 @@ class EnvVarsService:
         if var:
             return self._decrypt_value(var.encrypted_value)
         return None
-    
-    # async def delete_variable(
-    #     self, 
-    #     db: AsyncSession, 
-    #     user_id: str, 
-    #     key: str
-    # ) -> bool:
-    #     """Delete an environment variable."""
-    #     var = await self.get_variable_by_key(db, user_id, key)
-    #     if var:
-    #         await db.delete(var)
-    #         await db.commit()
-    #         return True
-    #     return False
-    
-    # async def delete_all_user_variables(
-    #     self, 
-    #     db: AsyncSession, 
-    #     user_id: str
-    # ) -> int:
-    #     """Delete all environment variables for a user. Returns count of deleted variables."""
-    #     variables = await self.get_all_user_variables(db, user_id)
-    #     count = len(variables)
-    #     for var in variables:
-    #         await db.delete(var)
-    #     await db.commit()
-    #     return count
+
     
     def get_masked_value(self, encrypted_value: str) -> str:
         """Get a masked version of the value."""

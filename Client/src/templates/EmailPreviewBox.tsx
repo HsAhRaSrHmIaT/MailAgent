@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CircleLoader } from "../components/Loader";
 import { apiService } from "../services/apiService";
+import { sendService } from "../services/sendService";
 import type { EmailPreviewBoxProps } from "../types";
 import { useTheme } from "../contexts/ThemeContext";
 import { toast } from "react-toastify";
@@ -47,24 +48,40 @@ const EmailPreviewBox = ({
             return;
         }
 
+        if (!emailData) {
+            toast.error("Cannot send: Email data missing");
+            return;
+        }
+
         setIsLoading(true);
         setActionInProgress("sending");
         try {
-            // Update email status to "sent" in database
-            await apiService.updateEmail(emailId, {
-                status: "sent",
+            // Send the actual email
+            const result = await sendService.sendEmail({
+                emailId: emailId,
+                toEmail: emailData.to,
+                subject: emailData.subject,
+                body: emailData.body,
             });
 
-            setSent(true);
-            toast.success("Email marked as sent");
-            console.log("Email marked as sent");
+            if (result.success) {
+                setSent(true);
+                toast.success("Email sent successfully!");
+                console.log("Email sent successfully");
 
-            setTimeout(() => {
-                setSent(false);
-            }, 5000);
+                setTimeout(() => {
+                    setSent(false);
+                }, 5000);
+            } else {
+                toast.error(result.error || "Failed to send email");
+            }
         } catch (error) {
-            console.error("Error updating email status:", error);
-            toast.error("Failed to mark email as sent");
+            console.error("Error sending email:", error);
+            toast.error(
+                error instanceof Error
+                    ? error.message
+                    : "Failed to send email. Please check your email configuration.",
+            );
         } finally {
             setIsLoading(false);
             setActionInProgress(null);

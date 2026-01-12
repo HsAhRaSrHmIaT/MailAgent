@@ -65,7 +65,7 @@ const Themes: React.FC = () => {
                         <div
                             className="p-2 sm:p-3 rounded-xl"
                             style={{
-                                backgroundColor: `${currentPalette.primary}50`,
+                                backgroundColor: `${currentPalette.primary}20`,
                             }}
                         >
                             <IoColorPaletteOutline
@@ -92,7 +92,7 @@ const Themes: React.FC = () => {
                 </div>
 
                 <div
-                    className="border rounded-xl p-3 sm:p-4 flex flex-col gap-4"
+                    className="border rounded-xl p-3 sm:p-4 flex flex-col gap-4 shadow-lg"
                     style={{
                         borderColor: currentColors.border,
                         minHeight: "500px",

@@ -11,6 +11,7 @@ import type {
     ChatHistoryResponse,
     EmailHistoryResponse,
     UsageStats,
+    PreferenceSettings,
 } from "../types";
 import { getToken } from "./authService";
 
@@ -158,7 +159,7 @@ class ApiService {
     // HTTP request helper with auth
     async fetch(url: string, options: RequestInit = {}): Promise<Response> {
         const headers = this.getAuthHeaders();
-        const response = await fetch(url, {
+        const response = await window.fetch(url, {
             ...options,
             headers: {
                 ...headers,
@@ -231,26 +232,6 @@ class ApiService {
         }
         return response.json();
     }
-
-    // async deleteEnvironmentVariable(key: string): Promise<any> {
-    //     const response = await this.fetch(`${this.apiUrl}/env-vars/${key}`, {
-    //         method: "DELETE",
-    //     });
-    //     if (!response.ok) {
-    //         throw new Error("Failed to delete environment variable");
-    //     }
-    //     return response.json();
-    // }
-
-    // async deleteAllEnvironmentVariables(): Promise<any> {
-    //     const response = await this.fetch(`${this.apiUrl}/env-vars/`, {
-    //         method: "DELETE",
-    //     });
-    //     if (!response.ok) {
-    //         throw new Error("Failed to delete all environment variables");
-    //     }
-    //     return response.json();
-    // }
 
     // Email Configuration API Methods
     async getEmailConfigs(): Promise<EmailConfig[]> {
@@ -520,6 +501,51 @@ class ApiService {
         if (!response.ok) throw new Error("Failed to clear email history");
     }
 
+    async getDrafts(): Promise<EmailHistoryResponse> {
+        const params = new URLSearchParams({
+            status: "draft",
+        });
+
+        const response = await this.fetch(`${this.apiUrl}/emails?${params}`);
+        if (!response.ok) throw new Error("Failed to fetch drafts");
+
+        const data = (await response.json()) as {
+            emails: Array<{
+                id: string;
+                to_email: string;
+                subject: string;
+                body: string;
+                tone?: string;
+                prompt?: string;
+                status: string;
+                sent_at?: string;
+                regeneration_count: number;
+                version: number;
+                timestamp: string;
+            }>;
+            hasMore: boolean;
+            total: number;
+        };
+
+        return {
+            emails: data.emails.map((email) => ({
+                id: email.id,
+                to_email: email.to_email,
+                subject: email.subject,
+                body: email.body,
+                tone: email.tone,
+                prompt: email.prompt,
+                status: email.status,
+                sent_at: email.sent_at,
+                regeneration_count: email.regeneration_count,
+                version: email.version,
+                timestamp: new Date(email.timestamp),
+            })),
+            hasMore: data.hasMore,
+            total: data.total,
+        };
+    }
+
     async getUsageStats(): Promise<UsageStats> {
         const response = await this.fetch(`${this.apiUrl}/usage-stats`);
         if (!response.ok) throw new Error("Failed to fetch usage stats");
@@ -569,12 +595,7 @@ class ApiService {
         return response.json();
     }
 
-    async getPreferences(): Promise<{
-        language: string;
-        default_tone: string;
-        ai_learning: boolean;
-        save_history: boolean;
-    }> {
+    async getPreferences(): Promise<PreferenceSettings> {
         const response = await this.fetch(`${this.apiUrl}/auth/preferences`);
         if (!response.ok) {
             throw new Error("Failed to fetch user preferences");
@@ -588,12 +609,7 @@ class ApiService {
         default_tone?: string;
         ai_learning?: boolean;
         save_history?: boolean;
-    }): Promise<{
-        language: string;
-        default_tone: string;
-        ai_learning: boolean;
-        save_history: boolean;
-    }> {
+    }): Promise<PreferenceSettings> {
         const response = await this.fetch(`${this.apiUrl}/auth/preferences`, {
             method: "PUT",
             headers: {

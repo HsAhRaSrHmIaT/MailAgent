@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 import EmailForm from "./pages/EmailForm";
 import Settings from "./pages/Settings";
+import Drafts from "./pages/Drafts";
 import GetDB from "./pages/GetDB";
 import Welcome from "./pages/Welcome";
 import Login from "./pages/Login";
@@ -83,6 +84,14 @@ function AppRoutes() {
                     element={
                         <ProtectedRoute>
                             <Settings />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/drafts"
+                    element={
+                        <ProtectedRoute>
+                            <Drafts />
                         </ProtectedRoute>
                     }
                 />

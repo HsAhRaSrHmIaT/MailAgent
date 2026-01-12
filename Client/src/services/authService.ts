@@ -3,9 +3,10 @@ import type {
     RegisterData,
     AuthResponse,
     User,
+    AvatarUploadResponse,
 } from "../types";
 
-const API_BASE_URL = "http://localhost:8000/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 const TOKEN_KEY = "auth_token";
 
 // Token management
@@ -217,7 +218,7 @@ export const logout = (): void => {
 // Upload avatar
 export const uploadAvatar = async (
     file: File,
-): Promise<{ success: boolean; profilePicture?: string; error?: string }> => {
+): Promise<AvatarUploadResponse> => {
     try {
         const token = getToken();
         if (!token) {
