@@ -230,6 +230,12 @@ class UpdateEmailRequest(BaseModel):
     subject: str | None = None
     to_email: str | None = None
 
+class SendEmailRequest(BaseModel):
+    email_id: str
+    to_email: str
+    subject: str
+    body: str
+
 class EmailHistoryResponse(BaseModel):
     id: str
     to_email: str

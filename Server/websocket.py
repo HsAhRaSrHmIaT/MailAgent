@@ -4,7 +4,6 @@ from app.services.user_activity_service import user_activity_service
 from app.models.schemas import ActivityAction, ActivityStatus
 from app.core.security import verify_token
 import time
-import json
 
 class WebSocketHandler:
     def __init__(self, websocket: WebSocket):

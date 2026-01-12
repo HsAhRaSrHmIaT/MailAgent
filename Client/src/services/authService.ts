@@ -3,9 +3,10 @@ import type {
     RegisterData,
     AuthResponse,
     User,
+    AvatarUploadResponse,
 } from "../types";
 
-const API_BASE_URL = "http://localhost:8000/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 const TOKEN_KEY = "auth_token";
 
 // Token management
@@ -208,30 +209,16 @@ export const updateProfile = async (userData: Partial<User>): Promise<User> => {
 };
 
 // Logout
-export const logout = async (): Promise<void> => {
-    const token = getToken();
-
-    if (token) {
-        try {
-            await fetch(`${API_BASE_URL}/auth/logout`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-        } catch (error) {
-            console.error("Failed to log logout activity:", error);
-        }
-    }
-
+export const logout = (): void => {
     removeToken();
+    // You can also call a backend logout endpoint here if needed
+    // fetch(`${API_BASE_URL}/auth/logout`, { ... });
 };
 
 // Upload avatar
 export const uploadAvatar = async (
     file: File,
-): Promise<{ success: boolean; profilePicture?: string; error?: string }> => {
+): Promise<AvatarUploadResponse> => {
     try {
         const token = getToken();
         if (!token) {

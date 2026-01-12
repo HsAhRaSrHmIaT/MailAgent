@@ -316,3 +316,33 @@ export interface CustomCheckboxProps {
     onChange: () => void;
     label: string;
 }
+
+export interface SendEmailResult {
+    success: boolean;
+    message: string;
+    error?: string;
+}
+
+export interface PreferenceSettings {
+    language: string;
+    default_tone: string;
+    ai_learning: boolean;
+    save_history: boolean;
+}
+
+export interface AvatarUploadResponse {
+    success: boolean;
+    profilePicture?: string;
+    error?: string;
+}
+
+export interface ActivityFilters {
+    action?: string;
+    status?: string;
+    search_term?: string;
+    limit?: number;
+}
+
+export interface CleanupResponse {
+    deleted_count: number;
+}

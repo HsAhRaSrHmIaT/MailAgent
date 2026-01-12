@@ -13,7 +13,7 @@ import { apiService } from "../services/apiService";
 import { useTheme } from "../contexts/ThemeContext";
 
 import { IoSettingsOutline } from "react-icons/io5";
-import { MdOutlineDesktopWindows } from "react-icons/md";
+import { MdOutlineDesktopWindows, MdDrafts } from "react-icons/md";
 import { Link } from "react-router-dom";
 import type { Message, CommandState, EmailData } from "../types";
 
@@ -684,8 +684,18 @@ const EmailForm = () => {
 
             {/* Desktop Side Action Bar */}
             <div className="hidden lg:flex flex-col items-center justify-start space-y-4 py-8 pr-4 absolute right-0 top-0 bottom-0 z-10">
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex flex-col items-center justify-center gap-4">
                     {theme !== "system" && <ToggleTheme />}
+                    <Link to="/drafts">
+                        <div className="flex items-center justify-center gap-2 cursor-pointer hover:scale-110 transition-transform duration-200">
+                            <div className="hover:rotate-12 transition-transform duration-200 cursor-pointer">
+                                <MdDrafts
+                                    size={24}
+                                    style={{ color: currentColors.text }}
+                                />
+                            </div>
+                        </div>
+                    </Link>
                     <Link to="/settings">
                         <div className="flex items-center justify-center gap-2 cursor-pointer hover:scale-110 transition-transform duration-200">
                             {theme === "system" && (
@@ -733,6 +743,15 @@ const EmailForm = () => {
                         </span>
                     </div>
                 )}
+
+                <div
+                    className="h-6 w-px"
+                    style={{ backgroundColor: currentColors.border }}
+                />
+
+                <Link to="/drafts">
+                    <MdDrafts size={24} style={{ color: currentColors.text }} />
+                </Link>
 
                 <div
                     className="h-6 w-px"

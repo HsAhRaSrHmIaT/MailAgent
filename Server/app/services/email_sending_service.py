@@ -472,5 +472,83 @@ class EmailSendingService:
         except Exception as e:
             print(f"Failed to send OTP email: {str(e)}")
             return False
+    
+    def send_user_email(
+        self, 
+        sender_email: str, 
+        sender_password: str, 
+        recipient_email: str, 
+        subject: str, 
+        body: str,
+        smtp_server: Optional[str] = None,
+        smtp_port: Optional[int] = None
+    ) -> tuple[bool, Optional[str]]:
+        """
+        Send a user-generated email using their own SMTP credentials.
+        
+        Args:
+            sender_email: The sender's email address
+            sender_password: The sender's email password/app password
+            recipient_email: The recipient's email address
+            subject: Email subject
+            body: Email body (can be HTML or plain text)
+            smtp_server: SMTP server address (defaults to Gmail if not provided)
+            smtp_port: SMTP port (defaults to 587 if not provided)
+            
+        Returns:
+            Tuple of (success: bool, error_message: Optional[str])
+        """
+        if not sender_email or not sender_password:
+            return False, "Sender email credentials are required"
+        
+        if not recipient_email:
+            return False, "Recipient email is required"
+        
+        # Use provided SMTP settings or default to Gmail
+        server = smtp_server or "smtp.gmail.com"
+        port = smtp_port or 587
+        
+        try:
+            # Create message
+            message = MIMEMultipart("alternative")
+            message["Subject"] = subject
+            message["From"] = sender_email
+            message["To"] = recipient_email
+            
+            # Check if body contains HTML
+            if "<html" in body.lower() or "<div" in body.lower():
+                # Body is HTML
+                part = MIMEText(body, "html")
+            else:
+                # Body is plain text, but preserve formatting
+                part = MIMEText(body, "plain")
+            
+            message.attach(part)
+            
+            # Send email
+            with smtplib.SMTP(server, port) as smtp:
+                smtp.starttls()  # Secure the connection
+                smtp.login(sender_email, sender_password)
+                smtp.sendmail(sender_email, recipient_email, message.as_string())
+            
+            print(f"Email sent successfully from {sender_email} to {recipient_email}")
+            return True, None
+            
+        except smtplib.SMTPAuthenticationError:
+            error_msg = "Authentication failed. Please check your email and password/app password."
+            print(f"SMTP Authentication Error: {error_msg}")
+            return False, error_msg
+        except smtplib.SMTPRecipientsRefused:
+            error_msg = f"Recipient email address '{recipient_email}' was refused by the server."
+            print(f"SMTP Recipients Refused: {error_msg}")
+            return False, error_msg
+        except smtplib.SMTPException as e:
+            error_msg = f"SMTP error occurred: {str(e)}"
+            print(f"SMTP Exception: {error_msg}")
+            return False, error_msg
+        except Exception as e:
+            error_msg = f"Failed to send email: {str(e)}"
+            print(f"General Exception: {error_msg}")
+            return False, error_msg
 
 email_sending_service = EmailSendingService()

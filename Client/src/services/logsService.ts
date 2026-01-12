@@ -1,18 +1,12 @@
-import type { UserActivityLog, ActivityStats } from "../types";
-
-export interface ActivityFilters {
-    action?: string;
-    status?: string;
-    search_term?: string;
-    limit?: number;
-}
-
-export interface CleanupResponse {
-    deleted_count: number;
-}
+import type {
+    UserActivityLog,
+    ActivityStats,
+    ActivityFilters,
+    CleanupResponse,
+} from "../types";
 
 class ActivityLogsService {
-    private baseUrl = "http://localhost:8000/api/activity-logs";
+    private baseUrl = (import.meta.env.VITE_API_URL || "http://localhost:8000/api") + "/activity-logs";
 
     async fetchActivities(
         filters: ActivityFilters = {},

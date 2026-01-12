@@ -3,13 +3,19 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import DatabaseManager
 from app.services.email_service import email_service
+from app.services.email_config_service import email_config_service
+from app.services.email_sending_service import email_sending_service
+from app.services.user_activity_service import user_activity_service
 from app.core.security import get_current_user_from_token
 from app.models.schemas import (
     SaveEmailRequest,
     UpdateEmailRequest,
+    SendEmailRequest,
     EmailHistoryResponse,
     PaginatedEmailsResponse,
-    UsageStatsResponse
+    UsageStatsResponse,
+    ActivityAction,
+    ActivityStatus
 )
 from datetime import datetime
 
@@ -168,3 +174,77 @@ async def get_usage_stats(
         user_id=current_user["id"]
     )
     return stats
+
+@router.post("/send-email")
+async def send_email(
+    data: SendEmailRequest,
+    current_user: dict = Depends(get_current_user_from_token),
+    db: AsyncSession = Depends(get_db)
+):
+    """Send an email using user's active email account"""
+    user_id = current_user["id"]
+    
+    # Get user's active email configuration
+    email_config = await email_config_service.get_active_email(db, user_id)
+    
+    if not email_config:
+        await user_activity_service.log_activity(
+            user_id=user_id,
+            action=ActivityAction.EMAIL_SENT,
+            status=ActivityStatus.ERROR,
+            message="Failed to send email",
+            details={"error": "No active email configuration found", "to": data.to_email}
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No active email configuration found. Please set an active email in settings."
+        )
+    
+    # Decrypt the password
+    decrypted_password = email_config_service._decrypt_password(email_config.encrypted_password)
+    
+    # Send the email using user's credentials (defaults to Gmail SMTP if not specified)
+    success, error_message = email_sending_service.send_user_email(
+        sender_email=email_config.email,
+        sender_password=decrypted_password,
+        recipient_email=data.to_email,
+        subject=data.subject,
+        body=data.body
+    )
+    
+    if success:
+        # Update email status to 'sent' and set sent_at timestamp
+        await email_service.update_email(
+            db=db,
+            user_id=user_id,
+            email_id=data.email_id,
+            status="sent"
+        )
+        
+        # Log successful send
+        await user_activity_service.log_activity(
+            user_id=user_id,
+            action=ActivityAction.EMAIL_SENT,
+            status=ActivityStatus.SUCCESS,
+            message="Email sent successfully",
+            details={"from": email_config.email, "to": data.to_email, "subject": data.subject}
+        )
+        
+        return {
+            "success": True,
+            "message": "Email sent successfully"
+        }
+    else:
+        # Log failed send
+        await user_activity_service.log_activity(
+            user_id=user_id,
+            action=ActivityAction.EMAIL_SENT,
+            status=ActivityStatus.ERROR,
+            message="Failed to send email",
+            details={"error": error_message, "to": data.to_email}
+        )
+        
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=error_message or "Failed to send email"
+        )
