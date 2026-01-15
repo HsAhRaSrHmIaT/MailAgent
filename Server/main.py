@@ -1,5 +1,6 @@
 import os
 import uvicorn
+import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -7,6 +8,7 @@ from websocket import websocket_endpoint
 
 from app.core.config import settings
 from app.api import logs, auth, env_vars, email_configs, chat_history, email_history
+from app.services.data_cleanup_service import data_cleanup_service
 
 app = FastAPI(
     title="MailAgent",
@@ -33,6 +35,12 @@ app.include_router(chat_history.router, prefix="/api", tags=["chat-history"])
 app.include_router(email_history.router, prefix="/api", tags=["email-history"])
 
 app.add_api_websocket_route("/api", websocket_endpoint)
+
+@app.on_event("startup")
+async def startup_event():
+    """Start background tasks on server startup"""
+    # Start data cleanup scheduler in the background
+    asyncio.create_task(data_cleanup_service.start_cleanup_scheduler(interval_hours=1))
 
 @app.get("/")
 async def root():

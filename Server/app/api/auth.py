@@ -765,3 +765,180 @@ async def update_preferences(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update preferences: {str(e)}"
         )
+
+@router.post("/send-delete-verification")
+async def send_delete_verification(
+    current_user: dict = Depends(get_current_user_from_token),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Send a verification code to user's email before deleting all data.
+    
+    Requires authentication (Bearer token).
+    """
+    try:
+        import random
+        import string
+        from datetime import datetime, timedelta
+        
+        user = await auth_service.get_user_by_id(db, current_user["id"])
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        # Generate 6-digit verification code
+        verification_code = ''.join(random.choices(string.digits, k=6))
+        
+        # Store verification code with expiry (10 minutes) and purpose
+        user.otp_code = verification_code
+        user.otp_expires = datetime.utcnow() + timedelta(minutes=10)
+        user.otp_purpose = "data_deletion"
+        await db.commit()
+        
+        # Send email with verification code
+        from app.services.email_sending_service import email_sending_service
+        
+        email_subject = "⚠️ Account Data Deletion Verification"
+        email_body = f"""
+            Hello,
+
+            You have requested to delete all your data from MailAgent.
+
+            Your verification code is: {verification_code}
+
+            This code will expire in 10 minutes.
+
+            If you did not request this, please ignore this email and your data will remain safe.
+
+            Best regards,
+            MailAgent Team
+            """
+        
+        # Use a default email service or system email to send
+        # For now, we'll use the first available email config
+        from app.services.email_config_service import email_config_service
+        active_config = await email_config_service.get_active_email(db, current_user["id"])
+        
+        if active_config:
+            decrypted_password = email_config_service._decrypt_password(active_config.encrypted_password)
+            success, error = email_sending_service.send_user_email(
+                sender_email=active_config.email,
+                sender_password=decrypted_password,
+                recipient_email=user.email,
+                subject=email_subject,
+                body=email_body
+            )
+            
+            if not success:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Failed to send verification email: {error}"
+                )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No active email configuration found. Please set up an email first."
+            )
+        
+        return {
+            "success": True,
+            "message": f"Verification code sent to {user.email}"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to send verification code: {str(e)}"
+        )
+
+@router.delete("/delete-all-data")
+async def delete_all_user_data(
+    request_body: dict,
+    current_user: dict = Depends(get_current_user_from_token),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Delete all user data (chat history, emails, activity logs) after verification.
+    
+    Requires authentication (Bearer token) and verification code.
+    """
+    try:
+        from datetime import datetime
+        
+        verification_code = request_body.get("verification_code")
+        
+        if not verification_code:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Verification code is required"
+            )
+        
+        user = await auth_service.get_user_by_id(db, current_user["id"])
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        # Verify code exists and purpose matches
+        if not user.otp_code or not user.otp_expires or not user.otp_purpose:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No verification code found. Please request a new code."
+            )
+        
+        if user.otp_purpose != "data_deletion":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid verification code for this action."
+            )
+        
+        if user.otp_expires < datetime.utcnow():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Verification code has expired. Please request a new code."
+            )
+        
+        if user.otp_code != verification_code:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid verification code."
+            )
+        
+        # Clear verification code
+        user.otp_code = None
+        user.otp_expires = None
+        user.otp_purpose = None
+        await db.commit()
+        
+        from app.services.email_service import email_service
+        from app.services.chat_service import chat_service
+        from app.services.user_activity_service import user_activity_service
+        
+        user_id = current_user["id"]
+        
+        # Delete all emails
+        await email_service.clear_user_emails(db, user_id)
+        
+        # Delete all chat messages
+        await chat_service.clear_user_messages(db, user_id)
+        
+        # Delete all activity logs
+        await user_activity_service.clear_user_activities(user_id)
+        
+        return {
+            "success": True,
+            "message": "All user data deleted successfully"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete user data: {str(e)}"
+        )

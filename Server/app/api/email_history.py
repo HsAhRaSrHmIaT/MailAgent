@@ -69,7 +69,8 @@ async def save_email(
                 user_id=user_id,
                 action=ActivityAction.EMAIL_DRAFT_UPDATED,
                 status=ActivityStatus.SUCCESS,
-                details=f"Updated draft email: {data.subject[:50]}"
+                message="Draft email updated",
+                details={"subject": data.subject[:50]}
             )
     else:
         # Create new email
@@ -92,7 +93,8 @@ async def save_email(
                 user_id=user_id,
                 action=ActivityAction.EMAIL_DRAFT_CREATED,
                 status=ActivityStatus.SUCCESS,
-                details=f"Created draft email: {data.subject[:50]}"
+                message="Draft email created",
+                details={"subject": data.subject[:50]}
             )
     
     return {"success": True}
@@ -178,7 +180,8 @@ async def update_email(
             user_id=user_id,
             action=ActivityAction.EMAIL_DRAFT_DELETED,
             status=ActivityStatus.SUCCESS,
-            details=f"Deleted draft: {email.subject[:50]}"
+            message="Draft email deleted",
+            details={"subject": email.subject[:50]}
         )
     
     return {"success": True, "email_id": email.email_id}

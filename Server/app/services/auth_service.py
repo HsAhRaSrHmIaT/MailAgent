@@ -199,9 +199,10 @@ class AuthService:
         # Generate a 6-digit OTP
         otp = str(random.randint(100000, 999999))
         
-        # Set OTP expiration (10 minutes from now)
+        # Set OTP expiration (10 minutes from now) and purpose
         user.otp_code = otp
         user.otp_expires = datetime.now(timezone.utc) + timedelta(minutes=10)
+        user.otp_purpose = "email_verification"
         
         await db.commit()
         await db.refresh(user)
@@ -213,6 +214,10 @@ class AuthService:
         user = await self.get_user_by_email(db, email)
         
         if not user:
+            return False
+        
+        # Check if OTP purpose is correct
+        if user.otp_purpose != "email_verification":
             return False
         
         # Check if OTP matches
@@ -227,6 +232,7 @@ class AuthService:
         user.is_verified = True
         user.otp_code = None
         user.otp_expires = None
+        user.otp_purpose = None
         
         await db.commit()
         

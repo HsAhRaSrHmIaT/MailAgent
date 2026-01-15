@@ -85,6 +85,7 @@ const ChatArea = ({
                                             emailId={message.emailId}
                                             tone={message.tone}
                                             prompt={message.prompt}
+                                            status={message.status}
                                             onRegenerate={(newEmailData) => {
                                                 if (onUpdateMessage) {
                                                     onUpdateMessage(

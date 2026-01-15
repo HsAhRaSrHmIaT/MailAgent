@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Mail } from "lucide-react";
+import { Mail, Info } from "lucide-react";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { apiService } from "../../../services/apiService";
 import { ChatLoader, ListLoader } from "../../../components/Loader";
@@ -84,10 +84,32 @@ const UsageStats = () => {
                         {isLoading ? <ChatLoader /> : `${stats.success_rate}%`}
                     </div>
                     <div
-                        className="text-xs sm:text-sm"
+                        className="text-xs sm:text-sm flex items-center justify-center gap-1"
                         style={{ color: currentColors.textSecondary }}
                     >
                         Success Rate
+                        <div className="group relative inline-block">
+                            <Info className="w-3 h-3 cursor-help" />
+                            <div
+                                className="invisible group-hover:visible absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 text-xs rounded-lg shadow-lg z-10"
+                                style={{
+                                    backgroundColor: currentColors.surface,
+                                    color: currentColors.text,
+                                    border: `1px solid ${currentColors.border}`,
+                                }}
+                            >
+                                Percentage of successful emails. Counts emails
+                                with status "sent" OR regeneration count ≤ 1 as
+                                successful. Formula: (successful emails / total
+                                emails) × 100
+                                <div
+                                    className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent"
+                                    style={{
+                                        borderTopColor: currentColors.surface,
+                                    }}
+                                ></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div
@@ -102,10 +124,31 @@ const UsageStats = () => {
                         )}
                     </div>
                     <div
-                        className="text-xs sm:text-sm"
+                        className="text-xs sm:text-sm flex items-center justify-center gap-1"
                         style={{ color: currentColors.textSecondary }}
                     >
                         Time Saved
+                        <div className="group relative inline-block">
+                            <Info className="w-3 h-3 cursor-help" />
+                            <div
+                                className="invisible group-hover:visible absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 text-xs rounded-lg shadow-lg z-10"
+                                style={{
+                                    backgroundColor: currentColors.surface,
+                                    color: currentColors.text,
+                                    border: `1px solid ${currentColors.border}`,
+                                }}
+                            >
+                                Estimated time saved by using AI. Each email
+                                generated saves ~10 minutes of manual writing
+                                time. Formula: (total emails × 10 min) ÷ 60
+                                <div
+                                    className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent"
+                                    style={{
+                                        borderTopColor: currentColors.surface,
+                                    }}
+                                ></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

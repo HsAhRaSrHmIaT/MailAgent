@@ -188,6 +188,22 @@ class UserActivityService:
         except Exception as e:
             print(f"Failed to clear activities: {e}")
             return 0
+    
+    async def clear_user_activities(self, user_id: str) -> int:
+        """Clear all activity logs for a user"""
+        try:
+            async with await db_manager.get_session() as session:
+                delete_query = delete(UserActivityLogModel).where(
+                    UserActivityLogModel.user_id == user_id
+                )
+                
+                result = await session.execute(delete_query)
+                await session.commit()
+                
+                return result.rowcount
+        except Exception as e:
+            print(f"Failed to clear user activities: {e}")
+            return 0
 
 
 # Global instance

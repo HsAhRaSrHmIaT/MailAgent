@@ -24,6 +24,7 @@ class UserModel(Base):
     reset_token_expires = Column(DateTime(timezone=True), nullable=True)
     otp_code = Column(String, nullable=True)
     otp_expires = Column(DateTime(timezone=True), nullable=True)
+    otp_purpose = Column(String, nullable=True)  # email_verification, data_deletion, password_reset, etc.
     is_verified = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
