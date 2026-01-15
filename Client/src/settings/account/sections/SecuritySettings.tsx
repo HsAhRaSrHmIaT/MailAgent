@@ -2,11 +2,14 @@ import { useTheme } from "../../../contexts/ThemeContext";
 import { useState, useEffect, useRef } from "react";
 import CustomCheckbox from "../../../hooks/Checkbox";
 import { IoChevronDownOutline } from "react-icons/io5";
+import { Info } from "lucide-react";
 import { apiService } from "../../../services/apiService";
 import { toast } from "react-toastify";
+import { useAuth } from "../../../contexts/AuthContext";
 
 const SecuritySettings = () => {
     const { currentColors } = useTheme();
+    const { user } = useAuth();
     const [aiLearning, setAiLearning] = useState(false);
     const [saveHistory, setSaveHistory] = useState(false);
     const [language, setLanguage] = useState("English");
@@ -115,6 +118,59 @@ const SecuritySettings = () => {
 
         return () => clearTimeout(timeoutId);
     }, [language, defaultTone, aiLearning, saveHistory, isLoading]);
+
+    const handleDeleteAllData = async () => {
+        if (!user?.email) {
+            toast.error("User email not found");
+            return;
+        }
+
+        const confirmDelete = window.confirm(
+            `⚠️ WARNING: This will permanently delete ALL your data including:\n\n` +
+                `• All chat conversations\n` +
+                `• All generated emails\n` +
+                `• All activity logs\n\n` +
+                `This action CANNOT be undone!\n\n` +
+                `Click OK to receive a verification code via email.`,
+        );
+
+        if (!confirmDelete) {
+            return; // User cancelled
+        }
+
+        try {
+            // Step 1: Send verification code to user's email
+            toast.info("Sending verification code to your email...");
+            await apiService.sendDeleteVerificationCode();
+
+            // Step 2: Ask user to enter the verification code
+            const verificationCode = prompt(
+                `A 6-digit verification code has been sent to ${user.email}\n\n` +
+                    `Please enter the code to confirm deletion:`,
+            );
+
+            if (!verificationCode) {
+                toast.info("Deletion cancelled");
+                return;
+            }
+
+            // Step 3: Verify code and delete data
+            await apiService.deleteAllUserData(verificationCode.trim());
+            toast.success("All data deleted successfully");
+
+            // Reload the page to refresh the UI
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } catch (error) {
+            console.error("Failed to delete data:", error);
+            toast.error(
+                error instanceof Error
+                    ? error.message
+                    : "Failed to delete data",
+            );
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -256,19 +312,67 @@ const SecuritySettings = () => {
                     >
                         Data & Privacy
                     </h4>
-                    <CustomCheckbox
-                        checked={aiLearning}
-                        onChange={() => setAiLearning(!aiLearning)}
-                        label="Allow AI to learn from my email patterns"
-                    />
-                    <CustomCheckbox
-                        checked={saveHistory}
-                        onChange={() => setSaveHistory(!saveHistory)}
-                        label="Save conversation history for 7 days"
-                    />
+                    <div>
+                        <CustomCheckbox
+                            checked={aiLearning}
+                            onChange={() => setAiLearning(!aiLearning)}
+                            label="Allow AI to learn from my email patterns"
+                        />
+                        <p
+                            className="text-xs mt-1 ml-6"
+                            style={{ color: currentColors.textSecondary }}
+                        >
+                            Helps improve email suggestions based on your
+                            writing style
+                        </p>
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-1">
+                            <CustomCheckbox
+                                checked={saveHistory}
+                                onChange={() => setSaveHistory(!saveHistory)}
+                                label="Save conversation history"
+                            />
+                            <div className="group relative inline-block">
+                                <Info
+                                    className="w-3.5 h-3.5 cursor-help"
+                                    style={{
+                                        color: currentColors.textSecondary,
+                                    }}
+                                />
+                                <div
+                                    className="invisible group-hover:visible absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-2 text-xs rounded-lg shadow-lg z-10"
+                                    style={{
+                                        backgroundColor: currentColors.surface,
+                                        color: currentColors.text,
+                                        border: `1px solid ${currentColors.border}`,
+                                    }}
+                                >
+                                    ⚠️ If disabled, all chat messages and email
+                                    data will be automatically deleted within 24
+                                    hours. Enable to keep your history for
+                                    future reference.
+                                    <div
+                                        className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent"
+                                        style={{
+                                            borderTopColor:
+                                                currentColors.surface,
+                                        }}
+                                    ></div>
+                                </div>
+                            </div>
+                        </div>
+                        <p
+                            className="text-xs mt-1 ml-6"
+                            style={{ color: currentColors.textSecondary }}
+                        >
+                            Keep your conversations and emails for easy access
+                        </p>
+                    </div>
                     <button
                         className="text-sm hover:underline cursor-pointer mt-2 font-medium transition-colors"
                         style={{ color: "#EF4444" }}
+                        onClick={handleDeleteAllData}
                         onMouseEnter={(e) => {
                             e.currentTarget.style.color = "#DC2626";
                         }}

@@ -622,6 +622,32 @@ class ApiService {
         }
         return response.json();
     }
+
+    async sendDeleteVerificationCode(): Promise<void> {
+        const response = await this.fetch(
+            `${this.apiUrl}/auth/send-delete-verification`,
+            {
+                method: "POST",
+            },
+        );
+        if (!response.ok) {
+            throw new Error("Failed to send verification code");
+        }
+    }
+
+    async deleteAllUserData(verificationCode: string): Promise<void> {
+        const response = await this.fetch(
+            `${this.apiUrl}/auth/delete-all-data`,
+            {
+                method: "DELETE",
+                body: JSON.stringify({ verification_code: verificationCode }),
+            },
+        );
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || "Failed to delete user data");
+        }
+    }
 }
 
 export const apiService = new ApiService();

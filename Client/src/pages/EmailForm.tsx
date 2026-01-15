@@ -50,6 +50,7 @@ const EmailForm = () => {
         emailId?: string,
         tone?: string,
         prompt?: string,
+        status?: string,
     ) => {
         const newMessage: Message = {
             id: Date.now().toString(),
@@ -62,6 +63,7 @@ const EmailForm = () => {
             emailId,
             tone,
             prompt,
+            status,
         };
         setMessages((prev) => [...prev, newMessage]);
 
@@ -135,6 +137,7 @@ const EmailForm = () => {
                         emailId: email.id,
                         tone: email.tone,
                         prompt: email.prompt,
+                        status: email.status,
                     }),
                 );
 
@@ -392,6 +395,7 @@ const EmailForm = () => {
                                 emailId,
                                 hashTag.replace("#", "") || undefined,
                                 newData.prompt,
+                                "unsent",
                             );
 
                             // Save email to database with prompt

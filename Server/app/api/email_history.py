@@ -42,18 +42,61 @@ async def save_email(
     db: AsyncSession = Depends(get_db)
 ):
     """Save an email"""
-    await email_service.save_email(
+    user_id = current_user["id"]
+    
+    # Check if email already exists
+    existing_email = await email_service.get_email_by_id(
         db=db,
-        user_id=current_user["id"],
-        email_id=data.email_id,
-        to_email=data.to_email,
-        subject=data.subject,
-        body=data.body,
-        timestamp=datetime.fromisoformat(data.timestamp),
-        tone=data.tone,
-        prompt=data.prompt,
-        status=data.status
+        user_id=user_id,
+        email_id=data.email_id
     )
+    
+    if existing_email:
+        # If email already exists, update it instead of creating duplicate
+        await email_service.update_email(
+            db=db,
+            user_id=user_id,
+            email_id=data.email_id,
+            to_email=data.to_email,
+            subject=data.subject,
+            body=data.body,
+            status=data.status
+        )
+        
+        # Log draft update
+        if data.status == "draft":
+            await user_activity_service.log_activity(
+                user_id=user_id,
+                action=ActivityAction.EMAIL_DRAFT_UPDATED,
+                status=ActivityStatus.SUCCESS,
+                message="Draft email updated",
+                details={"subject": data.subject[:50]}
+            )
+    else:
+        # Create new email
+        await email_service.save_email(
+            db=db,
+            user_id=user_id,
+            email_id=data.email_id,
+            to_email=data.to_email,
+            subject=data.subject,
+            body=data.body,
+            timestamp=datetime.fromisoformat(data.timestamp),
+            tone=data.tone,
+            prompt=data.prompt,
+            status=data.status
+        )
+        
+        # Log draft creation
+        if data.status == "draft":
+            await user_activity_service.log_activity(
+                user_id=user_id,
+                action=ActivityAction.EMAIL_DRAFT_CREATED,
+                status=ActivityStatus.SUCCESS,
+                message="Draft email created",
+                details={"subject": data.subject[:50]}
+            )
+    
     return {"success": True}
 
 @router.get("/emails", response_model=PaginatedEmailsResponse)
@@ -61,6 +104,7 @@ async def get_emails(
     limit: int = Query(50, ge=1, le=100),
     before: Optional[str] = Query(None, description="ISO timestamp to load emails before"),
     after: Optional[str] = Query(None, description="ISO timestamp to load emails after"),
+    status: Optional[str] = Query(None, description="Filter by email status (draft, sent, unsent, deleted)"),
     current_user: dict = Depends(get_current_user_from_token),
     db: AsyncSession = Depends(get_db)
 ):
@@ -73,7 +117,8 @@ async def get_emails(
         user_id=current_user["id"],
         limit=limit,
         before_timestamp=before_dt,
-        after_timestamp=after_dt
+        after_timestamp=after_dt,
+        status=status
     )
     
     total_count = await email_service.get_email_count(
@@ -110,9 +155,11 @@ async def update_email(
     db: AsyncSession = Depends(get_db)
 ):
     """Update an email (for Edit, Send, Save as Draft actions)"""
+    user_id = current_user["id"]
+    
     email = await email_service.update_email(
         db=db,
-        user_id=current_user["id"],
+        user_id=user_id,
         email_id=email_id,
         status=data.status,
         body=data.body,
@@ -125,6 +172,16 @@ async def update_email(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Email not found"
+        )
+    
+    # Log draft deletion
+    if data.status == "deleted":
+        await user_activity_service.log_activity(
+            user_id=user_id,
+            action=ActivityAction.EMAIL_DRAFT_DELETED,
+            status=ActivityStatus.SUCCESS,
+            message="Draft email deleted",
+            details={"subject": email.subject[:50]}
         )
     
     return {"success": True, "email_id": email.email_id}

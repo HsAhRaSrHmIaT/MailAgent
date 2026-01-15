@@ -14,6 +14,7 @@ const EmailPreviewBox = ({
     emailId,
     tone,
     prompt,
+    status,
     onRegenerate,
     onUpdate,
 }: EmailPreviewBoxProps) => {
@@ -22,6 +23,7 @@ const EmailPreviewBox = ({
     const [isLoading, setIsLoading] = useState(false);
     const [isRegenerating, setIsRegenerating] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const [currentStatus, setCurrentStatus] = useState(status);
     const [actionInProgress, setActionInProgress] = useState<string | null>(
         null,
     );
@@ -66,6 +68,7 @@ const EmailPreviewBox = ({
 
             if (result.success) {
                 setSent(true);
+                setCurrentStatus("sent");
                 toast.success("Email sent successfully!");
                 console.log("Email sent successfully");
 
@@ -88,6 +91,45 @@ const EmailPreviewBox = ({
         }
     };
 
+    const resendEmail = async () => {
+        if (!emailId) {
+            toast.error("Cannot resend: Email ID missing");
+            return;
+        }
+
+        if (!emailData) {
+            toast.error("Cannot resend: Email data missing");
+            return;
+        }
+
+        setIsLoading(true);
+        setActionInProgress("resending");
+        try {
+            const result = await sendService.sendEmail({
+                emailId: emailId,
+                toEmail: emailData.to,
+                subject: emailData.subject,
+                body: emailData.body,
+            });
+
+            if (result.success) {
+                toast.success("Email resent successfully!");
+            } else {
+                toast.error(result.error || "Failed to resend email");
+            }
+        } catch (error) {
+            console.error("Error resending email:", error);
+            toast.error(
+                error instanceof Error
+                    ? error.message
+                    : "Failed to resend email.",
+            );
+        } finally {
+            setIsLoading(false);
+            setActionInProgress(null);
+        }
+    };
+
     const saveAsDraft = async () => {
         if (!emailId) {
             toast.error("Cannot save draft: Email ID missing");
@@ -97,6 +139,7 @@ const EmailPreviewBox = ({
         setActionInProgress("draft");
         try {
             await apiService.updateEmail(emailId, { status: "draft" });
+            setCurrentStatus("draft");
             toast.success("Saved as draft");
         } catch (error) {
             console.error("Failed to save draft:", error);
@@ -213,6 +256,7 @@ const EmailPreviewBox = ({
         }
     };
 
+
     const getButtonText = () => {
         if (isLoading) return <CircleLoader size="sm" />;
         if (sent) return "Sent";
@@ -327,33 +371,57 @@ const EmailPreviewBox = ({
             <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-3">
                 {!isEditing ? (
                     <>
-                        <button
-                            className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm w-14 sm:w-16 shadow-sm cursor-pointer hover:opacity-60 flex-shrink-0 disabled:cursor-not-allowed"
-                            style={{
-                                borderColor: currentColors.border,
-                                color: currentColors.text,
-                            }}
-                            onClick={sendEmail}
-                            disabled={
-                                isLoading || sent || isAnyActionInProgress
-                            }
-                        >
-                            {getButtonText()}
-                        </button>
-                        <button
-                            className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm cursor-pointer hover:opacity-60 flex-shrink-0 disabled:cursor-not-allowed"
-                            style={{
-                                borderColor: currentColors.border,
-                            }}
-                            onClick={saveAsDraft}
-                            disabled={isAnyActionInProgress}
-                        >
-                            {actionInProgress === "draft" ? (
-                                <CircleLoader size="sm" />
-                            ) : (
-                                "Save as Draft"
-                            )}
-                        </button>
+                        {/* Show Send button only if not sent */}
+                        {currentStatus !== "sent" && (
+                            <button
+                                className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm w-14 sm:w-16 shadow-sm cursor-pointer hover:opacity-60 flex-shrink-0 disabled:cursor-not-allowed"
+                                style={{
+                                    borderColor: currentColors.border,
+                                    color: currentColors.text,
+                                }}
+                                onClick={sendEmail}
+                                disabled={
+                                    isLoading || sent || isAnyActionInProgress
+                                }
+                            >
+                                {getButtonText()}
+                            </button>
+                        )}
+                        {/* Show Resend button only if sent */}
+                        {currentStatus === "sent" && (
+                            <button
+                                className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm cursor-pointer hover:opacity-60 flex-shrink-0 disabled:cursor-not-allowed"
+                                style={{
+                                    borderColor: currentColors.border,
+                                    color: currentColors.text,
+                                }}
+                                onClick={resendEmail}
+                                disabled={isAnyActionInProgress}
+                            >
+                                {actionInProgress === "resending" ? (
+                                    <CircleLoader size="sm" />
+                                ) : (
+                                    "Resend"
+                                )}
+                            </button>
+                        )}
+                        {/* Hide Save as Draft button if already draft */}
+                        {currentStatus !== "draft" && (
+                            <button
+                                className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm cursor-pointer hover:opacity-60 flex-shrink-0 disabled:cursor-not-allowed"
+                                style={{
+                                    borderColor: currentColors.border,
+                                }}
+                                onClick={saveAsDraft}
+                                disabled={isAnyActionInProgress}
+                            >
+                                {actionInProgress === "draft" ? (
+                                    <CircleLoader size="sm" />
+                                ) : (
+                                    "Save as Draft"
+                                )}
+                            </button>
+                        )}
                         <button
                             className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm cursor-pointer hover:opacity-60 flex-shrink-0 disabled:cursor-not-allowed"
                             style={{

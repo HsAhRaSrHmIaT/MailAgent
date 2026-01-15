@@ -29,6 +29,7 @@ export interface Message {
     emailId?: string;
     tone?: string;
     prompt?: string;
+    status?: string;
 }
 
 export interface ChatHistoryResponse {
@@ -145,6 +146,7 @@ export interface EmailPreviewBoxProps {
     emailId?: string;
     tone?: string;
     prompt?: string;
+    status?: string;
     onRegenerate?: (newEmailData: EmailData) => void;
     onUpdate?: (updatedEmailData: EmailData) => void;
 }
@@ -160,7 +162,10 @@ export interface UserActivityLog {
     action: string;
     status: string;
     message: string;
-    details?: Record<string, any>; /* eslint-disable-line @typescript-eslint/no-explicit-any */
+    details?: Record<
+        string,
+        any /* eslint-disable-line @typescript-eslint/no-explicit-any */
+    >;
     created_at: string;
 }
 

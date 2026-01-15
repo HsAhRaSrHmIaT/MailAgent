@@ -127,8 +127,9 @@ const Settings = () => {
                     lg:translate-x-0 fixed lg:relative w-80 lg:w-1/5 h-full p-4 pt-20 lg:pt-4 select-none flex flex-col z-40 transition-transform duration-300 ease-in-out`}
                 style={{ backgroundColor: currentColors.bg }}
             >
-                <div className="text-4xl font-bold p-2 lg:block hidden">
+                <div className="text-3xl font-bold p-2 lg:block hidden">
                     m<span className="font-mono text-blue-600">AI</span>lAgent
+                    <span className="text-xs sm:text-sm font-medium italic ml-2 self-end mb-1" style={{ color: currentColors.textSecondary }}>Settings</span>
                 </div>
                 {/* Left Side Panel */}
                 <ul className="space-y-3 p-2 mt-4 flex-1 flex flex-col">
