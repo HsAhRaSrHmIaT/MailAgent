@@ -4,6 +4,7 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { uploadAvatar } from "../../../services/authService";
+import { apiService } from "../../../services/apiService";
 import AvatarUpload from "./AvatarUpload";
 import Avatar from "../../../components/auth/Avatar";
 
@@ -15,6 +16,12 @@ const ProfileSection = () => {
     const [pendingAvatar, setPendingAvatar] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [removeAvatar, setRemoveAvatar] = useState(false);
+    const [emailChanged, setEmailChanged] = useState(false);
+    const [emailVerified, setEmailVerified] = useState(false);
+    const [verifyingEmail, setVerifyingEmail] = useState(false);
+    const [otpSent, setOtpSent] = useState(false);
+    const [otpCode, setOtpCode] = useState("");
+    const [verifyingOtp, setVerifyingOtp] = useState(false);
     //   const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [formData, setFormData] = useState({
@@ -28,6 +35,68 @@ const ProfileSection = () => {
             ...prev,
             [name]: value,
         }));
+
+        // Track if email has changed
+        if (name === "email" && value !== user?.email) {
+            setEmailChanged(true);
+            setEmailVerified(false);
+            setOtpSent(false);
+            setOtpCode("");
+        } else if (name === "email" && value === user?.email) {
+            setEmailChanged(false);
+            setEmailVerified(false);
+            setOtpSent(false);
+            setOtpCode("");
+        }
+    };
+
+    const handleSendOtp = async () => {
+        if (!formData.email) {
+            toast.error("Please enter an email address");
+            return;
+        }
+
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            toast.error("Please enter a valid email address");
+            return;
+        }
+
+        setVerifyingEmail(true);
+        try {
+            await apiService.sendEmailChangeVerification(formData.email);
+            setOtpSent(true);
+            toast.success("Verification code sent to your new email!");
+        } catch (error) {
+            toast.error(
+                error instanceof Error
+                    ? error.message
+                    : "Failed to send verification code",
+            );
+        } finally {
+            setVerifyingEmail(false);
+        }
+    };
+
+    const handleVerifyOtp = async () => {
+        if (!otpCode || otpCode.length !== 6) {
+            toast.error("Please enter a valid 6-digit code");
+            return;
+        }
+
+        setVerifyingOtp(true);
+        try {
+            await apiService.verifyEmailChange(otpCode);
+            setEmailVerified(true);
+            toast.success("Email verified successfully!");
+        } catch (error) {
+            toast.error(
+                error instanceof Error ? error.message : "Verification failed",
+            );
+        } finally {
+            setVerifyingOtp(false);
+        }
     };
 
     const handleFileSelect = (file: File) => {
@@ -66,6 +135,13 @@ const ProfileSection = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Check if email changed but not verified
+        if (emailChanged && !emailVerified) {
+            toast.error("Please verify your new email address before saving");
+            return;
+        }
+
         setIsLoading(true);
 
         try {
@@ -117,6 +193,10 @@ const ProfileSection = () => {
         }
         setPendingAvatar(null);
         setRemoveAvatar(false);
+        setEmailChanged(false);
+        setEmailVerified(false);
+        setOtpSent(false);
+        setOtpCode("");
         setIsEditing(false);
     };
 
@@ -261,19 +341,119 @@ const ProfileSection = () => {
                             >
                                 Email
                             </label>
-                            <input
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                placeholder="Enter email"
-                                className="w-full p-2 border rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm sm:text-base"
-                                style={{
-                                    backgroundColor: `${currentColors.surface}`,
-                                    borderColor: `${currentColors.border}`,
-                                    color: `${currentColors.text}`,
-                                }}
-                            />
+                            <div className="flex gap-2">
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    placeholder="Enter email"
+                                    className="flex-1 p-2 border rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-opacity-50 text-sm sm:text-base"
+                                    style={{
+                                        backgroundColor: `${currentColors.surface}`,
+                                        borderColor: `${currentColors.border}`,
+                                        color: `${currentColors.text}`,
+                                    }}
+                                />
+                                {emailChanged && !emailVerified && (
+                                    <button
+                                        type="button"
+                                        onClick={handleSendOtp}
+                                        disabled={verifyingEmail || otpSent}
+                                        className="px-4 py-2 rounded-lg font-semibold text-sm whitespace-nowrap transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                        style={{
+                                            backgroundColor: otpSent
+                                                ? `${currentColors.surface}`
+                                                : `${currentPalette.primary}`,
+                                            color: otpSent
+                                                ? currentColors.text
+                                                : "white",
+                                            border: `1px solid ${currentColors.border}`,
+                                        }}
+                                    >
+                                        {verifyingEmail && (
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                        )}
+                                        {otpSent ? "Code Sent" : "Verify"}
+                                    </button>
+                                )}
+                                {emailVerified && (
+                                    <div
+                                        className="px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2"
+                                        style={{
+                                            backgroundColor: `${currentPalette.primary}20`,
+                                            color: currentPalette.primary,
+                                            border: `1px solid ${currentPalette.primary}30`,
+                                        }}
+                                    >
+                                        ✓ Verified
+                                    </div>
+                                )}
+                            </div>
+                            {otpSent && !emailVerified && (
+                                <div className="space-y-2 animate-in fade-in duration-300">
+                                    <label
+                                        className="block text-xs font-medium"
+                                        style={{
+                                            color: currentColors.textSecondary,
+                                        }}
+                                    >
+                                        Enter the 6-digit code sent to your
+                                        email
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={otpCode}
+                                            onChange={(e) =>
+                                                setOtpCode(
+                                                    e.target.value
+                                                        .replace(/\D/g, "")
+                                                        .slice(0, 6),
+                                                )
+                                            }
+                                            placeholder="000000"
+                                            maxLength={6}
+                                            className="flex-1 p-2 border rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-opacity-50 text-center font-mono text-lg tracking-widest"
+                                            style={{
+                                                backgroundColor: `${currentColors.surface}`,
+                                                borderColor: `${currentColors.border}`,
+                                                color: `${currentColors.text}`,
+                                            }}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleVerifyOtp}
+                                            disabled={
+                                                verifyingOtp ||
+                                                otpCode.length !== 6
+                                            }
+                                            className="px-4 py-2 text-white rounded-lg font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                            style={{
+                                                backgroundColor: `${currentPalette.primary}`,
+                                            }}
+                                        >
+                                            {verifyingOtp && (
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                            )}
+                                            {verifyingOtp
+                                                ? "Verifying..."
+                                                : "Verify Code"}
+                                        </button>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={handleSendOtp}
+                                        disabled={verifyingEmail}
+                                        className="text-xs transition-all hover:opacity-70"
+                                        style={{
+                                            color: currentPalette.primary,
+                                        }}
+                                    >
+                                        Resend code
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         {/* Action Buttons */}

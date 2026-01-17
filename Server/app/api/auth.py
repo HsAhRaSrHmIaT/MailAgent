@@ -766,6 +766,150 @@ async def update_preferences(
             detail=f"Failed to update preferences: {str(e)}"
         )
 
+@router.post("/send-email-change-verification")
+async def send_email_change_verification(
+    request_body: dict,
+    current_user: dict = Depends(get_current_user_from_token),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Send OTP verification code to a new email address for email change.
+    
+    Requires authentication (Bearer token).
+    """
+    try:
+        import random
+        import string
+        from datetime import datetime, timedelta, timezone
+        
+        new_email = request_body.get("email")
+        
+        if not new_email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email is required"
+            )
+        
+        # Check if the new email is already taken by another user
+        existing_user = await auth_service.get_user_by_email(db, new_email)
+        if existing_user and existing_user.id != current_user["id"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This email is already in use by another account"
+            )
+        
+        # Get current user
+        user = await auth_service.get_user_by_id(db, current_user["id"])
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        # Generate 6-digit verification code
+        verification_code = ''.join(random.choices(string.digits, k=6))
+        
+        # Store verification code with expiry (10 minutes) and purpose
+        user.otp_code = verification_code
+        user.otp_expires = datetime.now(timezone.utc) + timedelta(minutes=10)
+        user.otp_purpose = "email_change"
+        await db.commit()
+        
+        # Send OTP email to the NEW email address
+        from app.services.email_sending_service import email_sending_service
+        
+        email_sending_service.send_otp_email(
+            recipient_email=new_email,
+            username=user.username or user.email.split('@')[0],
+            otp=verification_code
+        )
+        
+        return {
+            "success": True,
+            "message": f"Verification code sent to {new_email}"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to send verification code: {str(e)}"
+        )
+
+@router.post("/verify-email-change")
+async def verify_email_change(
+    request_body: dict,
+    current_user: dict = Depends(get_current_user_from_token),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Verify OTP code for email change.
+    
+    Requires authentication (Bearer token).
+    """
+    try:
+        from datetime import datetime, timezone
+        
+        otp_code = request_body.get("otp")
+        
+        if not otp_code:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Verification code is required"
+            )
+        
+        user = await auth_service.get_user_by_id(db, current_user["id"])
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        # Verify code exists and purpose matches
+        if not user.otp_code or not user.otp_expires or not user.otp_purpose:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No verification code found. Please request a new code."
+            )
+        
+        if user.otp_purpose != "email_change":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid verification code for this action."
+            )
+        
+        if user.otp_expires < datetime.now(timezone.utc):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Verification code has expired. Please request a new code."
+            )
+        
+        if user.otp_code != otp_code:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid verification code."
+            )
+        
+        # Clear verification code after successful verification
+        user.otp_code = None
+        user.otp_expires = None
+        user.otp_purpose = None
+        await db.commit()
+        
+        return {
+            "success": True,
+            "message": "Email verified successfully"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to verify code: {str(e)}"
+        )
+
 @router.post("/send-delete-verification")
 async def send_delete_verification(
     current_user: dict = Depends(get_current_user_from_token),

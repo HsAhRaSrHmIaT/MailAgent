@@ -663,7 +663,7 @@ const EmailForm = () => {
                                 disabled={
                                     !message.trim() ||
                                     (commandState.isActive &&
-                                        commandState.command === "/clear")
+                                        commandState.command === "/clear") || isLoading
                                 }
                             />
                         </div>
