@@ -5,7 +5,7 @@ import { BsFillSendFill } from "react-icons/bs";
 import { FaMicrophone } from "react-icons/fa";
 
 const SendButtons = ({ onSubmit, disabled = false }: SendButtonsProps) => {
-    const { currentColors } = useTheme();
+    const { currentColors, currentPalette } = useTheme();
 
     return (
         <div className="flex flex-col space-y-2 sm:space-y-5">
@@ -16,8 +16,8 @@ const SendButtons = ({ onSubmit, disabled = false }: SendButtonsProps) => {
                 style={{
                     backgroundColor: disabled
                         ? currentColors.border
-                        : currentColors.text,
-                    color: disabled ? currentColors.text : currentColors.bg,
+                        : currentPalette.primary,
+                    color: disabled ? currentColors.text : "#FFFFFF",
                 }}
             >
                 <BsFillSendFill className="w-4 h-4 sm:w-5 sm:h-5" />

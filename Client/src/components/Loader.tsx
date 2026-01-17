@@ -8,7 +8,7 @@ const sizeClasses = {
 };
 
 const Loader = ({ variant = "chat", size = "sm" }: LoaderProps) => {
-    const { currentColors } = useTheme();
+    const { currentColors, currentPalette } = useTheme();
 
     const containerClasses = {
         chat: "flex justify-center space-x-1 p-2 rounded items-center",
@@ -70,10 +70,10 @@ const Loader = ({ variant = "chat", size = "sm" }: LoaderProps) => {
         <div
             className={`${sizeClasses[size]} border-4 rounded-full animate-spin`}
             style={{
-                borderTopColor: currentColors.text,
-                borderRightColor: currentColors.text + "33",
-                borderBottomColor: currentColors.text + "33",
-                borderLeftColor: currentColors.text + "33",
+                borderTopColor: currentPalette.primary,
+                borderRightColor: currentColors.surface,
+                borderBottomColor: currentColors.surface,
+                borderLeftColor: currentColors.surface,
             }}
         />
     );

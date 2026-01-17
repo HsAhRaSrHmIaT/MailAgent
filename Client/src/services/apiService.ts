@@ -648,6 +648,34 @@ class ApiService {
             throw new Error(error.detail || "Failed to delete user data");
         }
     }
+
+    async sendEmailChangeVerification(email: string): Promise<void> {
+        const response = await this.fetch(
+            `${this.apiUrl}/auth/send-email-change-verification`,
+            {
+                method: "POST",
+                body: JSON.stringify({ email }),
+            },
+        );
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || "Failed to send verification code");
+        }
+    }
+
+    async verifyEmailChange(otp: string): Promise<void> {
+        const response = await this.fetch(
+            `${this.apiUrl}/auth/verify-email-change`,
+            {
+                method: "POST",
+                body: JSON.stringify({ otp }),
+            },
+        );
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || "Invalid verification code");
+        }
+    }
 }
 
 export const apiService = new ApiService();

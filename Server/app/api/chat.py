@@ -9,17 +9,30 @@ from typing import Optional
 
 
 async def get_user_llm_service(user_id: Optional[str] = None) -> LLMService:
-    """Get an LLM service instance configured with user's API key if available."""
+    """Get an LLM service instance configured with user's API key and preferences."""
     if not user_id:
         # Use default service with system API key
         return llm_service
     
     user_api_key = None
+    user_preferences = None
     fetch_error = None
     
     try:
-        # Get database session - ONLY fetch the key, don't process it here
+        # Get database session - fetch both API key and preferences
         async with db_manager.session_factory() as db:
+            from app.services.auth_service import auth_service
+            
+            # Get user preferences
+            user = await auth_service.get_user_by_id(db, user_id)
+            if user:
+                user_preferences = {
+                    "language": user.language or "English",
+                    "default_tone": user.default_tone or "Professional",
+                    "ai_learning": user.ai_learning or False
+                }
+            
+            # Get API key
             user_api_key = await env_vars_service.get_decrypted_value(db, user_id, "GOOGLE_API_KEY")
         # Session is now closed, safe to do everything else
     except Exception as e:
@@ -42,6 +55,15 @@ async def get_user_llm_service(user_id: Optional[str] = None) -> LLMService:
     elif user_api_key:
         # Try to create service with user's API key
         user_service = LLMService(api_key=user_api_key)
+        
+        # Set user preferences if available
+        if user_preferences:
+            user_service.set_user_preferences(
+                language=user_preferences["language"],
+                default_tone=user_preferences["default_tone"],
+                ai_learning=user_preferences["ai_learning"]
+            )
+        
         if user_service.is_available():
             # Test if the API key actually works by attempting a simple request
             try:
@@ -97,6 +119,14 @@ async def get_user_llm_service(user_id: Optional[str] = None) -> LLMService:
             print(f"Failed to log activity: {log_err}")
     
     # Fallback to default service
+    # Even with default service, apply user preferences if available
+    if user_preferences:
+        llm_service.set_user_preferences(
+            language=user_preferences["language"],
+            default_tone=user_preferences["default_tone"],
+            ai_learning=user_preferences["ai_learning"]
+        )
+    
     return llm_service
 
 
@@ -110,7 +140,7 @@ async def handle_chat_message(data: dict, user_id: Optional[str] = None) -> cht:
 
     # Get appropriate LLM service (user-specific or default)
     service = await get_user_llm_service(user_id)
-    ai_response = await service.generate_response(chat_msg.content, getattr(chat_msg, "tone", ""))
+    ai_response = await service.generate_response(chat_msg.content, getattr(chat_msg, "tone", ""), user_id=user_id)
     response = cht(
         role="assistant",
         content=ai_response,
@@ -147,6 +177,6 @@ async def handle_email_request(data: dict, user_id: Optional[str] = None) -> dic
             )
         raise Exception("AI service unavailable. Please configure GOOGLE_API_KEY.")
     
-    email_content = await service.generate_email(email_req.prompt, email_req.tone, email_req.receiverEmail)
+    email_content = await service.generate_email(email_req.prompt, email_req.tone, email_req.receiverEmail, user_id=user_id)
 
     return email_content

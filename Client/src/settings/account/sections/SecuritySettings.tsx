@@ -2,6 +2,7 @@ import { useTheme } from "../../../contexts/ThemeContext";
 import { useState, useEffect, useRef } from "react";
 import CustomCheckbox from "../../../hooks/Checkbox";
 import { IoChevronDownOutline } from "react-icons/io5";
+import { IoIosNuclear } from "react-icons/io";
 import { Info } from "lucide-react";
 import { apiService } from "../../../services/apiService";
 import { toast } from "react-toastify";
@@ -379,7 +380,11 @@ const SecuritySettings = () => {
                         onMouseLeave={(e) => {
                             e.currentTarget.style.color = "#EF4444";
                         }}
-                    >
+                    >   
+                        <IoIosNuclear
+                            className="inline-block mr-1 mb-0.5"
+                            size={20}
+                        />
                         Delete All My Data
                     </button>
                 </div>
