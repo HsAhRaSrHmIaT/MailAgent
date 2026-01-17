@@ -357,96 +357,13 @@ const EmailForm = () => {
             });
             setMessage("");
         } else {
-            // setIsEmailGenerating(true);
-            setIsAIThinking(true);
+            // Add user message immediately
             await addMessage(
                 `${newData.prompt}\nGenerating email for: **_${newData.receiverEmail}_**`,
                 "user",
             );
 
-            try {
-                setTimeout(async () => {
-                    await addMessage("Generating Email...", "assistant");
-                    setIsAIThinking(false);
-                }, 1000);
-
-                setTimeout(async () => {
-                    setIsEmailGenerating(true);
-                    try {
-                        const response = await apiService.generateEmail({
-                            receiverEmail: newData.receiverEmail!,
-                            prompt: newData.prompt!,
-                            tone: hashTag.replace("#", "") || undefined,
-                        });
-                        if (response.success && response.email) {
-                            const emailId = Date.now().toString();
-
-                            // Add email message to chat
-                            await addMessage(
-                                "",
-                                "assistant",
-                                hashTag || undefined,
-                                "email",
-                                {
-                                    to: response.email.to,
-                                    subject: response.email.subject,
-                                    body: response.email.body,
-                                },
-                                emailId,
-                                hashTag.replace("#", "") || undefined,
-                                newData.prompt,
-                                "unsent",
-                            );
-
-                            // Save email to database with prompt
-                            try {
-                                await apiService.saveEmail(
-                                    emailId,
-                                    response.email.to,
-                                    response.email.subject,
-                                    response.email.body,
-                                    new Date(),
-                                    hashTag.replace("#", "") || undefined,
-                                    newData.prompt,
-                                    "unsent",
-                                );
-                            } catch (error) {
-                                console.error(
-                                    "Failed to save email to database:",
-                                    error,
-                                );
-                            }
-                        } else {
-                            await addMessage(
-                                `❌Failed to generate email: ${
-                                    response.error || "Unknown error"
-                                }`,
-                                "assistant",
-                            );
-                        }
-                    } catch (error) {
-                        console.error("Error generating email:", error);
-                        await addMessage(
-                            "❌Something went wrong. Please try again later",
-                            "assistant",
-                        );
-                    } finally {
-                        setIsEmailGenerating(false);
-                    }
-                }, 3000);
-
-                setCommandState({
-                    ...commandState,
-                    step: 0,
-                    data: {},
-                });
-                setMessage("");
-                setHashTag("");
-            } catch (error) {
-                console.error("Error generating email:", error);
-                setIsEmailGenerating(false);
-            }
-
+            // Reset command state and clear input
             setCommandState({
                 isActive: false,
                 command: "",
@@ -454,6 +371,74 @@ const EmailForm = () => {
                 data: {},
             });
             setMessage("");
+            const currentHashTag = hashTag;
+            setHashTag("");
+
+            // Show loading state
+            setIsEmailGenerating(true);
+
+            try {
+                const response = await apiService.generateEmail({
+                    receiverEmail: newData.receiverEmail!,
+                    prompt: newData.prompt!,
+                    tone: currentHashTag.replace("#", "") || undefined,
+                });
+
+                if (response.success && response.email) {
+                    const emailId = Date.now().toString();
+
+                    // Add email message to chat
+                    await addMessage(
+                        "",
+                        "assistant",
+                        currentHashTag || undefined,
+                        "email",
+                        {
+                            to: response.email.to,
+                            subject: response.email.subject,
+                            body: response.email.body,
+                        },
+                        emailId,
+                        currentHashTag.replace("#", "") || undefined,
+                        newData.prompt,
+                        "unsent",
+                    );
+
+                    // Save email to database with prompt
+                    try {
+                        await apiService.saveEmail(
+                            emailId,
+                            response.email.to,
+                            response.email.subject,
+                            response.email.body,
+                            new Date(),
+                            currentHashTag.replace("#", "") || undefined,
+                            newData.prompt,
+                            "unsent",
+                        );
+                    } catch (error) {
+                        console.error(
+                            "Failed to save email to database:",
+                            error,
+                        );
+                    }
+                } else {
+                    await addMessage(
+                        `❌ Failed to generate email: ${
+                            response.error || "Unknown error"
+                        }`,
+                        "assistant",
+                    );
+                }
+            } catch (error) {
+                console.error("Error generating email:", error);
+                await addMessage(
+                    "❌ Something went wrong. Please try again later",
+                    "assistant",
+                );
+            } finally {
+                setIsEmailGenerating(false);
+            }
         }
     };
 
@@ -469,11 +454,41 @@ const EmailForm = () => {
         if (!message.trim()) return;
 
         const userMessage = message.trim();
-        const tone = hashTag.replace("#", "") || undefined;
+        const currentHashTag = hashTag;
+        const tone = currentHashTag.replace("#", "") || undefined;
 
-        await addMessage(userMessage, "user", hashTag);
+        // Clear inputs immediately for instant feedback
         setMessage("");
+
+        // Add user message first (sync state update)
+        setMessages((prev) => [
+            ...prev,
+            {
+                id: Date.now().toString(),
+                content: userMessage,
+                sender: "user" as const,
+                timestamp: new Date(),
+                hashtag: currentHashTag,
+                type: "text" as const,
+            },
+        ]);
+
+        // Then show loading
         setIsAIThinking(true);
+
+        // Save message to database in background
+        try {
+            await apiService.saveMessage({
+                id: Date.now().toString(),
+                content: userMessage,
+                sender: "user",
+                timestamp: new Date(),
+                hashtag: currentHashTag,
+                type: "text",
+            });
+        } catch (error) {
+            console.error("Failed to save message:", error);
+        }
 
         try {
             const response = await apiService.sendChatMessage({
@@ -481,11 +496,14 @@ const EmailForm = () => {
                 tone,
             });
 
+            // Hide loader immediately when response arrives
+            setIsAIThinking(false);
+
             if (response.success && response.message) {
                 await addMessage(response.message, "assistant");
             } else {
                 await addMessage(
-                    `❌Failed to get response: ${
+                    `❌ Failed to get response: ${
                         response.error || "Unknown error"
                     }`,
                     "assistant",
@@ -493,17 +511,12 @@ const EmailForm = () => {
             }
         } catch (error) {
             console.error("Error handling regular message:", error);
+            setIsAIThinking(false);
             await addMessage(
-                "❌Something went wrong. Please try again later",
+                "❌ Something went wrong. Please try again later",
                 "assistant",
             );
-        } finally {
-            setIsAIThinking(false);
         }
-
-        console.log("Regular message:", message);
-        // TODO: Handle regular chat message
-        setMessage("");
     };
 
     // Handle submit (Enter key or button click)
@@ -663,7 +676,8 @@ const EmailForm = () => {
                                 disabled={
                                     !message.trim() ||
                                     (commandState.isActive &&
-                                        commandState.command === "/clear") || isLoading
+                                        commandState.command === "/clear") ||
+                                    isLoading
                                 }
                             />
                         </div>
