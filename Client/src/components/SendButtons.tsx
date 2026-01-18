@@ -4,7 +4,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import { BsFillSendFill } from "react-icons/bs";
 import { FaMicrophone } from "react-icons/fa";
 
-const SendButtons = ({ onSubmit, disabled = false }: SendButtonsProps) => {
+const SendButtons = ({ onSubmit, disabled = false, isVoiceMode, onToggleVoiceMode }: SendButtonsProps) => {
     const { currentColors, currentPalette } = useTheme();
 
     return (
@@ -28,6 +28,8 @@ const SendButtons = ({ onSubmit, disabled = false }: SendButtonsProps) => {
                     backgroundColor: currentColors.border,
                     color: currentColors.text,
                 }}
+                onClick={onToggleVoiceMode}
+                title={isVoiceMode ? "Disable Voice Mode" : "Enable Voice Mode"}
             >
                 <FaMicrophone className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>

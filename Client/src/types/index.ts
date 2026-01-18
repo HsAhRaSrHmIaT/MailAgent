@@ -112,6 +112,8 @@ export interface SendButtonsProps {
     onSubmit: () => void;
     disabled?: boolean;
     isLoading?: boolean;
+    isVoiceMode?: boolean;
+    onToggleVoiceMode?: () => void;
 }
 
 export interface ThemeContextType {

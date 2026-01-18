@@ -8,6 +8,7 @@ import CommandStatusBar from "../components/CommandStatusBar";
 import SendButtons from "../components/SendButtons";
 import HashTag from "../components/HashTag";
 import ToggleTheme from "../components/ToggleTheme";
+import VoiceInterface from "../components/VoiceInterface";
 
 import { apiService } from "../services/apiService";
 import { useTheme } from "../contexts/ThemeContext";
@@ -25,6 +26,7 @@ const EmailForm = () => {
     const [isAIThinking, setIsAIThinking] = useState(false);
     const [isEmailGenerating, setIsEmailGenerating] = useState(false);
     const [emailValidationError, setEmailValidationError] = useState(false);
+    const [isVoiceMode, setIsVoiceMode] = useState(false);
     const [commandState, setCommandState] = useState<CommandState>({
         isActive: false,
         command: "",
@@ -591,112 +593,123 @@ const EmailForm = () => {
                 >
                     {/* Header */}
                     <Header setMessages={setMessages} />
-
-                    {/* Chat Messages Area */}
-                    <ChatArea
-                        messages={messages}
-                        isLoading={isLoading}
-                        isAIThinking={isAIThinking}
-                        isEmailGenerating={isEmailGenerating}
-                        onScrollToTop={loadOlderMessages}
-                        onUpdateMessage={handleUpdateMessage}
-                    />
-
-                    {/* Command Status Bar */}
-                    {commandState.isActive && (
-                        <CommandStatusBar
-                            commandState={commandState}
-                            clearCountdown={clearCountdown}
-                            totalSteps={totalSteps}
-                            onCancel={cancelCommand}
-                            currentMessage={message}
-                            isValidEmail={isValidEmail}
-                            showValidationError={emailValidationError}
-                        />
-                    )}
-
-                    {/* Input Section */}
-                    <div
-                        className="border-t p-4"
-                        style={{
-                            borderColor: currentColors.border,
-                        }}
-                    >
-                        <div className="flex items-end space-x-3">
-                            {/* Message Input */}
+                    {/* Conditional rendering: Voice Interface or Chat Area */}
+                    {isVoiceMode ? (
+                        <VoiceInterface onClose={() => setIsVoiceMode(false)} />
+                    ) : (
+                        <>
+                            {/* Chat Messages Area */}
+                            <ChatArea
+                                messages={messages}
+                                isLoading={isLoading}
+                                isAIThinking={isAIThinking}
+                                isEmailGenerating={isEmailGenerating}
+                                onScrollToTop={loadOlderMessages}
+                                onUpdateMessage={handleUpdateMessage}
+                            />
+                            {/* Command Status Bar */}
+                            {commandState.isActive && (
+                                <CommandStatusBar
+                                    commandState={commandState}
+                                    clearCountdown={clearCountdown}
+                                    totalSteps={totalSteps}
+                                    onCancel={cancelCommand}
+                                    currentMessage={message}
+                                    isValidEmail={isValidEmail}
+                                    showValidationError={emailValidationError}
+                                />
+                            )}
+                            {/* Input Section */}
                             <div
-                                className="flex-1 border p-3 overflow-hidden rounded-lg"
+                                className="border-t p-4"
                                 style={{
                                     borderColor: currentColors.border,
-                                    color: currentColors.text,
-                                }}
-                                tabIndex={-1}
-                                onFocus={(e) => {
-                                    e.currentTarget.style.borderColor =
-                                        currentColors.text || "#2563eb";
-                                }}
-                                onBlur={(e) => {
-                                    e.currentTarget.style.borderColor =
-                                        currentColors.border;
                                 }}
                             >
-                                <textarea
-                                    ref={textareaRef}
-                                    value={message}
-                                    onChange={handleInputChange}
-                                    onKeyDown={handleKeyDown}
-                                    className="w-full resize-none focus:outline-none scrollbar-hide"
-                                    style={{
-                                        scrollbarWidth: "none",
-                                        msOverflowStyle: "none",
-                                        color: currentColors.text,
-                                    }}
-                                    rows={2}
-                                    placeholder={getPlaceholder()}
-                                />
-                                <div className="flex justify-between items-center mt-2">
-                                    <HashTag
-                                        hashTag={hashTag}
-                                        setHashTag={setHashTag}
+                                <div className="flex items-end space-x-3">
+                                    {/* Message Input */}
+                                    <div
+                                        className="flex-1 border p-3 overflow-hidden rounded-lg"
+                                        style={{
+                                            borderColor: currentColors.border,
+                                            color: currentColors.text,
+                                        }}
+                                        tabIndex={-1}
+                                        onFocus={(e) => {
+                                            e.currentTarget.style.borderColor =
+                                                currentColors.text || "#2563eb";
+                                        }}
+                                        onBlur={(e) => {
+                                            e.currentTarget.style.borderColor =
+                                                currentColors.border;
+                                        }}
+                                    >
+                                        <textarea
+                                            ref={textareaRef}
+                                            value={message}
+                                            onChange={handleInputChange}
+                                            onKeyDown={handleKeyDown}
+                                            className="w-full resize-none focus:outline-none scrollbar-hide"
+                                            style={{
+                                                scrollbarWidth: "none",
+                                                msOverflowStyle: "none",
+                                                color: currentColors.text,
+                                            }}
+                                            rows={2}
+                                            placeholder={getPlaceholder()}
+                                        />
+                                        <div className="flex justify-between items-center mt-2">
+                                            <HashTag
+                                                hashTag={hashTag}
+                                                setHashTag={setHashTag}
+                                            />
+
+                                            <span className="text-xs select-none opacity-50">
+                                                {commandState.isActive &&
+                                                commandState.command ===
+                                                    "/email" &&
+                                                commandState.step === 0
+                                                    ? `${message.length}/${emailLength}`
+                                                    : `${message.length}/${maxMessageLength}`}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Send Buttons */}
+                                    <SendButtons
+                                        onSubmit={handleSubmit}
+                                        disabled={
+                                            !message.trim() ||
+                                            (commandState.isActive &&
+                                                commandState.command ===
+                                                    "/clear") ||
+                                            isLoading
+                                        }
+                                        isVoiceMode={isVoiceMode}
+                                        onToggleVoiceMode={() =>
+                                            setIsVoiceMode(!isVoiceMode)
+                                        }
                                     />
-
-                                    <span className="text-xs select-none opacity-50">
-                                        {commandState.isActive &&
-                                        commandState.command === "/email" &&
-                                        commandState.step === 0
-                                            ? `${message.length}/${emailLength}`
-                                            : `${message.length}/${maxMessageLength}`}
-                                    </span>
                                 </div>
-                            </div>
 
-                            {/* Send Buttons */}
-                            <SendButtons
-                                onSubmit={handleSubmit}
-                                disabled={
-                                    !message.trim() ||
-                                    (commandState.isActive &&
-                                        commandState.command === "/clear") ||
-                                    isLoading
-                                }
-                            />
-                        </div>
+                                {/* Quick Action Buttons - Hide during command mode */}
+                                {!commandState.isActive && (
+                                    <QuickActions
+                                        setMessage={setMessage}
+                                        setHashTag={setHashTag}
+                                        hashTag={hashTag}
+                                    />
+                                )}
 
-                        {/* Quick Action Buttons - Hide during command mode */}
-                        {!commandState.isActive && (
-                            <QuickActions
-                                setMessage={setMessage}
-                                setHashTag={setHashTag}
-                                hashTag={hashTag}
-                            />
-                        )}
-
-                        {/* Command Help */}
-                        {!commandState.isActive &&
-                            (message === "/" || message.includes("#")) && (
-                                <CommandHelp />
-                            )}
-                    </div>
+                                {/* Command Help */}
+                                {!commandState.isActive &&
+                                    (message === "/" ||
+                                        message.includes("#")) && (
+                                        <CommandHelp />
+                                    )}
+                            </div>{" "}
+                        </>
+                    )}{" "}
                 </div>
             </div>
 
