@@ -488,7 +488,7 @@ const Register = () => {
                             >
                                 I agree to the{" "}
                                 <Link
-                                    to="/terms"
+                                    to="/terms-and-conditions"
                                     className="font-medium transition-opacity hover:opacity-80"
                                     style={{ color: currentColors.text }}
                                 >
@@ -496,7 +496,7 @@ const Register = () => {
                                 </Link>{" "}
                                 and{" "}
                                 <Link
-                                    to="/privacy"
+                                    to="/privacy-policy"
                                     className="font-medium transition-opacity hover:opacity-80"
                                     style={{ color: currentColors.text }}
                                 >
