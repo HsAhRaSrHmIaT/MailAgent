@@ -15,7 +15,10 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import PageNotFound from "./pages/PageNotFound";
+import TermsandConditions from "./pages/acknowledgement/TermsandConditions";
+import PrivacyPolicy from "./pages/acknowledgement/PrivacyPolicy";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Cookies from "./components/auth/Cookies";
 
 function AppRoutes() {
     const { isLoading } = useAuth();
@@ -69,6 +72,11 @@ function AppRoutes() {
                 <Route path="/verify-email" element={<VerifyEmail />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
+                <Route
+                    path="/terms-and-conditions"
+                    element={<TermsandConditions />}
+                />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
                 {/* Protected Routes */}
                 <Route
@@ -107,6 +115,7 @@ function AppRoutes() {
                 {/* 404 Page */}
                 <Route path="*" element={<PageNotFound />} />
             </Routes>
+            <Cookies />
             <ToastContainer
                 position="top-right"
                 autoClose={3000}
