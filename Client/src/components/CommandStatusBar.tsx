@@ -10,13 +10,16 @@ const CommandStatusBar = ({
     isValidEmail,
     showValidationError = false,
 }: CommandStatusBarProps) => {
+    // For /email step 0 with new recipient input, just check showValidationError
+    // For other steps, check the message validation
     const isInvalidEmail =
         showValidationError &&
         commandState.command === "/email" &&
-        commandState.step === 0 &&
-        currentMessage.trim() &&
-        isValidEmail &&
-        !isValidEmail(currentMessage.trim());
+        (commandState.step === 0 ||
+            (commandState.step === 0 &&
+                currentMessage.trim() &&
+                isValidEmail &&
+                !isValidEmail(currentMessage.trim())));
 
     const { currentColors, currentPalette } = useTheme();
 

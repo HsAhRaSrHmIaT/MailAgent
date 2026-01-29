@@ -1,4 +1,5 @@
 import smtplib
+import dns.resolver
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import Optional
@@ -550,5 +551,265 @@ class EmailSendingService:
             error_msg = f"Failed to send email: {str(e)}"
             print(f"General Exception: {error_msg}")
             return False, error_msg
+    
+    def verify_smtp_mailbox(self, email: str, mx_host: str) -> tuple[bool, Optional[str]]:
+        """
+        Verify if a mailbox exists by connecting to the MX server directly via SMTP.
+        This method doesn't send any email, just checks if the server accepts the recipient.
+        
+        Args:
+            email: The email address to verify
+            mx_host: The MX server hostname
+            
+        Returns:
+            Tuple of (is_valid, error_message)
+        """
+        import socket
+        
+        try:
+            # Remove trailing dot from MX hostname
+            mx_host = mx_host.rstrip('.')
+            
+            print(f"  🔌 Connecting to mail server: {mx_host}")
+            
+            # Create socket and connect to MX server on port 25
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(10)
+            sock.connect((mx_host, 25))
+            
+            # Receive welcome message
+            sock.recv(1024)
+            
+            # Send HELO
+            sock.send(b'HELO verify.local\r\n')
+            sock.recv(1024)
+            
+            # Send MAIL FROM (use a generic sender)
+            sock.send(b'MAIL FROM: <verify@verify.local>\r\n')
+            sock.recv(1024)
+            
+            # Send RCPT TO - this is where we check if mailbox exists
+            sock.send(f'RCPT TO: <{email}>\r\n'.encode())
+            response = sock.recv(1024).decode()
+            
+            # Send QUIT
+            sock.send(b'QUIT\r\n')
+            sock.close()
+            
+            # Check response code
+            # 250 = mailbox exists
+            # 550/551/553 = mailbox doesn't exist or rejected
+            # 450/451/452 = temporary error, assume valid
+            if response.startswith('250'):
+                print(f"  ✓ Mailbox verified: {email}")
+                return True, None
+            elif response.startswith(('550', '551', '553')):
+                print(f"  ✗ Mailbox rejected: {response.strip()}")
+                return False, f"Mailbox '{email}' does not exist or is unavailable"
+            elif response.startswith(('450', '451', '452')):
+                print(f"  ⚠ Temporary error, assuming valid: {response.strip()}")
+                return True, None  # Assume valid on temporary errors
+            else:
+                print(f"  ⚠ Unexpected response: {response.strip()}")
+                return True, None  # Assume valid on unexpected responses
+                
+        except socket.timeout:
+            print(f"  ⚠ SMTP verification timeout for {mx_host}")
+            return True, None  # Don't fail on timeout
+        except Exception as e:
+            print(f"  ⚠ SMTP verification failed: {type(e).__name__} - {str(e)}")
+            return True, None  # Don't fail on errors, let actual send try
+    
+    def validate_email_domain(self, email: str) -> tuple[bool, Optional[str]]:
+        """
+        Validate email by checking MX records and verifying mailbox existence via SMTP.
+        
+        Args:
+            email: The email address to validate
+            
+        Returns:
+            Tuple of (is_valid, error_message)
+        """
+        try:
+            if '@' not in email:
+                return False, "Invalid email format"
+                
+            domain = email.split('@')[1].strip()
+            
+            if not domain:
+                return False, "Invalid email format - missing domain"
+            
+            # Check for invalid/test domains
+            invalid_domains = ['example.com', 'example.org', 'example.net', 
+                             'test.com', 'test.org', 'test.net',
+                             'localhost', 'invalid', 'local']
+            
+            if domain.lower() in invalid_domains:
+                return False, f"Domain '{domain}' is a reserved/test domain and cannot receive emails"
+            
+            # Step 1: Check MX records
+            print(f"🔍 Validating email: {email}")
+            try:
+                mx_records = dns.resolver.resolve(domain, 'MX')
+                if not mx_records or len(mx_records) == 0:
+                    print(f"✗ Domain '{domain}' has no MX records")
+                    return False, f"Domain '{domain}' cannot receive emails (no mail server configured)"
+                
+                # Sort by priority and get the primary MX server
+                mx_list = sorted(mx_records, key=lambda x: x.preference)
+                primary_mx = str(mx_list[0].exchange)
+                
+                print(f"✓ Domain '{domain}' has valid MX records (primary: {primary_mx})")
+                
+                # Step 2: Verify mailbox via SMTP
+                is_valid, error = self.verify_smtp_mailbox(email, primary_mx)
+                
+                if not is_valid:
+                    return False, error
+                    
+                print(f"✓ Email '{email}' validated successfully")
+                return True, None
+                    
+            except dns.resolver.NXDOMAIN:
+                print(f"✗ Domain '{domain}' does not exist")
+                return False, f"Domain '{domain}' does not exist"
+                
+            except dns.resolver.NoAnswer:
+                print(f"✗ Domain '{domain}' exists but has no MX records")
+                return False, f"Domain '{domain}' cannot receive emails (no mail server configured)"
+                
+            except dns.resolver.Timeout:
+                print(f"✗ DNS lookup timeout for '{domain}'")
+                return False, f"Cannot verify domain '{domain}': DNS lookup timeout"
+                
+            except dns.exception.DNSException as e:
+                print(f"✗ DNS error for '{domain}': {type(e).__name__} - {str(e)}")
+                return False, f"Cannot verify domain '{domain}': DNS lookup failed"
+                
+        except IndexError:
+            return False, "Invalid email format"
+        except Exception as e:
+            print(f"✗ Unexpected error validating {email}: {type(e).__name__} - {str(e)}")
+            return False, f"Email validation error: {str(e)}"
+    
+    async def send_user_emails_bulk(
+        self,
+        sender_email: str,
+        sender_password: str,
+        recipient_emails: list[str],
+        subject: str,
+        body: str,
+        smtp_server: Optional[str] = None,
+        smtp_port: Optional[int] = None
+    ) -> list[dict]:
+        """
+        Send emails to multiple recipients using a single SMTP connection (async/optimized).
+        
+        Args:
+            sender_email: The sender's email address
+            sender_password: The sender's email password/app password
+            recipient_emails: List of recipient email addresses (max 50)
+            subject: Email subject
+            body: Email body (can be HTML or plain text)
+            smtp_server: SMTP server address (defaults to Gmail if not provided)
+            smtp_port: SMTP port (defaults to 587 if not provided)
+            
+        Returns:
+            List of dicts with results: [{"email": str, "success": bool, "error": Optional[str]}]
+        """
+        if not sender_email or not sender_password:
+            return [{"email": email, "success": False, "error": "Sender credentials are required"} 
+                    for email in recipient_emails]
+        
+        if not recipient_emails or len(recipient_emails) == 0:
+            return []
+        
+        if len(recipient_emails) > 50:
+            return [{"email": email, "success": False, "error": "Maximum 50 recipients allowed"} 
+                    for email in recipient_emails]
+        
+        # Use provided SMTP settings or default to Gmail
+        server = smtp_server or "smtp.gmail.com"
+        port = smtp_port or 587
+        
+        results = []
+        
+        try:
+            # Open a single SMTP connection for all emails
+            with smtplib.SMTP(server, port) as smtp:
+                smtp.starttls()
+                
+                # Authenticate once
+                try:
+                    smtp.login(sender_email, sender_password)
+                except smtplib.SMTPAuthenticationError:
+                    error_msg = "Authentication failed. Please check your email and password/app password."
+                    return [{"email": email, "success": False, "error": error_msg} 
+                            for email in recipient_emails]
+                
+                # Send to each recipient through the same connection
+                for recipient_email in recipient_emails:
+                    try:
+                        # Validate domain before attempting to send
+                        is_valid, error_msg = self.validate_email_domain(recipient_email)
+                        if not is_valid:
+                            results.append({
+                                "email": recipient_email,
+                                "success": False,
+                                "error": error_msg
+                            })
+                            print(f"✗ Failed validation for {recipient_email}: {error_msg}")
+                            continue
+                        
+                        # Create message for this recipient
+                        message = MIMEMultipart("alternative")
+                        message["Subject"] = subject
+                        message["From"] = sender_email
+                        message["To"] = recipient_email
+                        
+                        # Check if body contains HTML
+                        if "<html" in body.lower() or "<div" in body.lower():
+                            part = MIMEText(body, "html")
+                        else:
+                            part = MIMEText(body, "plain")
+                        
+                        message.attach(part)
+                        
+                        # Send through the existing connection
+                        smtp.sendmail(sender_email, recipient_email, message.as_string())
+                        
+                        results.append({
+                            "email": recipient_email,
+                            "success": True,
+                            "error": None
+                        })
+                        print(f"✓ Email sent to {recipient_email}")
+                        
+                    except smtplib.SMTPRecipientsRefused:
+                        error_msg = f"Recipient address was refused by the server"
+                        results.append({
+                            "email": recipient_email,
+                            "success": False,
+                            "error": error_msg
+                        })
+                        print(f"✗ Failed to send to {recipient_email}: {error_msg}")
+                        
+                    except Exception as e:
+                        error_msg = str(e)
+                        results.append({
+                            "email": recipient_email,
+                            "success": False,
+                            "error": error_msg
+                        })
+                        print(f"✗ Failed to send to {recipient_email}: {error_msg}")
+                
+                print(f"Bulk send completed: {len([r for r in results if r['success']])}/{len(recipient_emails)} successful")
+                return results
+                
+        except Exception as e:
+            error_msg = f"Failed to establish SMTP connection: {str(e)}"
+            print(f"Connection Error: {error_msg}")
+            return [{"email": email, "success": False, "error": error_msg} 
+                    for email in recipient_emails]
 
 email_sending_service = EmailSendingService()

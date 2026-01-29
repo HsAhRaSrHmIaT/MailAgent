@@ -9,6 +9,7 @@ import SendButtons from "../components/SendButtons";
 import HashTag from "../components/HashTag";
 import ToggleTheme from "../components/ToggleTheme";
 import VoiceInterface from "../components/VoiceInterface";
+import RecipientInput from "../components/RecipientInput";
 
 import { apiService } from "../services/apiService";
 import { useTheme } from "../contexts/ThemeContext";
@@ -27,6 +28,8 @@ const EmailForm = () => {
     const [isEmailGenerating, setIsEmailGenerating] = useState(false);
     const [emailValidationError, setEmailValidationError] = useState(false);
     const [isVoiceMode, setIsVoiceMode] = useState(false);
+    const [commandRecipients, setCommandRecipients] = useState<string[]>([]);
+    const [recipientInputError, setRecipientInputError] = useState(false);
     const [commandState, setCommandState] = useState<CommandState>({
         isActive: false,
         command: "",
@@ -38,7 +41,7 @@ const EmailForm = () => {
     const [hasMoreMessages, setHasMoreMessages] = useState(true);
     const [isLoadingOlder, setIsLoadingOlder] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const emailLength = 50;
+    const emailLength = 2000; // Increased to allow multiple emails
     const maxMessageLength = 300;
     const { currentColors } = useTheme();
     const theme = localStorage.getItem("theme") || "light";
@@ -334,18 +337,38 @@ const EmailForm = () => {
             commands[commandState.command as keyof typeof commands];
         const currentStep = currentCommand.steps[commandState.step];
 
-        if (!message.trim()) return;
-
+        // Special handling for /email command step 0 (recipients)
         if (commandState.command === "/email" && commandState.step === 0) {
-            if (!isValidEmail(message.trim())) {
+            // Validate recipients from chip input
+            if (commandRecipients.length === 0) {
                 setEmailValidationError(true);
                 return;
             }
+
+            setEmailValidationError(false);
+
+            // Store recipients in command data
+            const newData = {
+                ...commandState.data,
+                receiverEmails: commandRecipients, // Store as array
+            };
+
+            // Move to next step (prompt)
+            setCommandState({
+                ...commandState,
+                step: commandState.step + 1,
+                data: newData,
+            });
+            return;
         }
+
+        // Regular text input handling for other steps
+        if (!message.trim()) return;
 
         setEmailValidationError(false);
 
-        const newData = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const newData: Record<string, any> = {
             ...commandState.data,
             [currentStep.field]: message.trim(),
         };
@@ -359,9 +382,13 @@ const EmailForm = () => {
             });
             setMessage("");
         } else {
+            // Determine if single or bulk send
+            const recipients = newData.receiverEmails as string[];
+            const isBulkSend = recipients.length > 1;
+
             // Add user message immediately
             await addMessage(
-                `${newData.prompt}\nGenerating email for: **_${newData.receiverEmail}_**`,
+                `${newData.prompt}\nGenerating email for: ${isBulkSend ? `**_${recipients.length} recipients_**` : `**_${recipients[0]}_**`}`,
                 "user",
             );
 
@@ -373,6 +400,7 @@ const EmailForm = () => {
                 data: {},
             });
             setMessage("");
+            setCommandRecipients([]); // Clear recipients
             const currentHashTag = hashTag;
             setHashTag("");
 
@@ -380,8 +408,9 @@ const EmailForm = () => {
             setIsEmailGenerating(true);
 
             try {
+                // Generate email for first recipient (same content for all in bulk)
                 const response = await apiService.generateEmail({
-                    receiverEmail: newData.receiverEmail!,
+                    receiverEmail: recipients[0],
                     prompt: newData.prompt!,
                     tone: currentHashTag.replace("#", "") || undefined,
                 });
@@ -389,14 +418,19 @@ const EmailForm = () => {
                 if (response.success && response.email) {
                     const emailId = Date.now().toString();
 
-                    // Add email message to chat
+                    // Store recipients as comma-separated string
+                    const recipientsString = recipients.join(", ");
+
+                    // Add email message to chat (show first recipient or count)
                     await addMessage(
                         "",
                         "assistant",
                         currentHashTag || undefined,
                         "email",
                         {
-                            to: response.email.to,
+                            to: isBulkSend
+                                ? `${recipients.length} recipients`
+                                : recipientsString,
                             subject: response.email.subject,
                             body: response.email.body,
                         },
@@ -406,11 +440,11 @@ const EmailForm = () => {
                         "unsent",
                     );
 
-                    // Save email to database with prompt
+                    // Save email to database with all recipient info
                     try {
                         await apiService.saveEmail(
                             emailId,
-                            response.email.to,
+                            recipientsString,
                             response.email.subject,
                             response.email.body,
                             new Date(),
@@ -544,6 +578,7 @@ const EmailForm = () => {
     const cancelCommand = () => {
         setClearCountdown(0); // Reset countdown
         setEmailValidationError(false);
+        setCommandRecipients([]); // Clear recipients
         setCommandState({
             isActive: false,
             command: "",
@@ -572,6 +607,9 @@ const EmailForm = () => {
         if (commandState.isActive) {
             if (commandState.command === "/clear") {
                 return "Clearing chat history...";
+            }
+            if (commandState.command === "/email" && commandState.step === 0) {
+                return "Enter your email prompt...";
             }
             const currentCommand =
                 commands[commandState.command as keyof typeof commands];
@@ -616,7 +654,12 @@ const EmailForm = () => {
                                     onCancel={cancelCommand}
                                     currentMessage={message}
                                     isValidEmail={isValidEmail}
-                                    showValidationError={emailValidationError}
+                                    showValidationError={
+                                        commandState.command === "/email" &&
+                                        commandState.step === 0
+                                            ? recipientInputError
+                                            : emailValidationError
+                                    }
                                 />
                             )}
                             {/* Input Section */}
@@ -631,55 +674,104 @@ const EmailForm = () => {
                                     <div
                                         className="flex-1 border p-3 overflow-hidden rounded-lg"
                                         style={{
-                                            borderColor: currentColors.border,
+                                            borderColor:
+                                                commandState.isActive &&
+                                                commandState.command ===
+                                                    "/email" &&
+                                                commandState.step === 0 &&
+                                                recipientInputError
+                                                    ? "#EF4444"
+                                                    : emailValidationError
+                                                      ? "#EF4444"
+                                                      : currentColors.border,
                                             color: currentColors.text,
                                         }}
                                         tabIndex={-1}
                                         onFocus={(e) => {
                                             e.currentTarget.style.borderColor =
-                                                currentColors.text || "#2563eb";
+                                                commandState.isActive &&
+                                                commandState.command ===
+                                                    "/email" &&
+                                                commandState.step === 0 &&
+                                                recipientInputError
+                                                    ? "#EF4444"
+                                                    : currentColors.text ||
+                                                      "#2563eb";
                                         }}
                                         onBlur={(e) => {
                                             e.currentTarget.style.borderColor =
-                                                currentColors.border;
-                                        }}
-                                    >
-                                        <textarea
-                                            ref={textareaRef}
-                                            value={message}
-                                            onChange={handleInputChange}
-                                            onKeyDown={handleKeyDown}
-                                            className="w-full resize-none focus:outline-none scrollbar-hide"
-                                            style={{
-                                                scrollbarWidth: "none",
-                                                msOverflowStyle: "none",
-                                                color: currentColors.text,
-                                            }}
-                                            rows={2}
-                                            placeholder={getPlaceholder()}
-                                        />
-                                        <div className="flex justify-between items-center mt-2">
-                                            <HashTag
-                                                hashTag={hashTag}
-                                                setHashTag={setHashTag}
-                                            />
-
-                                            <span className="text-xs select-none opacity-50">
-                                                {commandState.isActive &&
+                                                commandState.isActive &&
                                                 commandState.command ===
                                                     "/email" &&
-                                                commandState.step === 0
-                                                    ? `${message.length}/${emailLength}`
-                                                    : `${message.length}/${maxMessageLength}`}
-                                            </span>
-                                        </div>
+                                                commandState.step === 0 &&
+                                                recipientInputError
+                                                    ? "#EF4444"
+                                                    : currentColors.border;
+                                        }}
+                                    >
+                                        {/* Show RecipientInput for /email step 0 */}
+                                        {commandState.isActive &&
+                                        commandState.command === "/email" &&
+                                        commandState.step === 0 ? (
+                                            <RecipientInput
+                                                recipients={commandRecipients}
+                                                onRecipientsChange={
+                                                    setCommandRecipients
+                                                }
+                                                maxRecipients={50}
+                                                onErrorChange={
+                                                    setRecipientInputError
+                                                }
+                                            />
+                                        ) : (
+                                            <>
+                                                <textarea
+                                                    ref={textareaRef}
+                                                    value={message}
+                                                    onChange={handleInputChange}
+                                                    onKeyDown={handleKeyDown}
+                                                    className="w-full resize-none focus:outline-none scrollbar-hide"
+                                                    style={{
+                                                        scrollbarWidth: "none",
+                                                        msOverflowStyle: "none",
+                                                        color: currentColors.text,
+                                                    }}
+                                                    rows={2}
+                                                    placeholder={getPlaceholder()}
+                                                />
+                                                <div className="flex justify-between items-center mt-2">
+                                                    <HashTag
+                                                        hashTag={hashTag}
+                                                        setHashTag={setHashTag}
+                                                    />
+
+                                                    <span className="text-xs select-none opacity-50">
+                                                        {`${message.length}/${maxMessageLength}`}
+                                                    </span>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
 
                                     {/* Send Buttons */}
                                     <SendButtons
                                         onSubmit={handleSubmit}
                                         disabled={
-                                            !message.trim() ||
+                                            // For /email step 0, need recipients
+                                            (commandState.isActive &&
+                                                commandState.command ===
+                                                    "/email" &&
+                                                commandState.step === 0 &&
+                                                commandRecipients.length ===
+                                                    0) ||
+                                            // For other steps, need message
+                                            (commandState.isActive &&
+                                                commandState.step > 0 &&
+                                                !message.trim()) ||
+                                            // Regular message needs text
+                                            (!commandState.isActive &&
+                                                !message.trim()) ||
+                                            // Disable during clear
                                             (commandState.isActive &&
                                                 commandState.command ===
                                                     "/clear") ||
@@ -703,13 +795,12 @@ const EmailForm = () => {
 
                                 {/* Command Help */}
                                 {!commandState.isActive &&
-                                    (message === "/" ||
-                                        message.includes("#")) && (
+                                    (message === "/" || message === "#") && (
                                         <CommandHelp />
                                     )}
-                            </div>{" "}
+                            </div>
                         </>
-                    )}{" "}
+                    )}
                 </div>
             </div>
 
