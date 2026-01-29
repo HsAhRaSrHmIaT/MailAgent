@@ -232,11 +232,22 @@ class UpdateEmailRequest(BaseModel):
     subject: str | None = None
     to_email: str | None = None
 
-class SendEmailRequest(BaseModel):
+class BulkSendEmailRequest(BaseModel):
     email_id: str
-    to_email: str
+    to_emails: List[str]  # List of recipient emails (max 50)
     subject: str
     body: str
+
+class BulkSendResult(BaseModel):
+    email: str
+    success: bool
+    error: Optional[str] = None
+
+class BulkSendResponse(BaseModel):
+    total: int
+    successful: int
+    failed: int
+    results: List[BulkSendResult]
 
 class EmailHistoryResponse(BaseModel):
     id: str

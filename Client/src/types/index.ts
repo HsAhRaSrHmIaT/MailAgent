@@ -328,6 +328,10 @@ export interface SendEmailResult {
     success: boolean;
     message: string;
     error?: string;
+    total?: number;
+    successful?: number;
+    failed?: number;
+    results?: Array<{ email: string; success: boolean; error?: string }>;
 }
 
 export interface PreferenceSettings {

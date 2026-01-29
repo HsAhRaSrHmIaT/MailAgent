@@ -10,7 +10,9 @@ from app.core.security import get_current_user_from_token
 from app.models.schemas import (
     SaveEmailRequest,
     UpdateEmailRequest,
-    SendEmailRequest,
+    BulkSendEmailRequest,
+    BulkSendResponse,
+    BulkSendResult,
     EmailHistoryResponse,
     PaginatedEmailsResponse,
     UsageStatsResponse,
@@ -232,14 +234,27 @@ async def get_usage_stats(
     )
     return stats
 
-@router.post("/send-email")
-async def send_email(
-    data: SendEmailRequest,
+@router.post("/send-bulk-email", response_model=BulkSendResponse)
+async def send_bulk_email(
+    data: BulkSendEmailRequest,
     current_user: dict = Depends(get_current_user_from_token),
     db: AsyncSession = Depends(get_db)
 ):
-    """Send an email using user's active email account"""
+    """Send an email to multiple recipients (max 50) using user's active email account"""
     user_id = current_user["id"]
+    
+    # Validate recipient count
+    if len(data.to_emails) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="At least one recipient email is required"
+        )
+    
+    if len(data.to_emails) > 50:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Maximum 50 recipients allowed per bulk send"
+        )
     
     # Get user's active email configuration
     email_config = await email_config_service.get_active_email(db, user_id)
@@ -249,8 +264,8 @@ async def send_email(
             user_id=user_id,
             action=ActivityAction.EMAIL_SENT,
             status=ActivityStatus.ERROR,
-            message="Failed to send email",
-            details={"error": "No active email configuration found", "to": data.to_email}
+            message="Failed to send bulk email",
+            details={"error": "No active email configuration found", "recipient_count": len(data.to_emails)}
         )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -260,48 +275,64 @@ async def send_email(
     # Decrypt the password
     decrypted_password = email_config_service._decrypt_password(email_config.encrypted_password)
     
-    # Send the email using user's credentials (defaults to Gmail SMTP if not specified)
-    success, error_message = email_sending_service.send_user_email(
+    # Send emails to all recipients using optimized bulk send
+    results = await email_sending_service.send_user_emails_bulk(
         sender_email=email_config.email,
         sender_password=decrypted_password,
-        recipient_email=data.to_email,
+        recipient_emails=data.to_emails,
         subject=data.subject,
         body=data.body
     )
     
-    if success:
-        # Update email status to 'sent' and set sent_at timestamp
+    # Count successes and failures
+    successful_count = sum(1 for r in results if r["success"])
+    failed_count = len(results) - successful_count
+    
+    # Separate successful and failed recipients
+    successful_emails = [r["email"] for r in results if r["success"]]
+    failed_emails = [{"email": r["email"], "error": r["error"]} for r in results if not r["success"]]
+    
+    # Update email status based on results
+    if successful_count > 0:
+        # At least some emails were sent successfully
+        status_value = "sent" if failed_count == 0 else "partially_sent"
         await email_service.update_email(
             db=db,
             user_id=user_id,
             email_id=data.email_id,
-            status="sent"
+            status=status_value
         )
-        
-        # Log successful send
-        await user_activity_service.log_activity(
-            user_id=user_id,
-            action=ActivityAction.EMAIL_SENT,
-            status=ActivityStatus.SUCCESS,
-            message="Email sent successfully",
-            details={"from": email_config.email, "to": data.to_email, "subject": data.subject}
-        )
-        
-        return {
-            "success": True,
-            "message": "Email sent successfully"
+    
+    # Log the bulk send activity with detailed recipient information
+    await user_activity_service.log_activity(
+        user_id=user_id,
+        action=ActivityAction.EMAIL_SENT,
+        status=ActivityStatus.SUCCESS if failed_count == 0 else ActivityStatus.ERROR,
+        message=f"Bulk email sent to {successful_count}/{len(data.to_emails)} recipients",
+        details={
+            "from": email_config.email,
+            "recipient_count": len(data.to_emails),
+            "successful": successful_count,
+            "failed": failed_count,
+            "subject": data.subject,
+            "successful_recipients": successful_emails,
+            "failed_recipients": failed_emails
         }
-    else:
-        # Log failed send
-        await user_activity_service.log_activity(
-            user_id=user_id,
-            action=ActivityAction.EMAIL_SENT,
-            status=ActivityStatus.ERROR,
-            message="Failed to send email",
-            details={"error": error_message, "to": data.to_email}
+    )
+    
+    # Convert results to response format
+    response_results = [
+        BulkSendResult(
+            email=r["email"],
+            success=r["success"],
+            error=r["error"]
         )
-        
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=error_message or "Failed to send email"
-        )
+        for r in results
+    ]
+    
+    return BulkSendResponse(
+        total=len(results),
+        successful=successful_count,
+        failed=failed_count,
+        results=response_results
+    )
