@@ -69,85 +69,14 @@ const EmailPreviewBox = ({
             if (result.success) {
                 setSent(true);
                 setCurrentStatus("sent");
-
-                // Show success message
-                if (result.successful && result.successful > 1) {
-                    toast.success(
-                        `Successfully sent to all ${result.successful} recipients`,
-                    );
-                } else {
-                    toast.success(result.message || "Email sent successfully!");
-                }
-
-                // Log successful sends
-                if (result.results && result.results.length > 0) {
-                    const successful = result.results.filter(
-                        (r: any) => r.success,
-                    );
-                    if (successful.length > 0) {
-                        console.log("✓ Successfully sent to:");
-                        successful.forEach((r: any) => {
-                            console.log(`  ✓ ${r.email}`);
-                        });
-                    }
-                }
+                toast.success("Email sent successfully!");
+                console.log("Email sent successfully");
 
                 setTimeout(() => {
                     setSent(false);
                 }, 5000);
             } else {
-                // Show error summary
-                const errorMsg =
-                    result.message || result.error || "Failed to send email";
-
-                if (
-                    result.total &&
-                    result.successful !== undefined &&
-                    result.failed !== undefined
-                ) {
-                    // Bulk send with partial failure
-                    if (result.successful > 0) {
-                        toast.warning(
-                            `Sent to ${result.successful} of ${result.total} recipients. ${result.failed} failed.`,
-                        );
-                    } else {
-                        toast.error(
-                            `Failed to send to all ${result.total} recipients`,
-                        );
-                    }
-                } else {
-                    toast.error(errorMsg);
-                }
-
-                // Log detailed results
-                if (result.results && result.results.length > 0) {
-                    const successful = result.results.filter(
-                        (r: any) => r.success,
-                    );
-                    const failed = result.results.filter(
-                        (r: any) => !r.success,
-                    );
-
-                    if (successful.length > 0) {
-                        console.log(
-                            `✓ Successfully sent to ${successful.length} recipient(s):`,
-                        );
-                        successful.forEach((r: any) => {
-                            console.log(`  ✓ ${r.email}`);
-                        });
-                    }
-
-                    if (failed.length > 0) {
-                        console.error(
-                            `✗ Failed to send to ${failed.length} recipient(s):`,
-                        );
-                        failed.forEach((r: any) => {
-                            console.error(
-                                `  ✗ ${r.email}: ${r.error || "Unknown error"}`,
-                            );
-                        });
-                    }
-                }
+                toast.error(result.error || "Failed to send email");
             }
         } catch (error) {
             console.error("Error sending email:", error);
@@ -326,6 +255,7 @@ const EmailPreviewBox = ({
             setActionInProgress(null);
         }
     };
+
 
     const getButtonText = () => {
         if (isLoading) return <CircleLoader size="sm" />;

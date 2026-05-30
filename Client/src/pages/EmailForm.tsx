@@ -15,7 +15,12 @@ import { apiService } from "../services/apiService";
 import { useTheme } from "../contexts/ThemeContext";
 
 import { IoSettingsOutline } from "react-icons/io5";
-import { MdOutlineDesktopWindows, MdDrafts } from "react-icons/md";
+import {
+    MdOutlineDesktopWindows,
+    MdDrafts,
+    MdAdd,
+    MdClose,
+} from "react-icons/md";
 import { Link } from "react-router-dom";
 import type { Message, CommandState, EmailData } from "../types";
 
@@ -40,11 +45,13 @@ const EmailForm = () => {
     const [clearCountdown, setClearCountdown] = useState(0);
     const [hasMoreMessages, setHasMoreMessages] = useState(true);
     const [isLoadingOlder, setIsLoadingOlder] = useState(false);
+    const [isDesktopActionsCollapsed, setIsDesktopActionsCollapsed] =
+        useState(true);
+    const [isMobileActionsOpen, setIsMobileActionsOpen] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const emailLength = 2000; // Increased to allow multiple emails
     const maxMessageLength = 300;
-    const { currentColors } = useTheme();
-    const theme = localStorage.getItem("theme") || "light";
+    const { currentColors, theme } = useTheme();
 
     const addMessage = async (
         content: string,
@@ -224,7 +231,7 @@ const EmailForm = () => {
 
     // Countdown effect for clear command
     useEffect(() => {
-        let interval: NodeJS.Timeout;
+        let interval: ReturnType<typeof setInterval> | undefined;
         if (
             commandState.isActive &&
             commandState.command === "/clear" &&
@@ -805,87 +812,264 @@ const EmailForm = () => {
             </div>
 
             {/* Desktop Side Action Bar */}
-            <div className="hidden lg:flex flex-col items-center justify-start space-y-4 py-8 pr-4 absolute right-0 top-0 bottom-0 z-10">
-                <div className="flex flex-col items-center justify-center gap-4">
-                    {theme !== "system" && <ToggleTheme />}
-                    <Link to="/drafts">
-                        <div className="flex items-center justify-center gap-2 cursor-pointer hover:scale-110 transition-transform duration-200">
-                            <div className="hover:rotate-12 transition-transform duration-200 cursor-pointer">
-                                <MdDrafts
-                                    size={24}
-                                    style={{ color: currentColors.text }}
-                                />
+            <div className="fixed right-4 top-1/5 z-20 hidden -translate-y-1/2 lg:block">
+                <div className="relative">
+                    <button
+                        type="button"
+                        className={`absolute right-0 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border shadow-2xl backdrop-blur-xl transition-all duration-300 ${
+                            isDesktopActionsCollapsed
+                                ? "opacity-100 scale-100"
+                                : "pointer-events-none opacity-0 scale-90"
+                        }`}
+                        style={{
+                            backgroundColor: `${currentColors.surface}F0`,
+                            borderColor: currentColors.border,
+                            color: currentColors.text,
+                            boxShadow: `0 24px 60px ${currentColors.border}24`,
+                        }}
+                        onClick={() => setIsDesktopActionsCollapsed(false)}
+                        aria-label="Expand actions panel"
+                        title="Expand"
+                    >
+                        <span className="text-sm">▸</span>
+                    </button>
+
+                    <div
+                        className={`absolute right-0 top-1/2 w-[300px] -translate-y-1/2 origin-right overflow-hidden rounded-[28px] border px-3 py-4 shadow-2xl backdrop-blur-xl transition-all duration-300 ${
+                            isDesktopActionsCollapsed
+                                ? "pointer-events-none opacity-0 scale-90"
+                                : "opacity-100 scale-100"
+                        }`}
+                        style={{
+                            backgroundColor: `${currentColors.surface}F0`,
+                            borderColor: currentColors.border,
+                            boxShadow: `0 24px 60px ${currentColors.border}24`,
+                        }}
+                    >
+                        <div className="flex items-center justify-between gap-2 pb-2">
+                            <div
+                                className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em]"
+                                style={{
+                                    backgroundColor: `${currentColors.border}24`,
+                                    color: currentColors.textSecondary,
+                                }}
+                            >
+                                Actions
                             </div>
+
+                            <button
+                                type="button"
+                                className="flex h-9 w-9 items-center justify-center rounded-full border transition-transform duration-200 hover:scale-105"
+                                style={{
+                                    backgroundColor: `${currentColors.border}18`,
+                                    borderColor: currentColors.border,
+                                    color: currentColors.text,
+                                }}
+                                onClick={() => setIsDesktopActionsCollapsed(true)}
+                                aria-label="Collapse actions panel"
+                                title="Collapse"
+                            >
+                                <span className="text-sm rotate-180">▸</span>
+                            </button>
                         </div>
-                    </Link>
-                    <Link to="/settings">
-                        <div className="flex items-center justify-center gap-2 cursor-pointer hover:scale-110 transition-transform duration-200">
-                            {theme === "system" && (
+
+                        <div className="flex flex-col gap-3 transition-all duration-300">
+                            {theme !== "system" && (
+                                <div className="flex justify-center pt-1">
+                                    <ToggleTheme />
+                                </div>
+                            )}
+
+                            <Link
+                                to="/drafts"
+                                className="group flex items-center gap-3 rounded-2xl px-4 py-3 transition-all duration-200 hover:-translate-y-0.5"
+                                style={{
+                                    backgroundColor: `${currentColors.border}14`,
+                                }}
+                            >
+                                <div
+                                    className="flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-105"
+                                    style={{
+                                        backgroundColor: `${currentColors.border}1E`,
+                                        color: currentColors.text,
+                                    }}
+                                >
+                                    <MdDrafts size={22} />
+                                </div>
+                                <div className="min-w-0">
+                                    <div
+                                        className="text-sm font-semibold"
+                                        style={{ color: currentColors.text }}
+                                    >
+                                        Drafts
+                                    </div>
+                                    <div
+                                        className="text-xs"
+                                        style={{
+                                            color: currentColors.textSecondary,
+                                        }}
+                                    >
+                                        Review saved emails
+                                    </div>
+                                </div>
+                            </Link>
+
+                            <Link
+                                to="/settings"
+                                className="group flex items-center gap-3 rounded-2xl px-4 py-3 transition-all duration-200 hover:-translate-y-0.5"
+                                style={{
+                                    backgroundColor: `${currentColors.border}14`,
+                                }}
+                            >
+                                <div
+                                    className="flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-200 group-hover:rotate-90"
+                                    style={{
+                                        backgroundColor: `${currentColors.border}1E`,
+                                        color: currentColors.text,
+                                    }}
+                                >
+                                    <IoSettingsOutline size={22} />
+                                </div>
+                                <div className="min-w-0">
+                                    <div
+                                        className="text-sm font-semibold"
+                                        style={{ color: currentColors.text }}
+                                    >
+                                        Settings
+                                    </div>
+                                    <div
+                                        className="text-xs"
+                                        style={{
+                                            color: currentColors.textSecondary,
+                                        }}
+                                    >
+                                        Manage app preferences
+                                    </div>
+                                </div>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Mobile Floating Action Bubble */}
+            <div className="lg:hidden fixed bottom-4 right-4 z-50 pb-[env(safe-area-inset-bottom)]">
+                <div className="relative flex items-end justify-end">
+                    <div
+                        className={`absolute bottom-16 right-0 flex flex-col items-end gap-3 transition-all duration-300 ${
+                            isMobileActionsOpen
+                                ? "pointer-events-auto translate-y-0 opacity-100"
+                                : "pointer-events-none translate-y-3 opacity-0"
+                        }`}
+                    >
+                        {theme !== "system" ? (
+                            <div
+                                className="rounded-2xl border px-3 py-2 shadow-lg backdrop-blur-xl"
+                                style={{
+                                    backgroundColor: `${currentColors.surface}F2`,
+                                    borderColor: currentColors.border,
+                                }}
+                            >
+                                <ToggleTheme />
+                            </div>
+                        ) : (
+                            <div
+                                className="flex items-center gap-2 rounded-full border px-4 py-3 shadow-lg backdrop-blur-xl"
+                                style={{
+                                    backgroundColor: `${currentColors.surface}F2`,
+                                    borderColor: currentColors.border,
+                                }}
+                            >
+                                <MdOutlineDesktopWindows
+                                    size={18}
+                                    style={{
+                                        color: currentColors.textSecondary,
+                                    }}
+                                />
                                 <span
-                                    className="font-medium text-sm mb-1"
+                                    className="text-xs font-semibold uppercase tracking-[0.18em]"
                                     style={{
                                         color: currentColors.textSecondary,
                                     }}
                                 >
-                                    Settings
+                                    Auto
                                 </span>
-                            )}
-                            <div className="hover:rotate-180 transition-transform duration-200 cursor-pointer">
-                                <IoSettingsOutline
-                                    size={24}
-                                    style={{ color: currentColors.text }}
-                                />
                             </div>
-                        </div>
-                    </Link>
-                </div>
-            </div>
+                        )}
 
-            {/* Mobile Bottom Action Bar */}
-            <div
-                className="lg:hidden fixed bottom-0 left-0 right-0 flex items-center justify-around border-t p-3 backdrop-blur-md z-50"
-                style={{
-                    backgroundColor: currentColors.surface + "f5",
-                    borderColor: currentColors.border,
-                }}
-            >
-                {theme !== "system" ? (
-                    <ToggleTheme />
-                ) : (
-                    <div className="flex items-center gap-2 select-none">
-                        <MdOutlineDesktopWindows
-                            size={20}
-                            style={{ color: currentColors.textSecondary }}
-                        />
-                        <span
-                            className="font-medium text-sm"
-                            style={{ color: currentColors.textSecondary }}
+                        <Link
+                            to="/drafts"
+                            className="flex items-center gap-3 rounded-full border px-4 py-3 shadow-lg backdrop-blur-xl transition-transform duration-200 active:scale-95"
+                            style={{
+                                backgroundColor: `${currentColors.surface}F2`,
+                                borderColor: currentColors.border,
+                            }}
+                            onClick={() => setIsMobileActionsOpen(false)}
                         >
-                            Auto
-                        </span>
+                            <MdDrafts
+                                size={20}
+                                style={{ color: currentColors.text }}
+                            />
+                            <span
+                                className="text-sm font-semibold"
+                                style={{ color: currentColors.text }}
+                            >
+                                Drafts
+                            </span>
+                        </Link>
+
+                        <Link
+                            to="/settings"
+                            className="flex items-center gap-3 rounded-full border px-4 py-3 shadow-lg backdrop-blur-xl transition-transform duration-200 active:scale-95"
+                            style={{
+                                backgroundColor: `${currentColors.surface}F2`,
+                                borderColor: currentColors.border,
+                            }}
+                            onClick={() => setIsMobileActionsOpen(false)}
+                        >
+                            <IoSettingsOutline
+                                size={20}
+                                style={{ color: currentColors.text }}
+                            />
+                            <span
+                                className="text-sm font-semibold"
+                                style={{ color: currentColors.text }}
+                            >
+                                Settings
+                            </span>
+                        </Link>
                     </div>
-                )}
 
-                <div
-                    className="h-6 w-px"
-                    style={{ backgroundColor: currentColors.border }}
-                />
-
-                <Link to="/drafts">
-                    <MdDrafts size={24} style={{ color: currentColors.text }} />
-                </Link>
-
-                <div
-                    className="h-6 w-px"
-                    style={{ backgroundColor: currentColors.border }}
-                />
-
-                <Link to="/settings">
-                    <IoSettingsOutline
-                        size={24}
-                        style={{ color: currentColors.text }}
-                    />
-                </Link>
+                    <button
+                        type="button"
+                        className="flex h-14 w-14 items-center justify-center rounded-full border shadow-2xl backdrop-blur-xl transition-transform duration-200 active:scale-95"
+                        style={{
+                            backgroundColor: currentColors.surface,
+                            borderColor: currentColors.border,
+                            color: currentColors.text,
+                            boxShadow: `0 18px 40px ${currentColors.border}30`,
+                        }}
+                        onClick={() => setIsMobileActionsOpen((prev) => !prev)}
+                        aria-label={
+                            isMobileActionsOpen
+                                ? "Collapse actions"
+                                : "Expand actions"
+                        }
+                        aria-expanded={isMobileActionsOpen}
+                    >
+                        <span
+                            className={`flex transition-transform duration-300 ${
+                                isMobileActionsOpen ? "rotate-90" : "rotate-0"
+                            }`}
+                        >
+                            {isMobileActionsOpen ? (
+                                <MdClose size={24} />
+                            ) : (
+                                <MdAdd size={26} />
+                            )}
+                        </span>
+                    </button>
+                </div>
             </div>
         </div>
     );

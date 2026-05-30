@@ -110,7 +110,7 @@ const ChatArea = ({
                                         style={{
                                             backgroundColor:
                                                 message.sender === "user"
-                                                    ? currentPalette.primary
+                                                    ? currentPalette.chatBubble
                                                     : currentColors.surface,
                                             color:
                                                 message.sender === "user"

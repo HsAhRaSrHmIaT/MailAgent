@@ -17,10 +17,8 @@ const RecipientInput = ({
 }: RecipientInputProps) => {
     const { currentColors, currentPalette } = useTheme();
     const [inputValue, setInputValue] = useState("");
-    const [error, setError] = useState("");
 
     const updateError = (errorMsg: string) => {
-        setError(errorMsg);
         onErrorChange?.(!!errorMsg);
     };
     const fileInputRef = useRef<HTMLInputElement>(null);
