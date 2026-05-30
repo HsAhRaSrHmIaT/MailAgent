@@ -159,7 +159,7 @@ const Logs = () => {
                         <div className="flex flex-col sm:flex-row gap-2">
                             <button
                                 onClick={handleRefresh}
-                                className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors cursor-pointer hover:opacity-90"
                                 style={{
                                     backgroundColor: currentPalette.primary,
                                     color: "white",
@@ -174,7 +174,7 @@ const Logs = () => {
                             </button>
                             <button
                                 onClick={clearOldActivities}
-                                className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors cursor-pointer hover:opacity-90"
                                 style={{
                                     backgroundColor: "#ef4444",
                                     color: "white",
@@ -302,7 +302,7 @@ const Logs = () => {
                                         action: e.target.value,
                                     })
                                 }
-                                className="px-3 py-2 rounded border"
+                                className="px-3 py-2 rounded border cursor-pointer"
                                 style={{
                                     backgroundColor: currentColors.surface,
                                     borderColor: currentColors.border,
@@ -325,7 +325,7 @@ const Logs = () => {
                                         status: e.target.value,
                                     })
                                 }
-                                className="px-3 py-2 rounded border"
+                                className="px-3 py-2 rounded border cursor-pointer"
                                 style={{
                                     backgroundColor: currentColors.surface,
                                     borderColor: currentColors.border,

@@ -18,6 +18,7 @@ export interface ColorScheme {
     text: string;
     textSecondary: string;
     hoverBg?: string;
+    chatBubble: string;
 }
 
 export interface ColorPalette {
@@ -40,6 +41,7 @@ export const colorPalettes: ColorPalettes = {
             border: "#D1D5DB", // gray-300
             text: "#494a4aff", // gray-900
             textSecondary: "#6B7280", // gray-600
+            chatBubble: "#3B82F6", // blue-500
         },
         dark: {
             bg: "#1F2937", // gray-800
@@ -47,6 +49,7 @@ export const colorPalettes: ColorPalettes = {
             border: "#4B5563", // gray-600
             text: "#FFFFFF",
             textSecondary: "#9CA3AF", // gray-400
+            chatBubble: "#3B82F6", // blue-500
         },
     },
     pink: {
@@ -58,6 +61,7 @@ export const colorPalettes: ColorPalettes = {
             border: "#F9A8D4", // pink-300
             text: "#831843", // pink-900
             textSecondary: "#BE185D", // pink-700
+            chatBubble: "#FCE7F3", // pink-100
         },
         dark: {
             bg: "#251525ff",
@@ -65,6 +69,7 @@ export const colorPalettes: ColorPalettes = {
             border: "#EC4899",
             text: "#FFFFFF",
             textSecondary: "#F9A8D4",
+            chatBubble: "#EC4899", // pink-500
         },
     },
     purple: {
@@ -76,6 +81,7 @@ export const colorPalettes: ColorPalettes = {
             border: "#C4B5FD", // purple-300
             text: "#4C1D95", // purple-900
             textSecondary: "#7C3AED", // purple-700
+            chatBubble: "#8B5CF6", // purple-500
         },
         dark: {
             bg: "#1F1B2F",
@@ -83,6 +89,7 @@ export const colorPalettes: ColorPalettes = {
             border: "#8B5CF6",
             text: "#FFFFFF",
             textSecondary: "#C4B5FD",
+            chatBubble: "#8B5CF6", // purple-500
         },
     },
     red: {
@@ -94,6 +101,7 @@ export const colorPalettes: ColorPalettes = {
             border: "#FCA5A5", // red-300
             text: "#7F1D1D", // red-900
             textSecondary: "#B91C1C", // red-700
+            chatBubble: "#EF4444", // red-500
         },
         dark: {
             bg: "#1F1B1B",
@@ -101,6 +109,7 @@ export const colorPalettes: ColorPalettes = {
             border: "#EF4444",
             text: "#FFFFFF",
             textSecondary: "#FCA5A5",
+            chatBubble: "#EF4444", // red-500
         },
     },
     orange: {
@@ -112,6 +121,7 @@ export const colorPalettes: ColorPalettes = {
             border: "#FDBA74", // orange-300
             text: "#7C2D12", // orange-900
             textSecondary: "#C2410C", // orange-700
+            chatBubble: "#F97316", // orange-500
         },
         dark: {
             bg: "#1F1B17",
@@ -119,6 +129,7 @@ export const colorPalettes: ColorPalettes = {
             border: "#F97316",
             text: "#FFFFFF",
             textSecondary: "#FDBA74",
+            chatBubble: "#F97316", // orange-500
         },
     },
     green: {
@@ -130,6 +141,7 @@ export const colorPalettes: ColorPalettes = {
             border: "#6EE7B7", // emerald-300
             text: "#064E3B", // emerald-900
             textSecondary: "#047857", // emerald-700
+            chatBubble: "#10B981", // emerald-500
         },
         dark: {
             bg: "#1B1F1B",
@@ -137,6 +149,7 @@ export const colorPalettes: ColorPalettes = {
             border: "#10B981",
             text: "#FFFFFF",
             textSecondary: "#6EE7B7",
+            chatBubble: "#10B981", // emerald-500
         },
     },
     yellow: {
@@ -148,6 +161,7 @@ export const colorPalettes: ColorPalettes = {
             border: "#FCD34D", // amber-300
             text: "#78350F", // amber-900
             textSecondary: "#B45309", // amber-700
+            chatBubble: "#F59E0B", // amber-500
         },
         dark: {
             bg: "#1F1F1B",
@@ -155,6 +169,7 @@ export const colorPalettes: ColorPalettes = {
             border: "#F59E0B",
             text: "#FFFFFF",
             textSecondary: "#FCD34D",
+            chatBubble: "#F59E0B", // amber-500
         },
     },
     blue: {
@@ -166,6 +181,7 @@ export const colorPalettes: ColorPalettes = {
             border: "#93C5FD", // blue-300
             text: "#1E3A8A", // blue-900
             textSecondary: "#1D4ED8", // blue-700
+            chatBubble: "#3B82F6", // blue-500
         },
         dark: {
             bg: "#1B1F2F",
@@ -173,17 +189,19 @@ export const colorPalettes: ColorPalettes = {
             border: "#3B82F6",
             text: "#FFFFFF",
             textSecondary: "#93C5FD",
+            chatBubble: "#3B82F6", // blue-500
         },
     },
     ultraDark: {
         name: "Ultra Dark",
-        primary: "#0A0A0A",
+        primary: "#666666",
         light: {
             bg: "#F8F9FA",
             surface: "#FFFFFF",
             border: "#DEE2E6",
             text: "#212529",
             textSecondary: "#6C757D",
+            chatBubble: "#0A0A0A",
         },
         dark: {
             bg: "#111111",
@@ -191,6 +209,7 @@ export const colorPalettes: ColorPalettes = {
             border: "#333333",
             text: "#E0E0E0",
             textSecondary: "#A0A0A0",
+            chatBubble: "#0A0A0A",
         },
     },
 };

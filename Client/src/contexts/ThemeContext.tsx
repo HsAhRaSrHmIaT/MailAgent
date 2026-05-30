@@ -57,6 +57,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
             "--color-text-secondary",
             currentColors.textSecondary,
         );
+        root.style.setProperty("--color-chat-bubble", currentColors.chatBubble);
+        // Toggle dark class on root for global styles
 
         // Store theme in class
         document.documentElement.classList.toggle(
