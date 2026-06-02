@@ -8,6 +8,8 @@ import { toast } from "react-toastify";
 
 import { GiSpeaker } from "react-icons/gi";
 import { GoCopy, GoCheck } from "react-icons/go";
+import { LuRefreshCw, LuPencil, LuSend, LuBookmark } from "react-icons/lu";
+import { MdOutlineCancel } from "react-icons/md";
 
 const EmailPreviewBox = ({
     emailData,
@@ -24,67 +26,37 @@ const EmailPreviewBox = ({
     const [isRegenerating, setIsRegenerating] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [currentStatus, setCurrentStatus] = useState(status);
-    const [actionInProgress, setActionInProgress] = useState<string | null>(
-        null,
-    );
-    const [editedSubject, setEditedSubject] = useState(
-        emailData?.subject || "",
-    );
+    const [actionInProgress, setActionInProgress] = useState<string | null>(null);
+    const [editedSubject, setEditedSubject] = useState(emailData?.subject || "");
     const [editedBody, setEditedBody] = useState(emailData?.body || "");
     const [editedTo, setEditedTo] = useState(emailData?.to || "");
     const { currentColors, currentPalette } = useTheme();
 
     const copy_to_clipboard = async () => {
         if (emailData) {
-            await navigator.clipboard.writeText(
-                `Subject: ${emailData.subject}\n\n${emailData.body}`,
-            );
+            await navigator.clipboard.writeText(`Subject: ${emailData.subject}\n\n${emailData.body}`);
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
         }
     };
 
     const sendEmail = async () => {
-        if (!emailId) {
-            toast.error("Cannot send: Email ID missing");
-            return;
-        }
-
-        if (!emailData) {
-            toast.error("Cannot send: Email data missing");
-            return;
-        }
-
+        if (!emailId) { toast.error("Cannot send: Email ID missing"); return; }
+        if (!emailData) { toast.error("Cannot send: Email data missing"); return; }
         setIsLoading(true);
         setActionInProgress("sending");
         try {
-            // Send the actual email
-            const result = await sendService.sendEmail({
-                emailId: emailId,
-                toEmail: emailData.to,
-                subject: emailData.subject,
-                body: emailData.body,
-            });
-
+            const result = await sendService.sendEmail({ emailId, toEmail: emailData.to, subject: emailData.subject, body: emailData.body });
             if (result.success) {
                 setSent(true);
                 setCurrentStatus("sent");
                 toast.success("Email sent successfully!");
-                console.log("Email sent successfully");
-
-                setTimeout(() => {
-                    setSent(false);
-                }, 5000);
+                setTimeout(() => setSent(false), 5000);
             } else {
                 toast.error(result.error || "Failed to send email");
             }
         } catch (error) {
-            console.error("Error sending email:", error);
-            toast.error(
-                error instanceof Error
-                    ? error.message
-                    : "Failed to send email. Please check your email configuration.",
-            );
+            toast.error(error instanceof Error ? error.message : "Failed to send email.");
         } finally {
             setIsLoading(false);
             setActionInProgress(null);
@@ -92,38 +64,16 @@ const EmailPreviewBox = ({
     };
 
     const resendEmail = async () => {
-        if (!emailId) {
-            toast.error("Cannot resend: Email ID missing");
-            return;
-        }
-
-        if (!emailData) {
-            toast.error("Cannot resend: Email data missing");
-            return;
-        }
-
+        if (!emailId) { toast.error("Cannot resend: Email ID missing"); return; }
+        if (!emailData) { toast.error("Cannot resend: Email data missing"); return; }
         setIsLoading(true);
         setActionInProgress("resending");
         try {
-            const result = await sendService.sendEmail({
-                emailId: emailId,
-                toEmail: emailData.to,
-                subject: emailData.subject,
-                body: emailData.body,
-            });
-
-            if (result.success) {
-                toast.success("Email resent successfully!");
-            } else {
-                toast.error(result.error || "Failed to resend email");
-            }
+            const result = await sendService.sendEmail({ emailId, toEmail: emailData.to, subject: emailData.subject, body: emailData.body });
+            if (result.success) { toast.success("Email resent successfully!"); }
+            else { toast.error(result.error || "Failed to resend email"); }
         } catch (error) {
-            console.error("Error resending email:", error);
-            toast.error(
-                error instanceof Error
-                    ? error.message
-                    : "Failed to resend email.",
-            );
+            toast.error(error instanceof Error ? error.message : "Failed to resend email.");
         } finally {
             setIsLoading(false);
             setActionInProgress(null);
@@ -131,18 +81,13 @@ const EmailPreviewBox = ({
     };
 
     const saveAsDraft = async () => {
-        if (!emailId) {
-            toast.error("Cannot save draft: Email ID missing");
-            return;
-        }
-
+        if (!emailId) { toast.error("Cannot save draft: Email ID missing"); return; }
         setActionInProgress("draft");
         try {
             await apiService.updateEmail(emailId, { status: "draft" });
             setCurrentStatus("draft");
             toast.success("Saved as draft");
-        } catch (error) {
-            console.error("Failed to save draft:", error);
+        } catch {
             toast.error("Failed to save draft");
         } finally {
             setActionInProgress(null);
@@ -151,10 +96,8 @@ const EmailPreviewBox = ({
 
     const handleEdit = () => {
         if (isEditing) {
-            // Save changes
             saveEdits();
         } else {
-            // Enter edit mode
             setIsEditing(true);
             setEditedSubject(emailData?.subject || "");
             setEditedBody(emailData?.body || "");
@@ -163,32 +106,14 @@ const EmailPreviewBox = ({
     };
 
     const saveEdits = async () => {
-        if (!emailId) {
-            toast.error("Cannot save: Email ID missing");
-            return;
-        }
-
+        if (!emailId) { toast.error("Cannot save: Email ID missing"); return; }
         setActionInProgress("editing");
         try {
-            await apiService.updateEmail(emailId, {
-                subject: editedSubject,
-                body: editedBody,
-                to_email: editedTo,
-            });
-
-            // Update local state
-            if (onUpdate) {
-                onUpdate({
-                    to: editedTo,
-                    subject: editedSubject,
-                    body: editedBody,
-                });
-            }
-
+            await apiService.updateEmail(emailId, { subject: editedSubject, body: editedBody, to_email: editedTo });
+            if (onUpdate) onUpdate({ to: editedTo, subject: editedSubject, body: editedBody });
             setIsEditing(false);
             toast.success("Email updated");
-        } catch (error) {
-            console.error("Failed to save edits:", error);
+        } catch {
             toast.error("Failed to save changes");
         } finally {
             setActionInProgress(null);
@@ -203,52 +128,26 @@ const EmailPreviewBox = ({
     };
 
     const handleRegenerate = async () => {
-        if (!prompt) {
-            toast.error("Cannot regenerate: Original prompt not available");
-            return;
-        }
-
+        if (!prompt) { toast.error("Cannot regenerate: Original prompt not available"); return; }
         setIsRegenerating(true);
         setActionInProgress("regenerating");
         try {
-            const response = await apiService.generateEmail({
-                receiverEmail: emailData?.to || "",
-                prompt: prompt,
-                tone: tone,
-            });
-
+            const response = await apiService.generateEmail({ receiverEmail: emailData?.to || "", prompt, tone });
             if (response.success && response.email) {
-                // Update regeneration count in database
                 if (emailId) {
-                    try {
-                        await apiService.regenerateEmail(emailId);
-                    } catch (error) {
-                        console.error(
-                            "Failed to update regeneration count:",
-                            error,
-                        );
+                    try { await apiService.regenerateEmail(emailId); } catch {
+                            toast.error("Failed to update email with regenerated content");
                     }
                 }
-
-                // Update local display
-                if (onRegenerate) {
-                    onRegenerate({
-                        to: response.email.to,
-                        subject: response.email.subject,
-                        body: response.email.body,
-                    });
-                }
-
+                if (onRegenerate) onRegenerate({ to: response.email.to, subject: response.email.subject, body: response.email.body });
                 setEditedSubject(response.email.subject);
                 setEditedBody(response.email.body);
                 setEditedTo(response.email.to);
-
                 toast.success("Email regenerated");
             } else {
                 toast.error("Failed to regenerate email");
             }
-        } catch (error) {
-            console.error("Error regenerating email:", error);
+        } catch {
             toast.error("Failed to regenerate email");
         } finally {
             setIsRegenerating(false);
@@ -256,260 +155,242 @@ const EmailPreviewBox = ({
         }
     };
 
+    const isAnyActionInProgress = actionInProgress !== null;
 
-    const getButtonText = () => {
-        if (isLoading) return <CircleLoader size="sm" />;
-        if (sent) return "Sent";
-        return "Send";
+    /* ── shared input style ── */
+    const inputStyle = {
+        background: currentColors.bg,
+        color: currentColors.text,
+        borderColor: currentColors.border,
     };
 
-    const isAnyActionInProgress = actionInProgress !== null;
+    /* ── shared ghost button style ── */
+    const ghostBtn = {
+        borderColor: currentColors.border,
+        color: currentColors.textSecondary,
+    };
 
     return (
         <div
-            className="p-3 sm:p-4 rounded-sm shadow-sm"
+            className="rounded-xl overflow-hidden text-sm"
             style={{
                 background: currentColors.surface,
+                border: `1px solid ${currentColors.border}`,
                 color: currentColors.text,
+                fontFamily: "'DM Sans', sans-serif",
+                boxShadow: `0 2px 12px -4px ${currentColors.border}66`,
             }}
         >
-            <p className="select-none text-sm sm:text-base">
-                I'll help you create that email. Here's a professional template:
-                SEND To <i className="font-bold">{emailData?.to}</i>{" "}
-            </p>
-
-            {/* Email Preview Box */}
+            {/* ── Header ── */}
             <div
-                className="mt-3 p-3 sm:p-4 border rounded-lg shadow-sm"
-                style={{
-                    background: currentColors.bg,
-                    borderColor: currentColors.border,
-                }}
+                className="flex items-center justify-between px-4 py-2.5 gap-2"
+                style={{ borderBottom: `1px solid ${currentColors.border}` }}
             >
-                <div
-                    className="text-sm mb-2"
-                    style={{ color: currentColors.textSecondary }}
-                >
-                    {isEditing ? "Edit Email:" : "Generated Email:"}
-                </div>
-                <div className="space-y-2">
-                    {isEditing ? (
-                        <>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    To:
-                                </label>
-                                <input
-                                    type="email"
-                                    value={editedTo}
-                                    onChange={(e) =>
-                                        setEditedTo(e.target.value)
-                                    }
-                                    className="w-full px-2 py-1 border rounded text-sm"
-                                    style={{
-                                        background: currentColors.surface,
-                                        color: currentColors.text,
-                                        borderColor: currentColors.border,
-                                    }}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Subject:
-                                </label>
-                                <input
-                                    type="text"
-                                    value={editedSubject}
-                                    onChange={(e) =>
-                                        setEditedSubject(e.target.value)
-                                    }
-                                    className="w-full px-2 py-1 border rounded text-sm"
-                                    style={{
-                                        background: currentColors.surface,
-                                        color: currentColors.text,
-                                        borderColor: currentColors.border,
-                                    }}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Body:
-                                </label>
-                                <textarea
-                                    value={editedBody}
-                                    onChange={(e) =>
-                                        setEditedBody(e.target.value)
-                                    }
-                                    rows={8}
-                                    className="w-full px-2 py-1 border rounded text-sm resize-none"
-                                    style={{
-                                        background: currentColors.surface,
-                                        color: currentColors.text,
-                                        borderColor: currentColors.border,
-                                    }}
-                                />
-                            </div>
-                        </>
-                    ) : (
-                        <div className="whitespace-pre-wrap">
-                            <div>
-                                <strong>Subject:</strong>{" "}
-                                <span>{emailData?.subject}</span>
-                            </div>
-                            <div
-                                className="border-t pt-2 mt-2"
-                                style={{ borderColor: currentColors.border }}
-                            >
-                                <p className="mt-1">{emailData?.body}</p>
-                            </div>
-                        </div>
+                <div className="flex items-center gap-2 min-w-0">
+                    <span
+                        className="text-xs font-semibold uppercase tracking-widest select-none"
+                        style={{ color: currentColors.textSecondary, fontFamily: "'DM Mono', monospace" }}
+                    >
+                        Draft
+                    </span>
+                    {currentStatus === "sent" && (
+                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-green-500/15 text-green-500 font-medium select-none">
+                            Sent
+                        </span>
+                    )}
+                    {currentStatus === "draft" && (
+                        <span
+                            className="text-xs px-1.5 py-0.5 rounded-full font-medium select-none"
+                            style={{ background: currentColors.border + "55", color: currentColors.textSecondary }}
+                        >
+                            Saved draft
+                        </span>
                     )}
                 </div>
+                <span className="text-xs truncate min-w-0" style={{ color: currentColors.textSecondary }}>
+                    → <span className="font-medium" style={{ color: currentColors.text }}>{emailData?.to}</span>
+                </span>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-3">
+            {/* ── Body ── */}
+            <div className="px-4 py-3 space-y-3">
+                {isEditing ? (
+                    <>
+                        {/* To */}
+                        <div className="space-y-1">
+                            <label className="text-xs font-medium" style={{ color: currentColors.textSecondary }}>To</label>
+                            <input
+                                type="email"
+                                value={editedTo}
+                                onChange={(e) => setEditedTo(e.target.value)}
+                                className="w-full px-3 py-1.5 rounded-lg border text-sm outline-none transition-opacity focus:opacity-100"
+                                style={inputStyle}
+                            />
+                        </div>
+                        {/* Subject */}
+                        <div className="space-y-1">
+                            <label className="text-xs font-medium" style={{ color: currentColors.textSecondary }}>Subject</label>
+                            <input
+                                type="text"
+                                value={editedSubject}
+                                onChange={(e) => setEditedSubject(e.target.value)}
+                                className="w-full px-3 py-1.5 rounded-lg border text-sm outline-none"
+                                style={inputStyle}
+                            />
+                        </div>
+                        {/* Body */}
+                        <div className="space-y-1">
+                            <label className="text-xs font-medium" style={{ color: currentColors.textSecondary }}>Body</label>
+                            <textarea
+                                value={editedBody}
+                                onChange={(e) => setEditedBody(e.target.value)}
+                                rows={8}
+                                className="w-full px-3 py-2 rounded-lg border text-sm resize-none outline-none"
+                                style={inputStyle}
+                            />
+                        </div>
+                    </>
+                ) : (
+                    <div className="space-y-2">
+                        {/* Subject line */}
+                        <p className="font-semibold leading-snug" style={{ color: currentColors.text }}>
+                            {emailData?.subject}
+                        </p>
+                        {/* Divider */}
+                        <div className="border-t" style={{ borderColor: currentColors.border }} />
+                        {/* Body text */}
+                        <p
+                            className="whitespace-pre-wrap leading-relaxed text-xs"
+                            style={{ color: currentColors.textSecondary, maxHeight: 180, overflowY: "auto" }}
+                        >
+                            {emailData?.body}
+                        </p>
+                    </div>
+                )}
+            </div>
+
+            {/* ── Actions ── */}
+            <div
+                className="flex flex-wrap items-center gap-1.5 px-4 py-2.5"
+                style={{ borderTop: `1px solid ${currentColors.border}` }}
+            >
                 {!isEditing ? (
                     <>
-                        {/* Show Send button only if not sent */}
-                        {currentStatus !== "sent" && (
-                            <button
-                                className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm w-14 sm:w-16 shadow-sm cursor-pointer hover:opacity-60 flex-shrink-0 disabled:cursor-not-allowed"
-                                style={{
-                                    borderColor: currentColors.border,
-                                    color: currentColors.text,
-                                }}
+                        {/* Send / Resend */}
+                        {currentStatus !== "sent" ? (
+                            <ActionButton
                                 onClick={sendEmail}
-                                disabled={
-                                    isLoading || sent || isAnyActionInProgress
-                                }
+                                disabled={isLoading || sent || isAnyActionInProgress}
+                                primary
+                                primaryColor={currentPalette.primary}
                             >
-                                {getButtonText()}
-                            </button>
+                                {isLoading ? <CircleLoader size="sm" /> : <><LuSend size={13} />{sent ? "Sent" : "Send"}</>}
+                            </ActionButton>
+                        ) : (
+                            <ActionButton onClick={resendEmail} disabled={isAnyActionInProgress} style={ghostBtn}>
+                                {actionInProgress === "resending" ? <CircleLoader size="sm" /> : <><LuSend size={13} />Resend</>}
+                            </ActionButton>
                         )}
-                        {/* Show Resend button only if sent */}
-                        {currentStatus === "sent" && (
-                            <button
-                                className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm cursor-pointer hover:opacity-60 flex-shrink-0 disabled:cursor-not-allowed"
-                                style={{
-                                    borderColor: currentColors.border,
-                                    color: currentColors.text,
-                                }}
-                                onClick={resendEmail}
-                                disabled={isAnyActionInProgress}
-                            >
-                                {actionInProgress === "resending" ? (
-                                    <CircleLoader size="sm" />
-                                ) : (
-                                    "Resend"
-                                )}
-                            </button>
-                        )}
-                        {/* Hide Save as Draft button if already draft */}
+
+                        {/* Save as Draft */}
                         {currentStatus !== "draft" && (
-                            <button
-                                className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm cursor-pointer hover:opacity-60 flex-shrink-0 disabled:cursor-not-allowed"
-                                style={{
-                                    borderColor: currentColors.border,
-                                }}
-                                onClick={saveAsDraft}
-                                disabled={isAnyActionInProgress}
-                            >
-                                {actionInProgress === "draft" ? (
-                                    <CircleLoader size="sm" />
-                                ) : (
-                                    "Save as Draft"
-                                )}
-                            </button>
+                            <ActionButton onClick={saveAsDraft} disabled={isAnyActionInProgress} style={ghostBtn}>
+                                {actionInProgress === "draft" ? <CircleLoader size="sm" /> : <><LuBookmark size={13} />Draft</>}
+                            </ActionButton>
                         )}
-                        <button
-                            className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm cursor-pointer hover:opacity-60 flex-shrink-0 disabled:cursor-not-allowed"
-                            style={{
-                                borderColor: currentColors.border,
-                            }}
-                            onClick={handleEdit}
-                            disabled={isAnyActionInProgress}
-                        >
-                            Edit
-                        </button>
-                        <button
-                            className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm cursor-pointer hover:opacity-60 flex-shrink-0 disabled:cursor-not-allowed"
-                            style={{
-                                borderColor: currentColors.border,
-                            }}
+
+                        {/* Edit */}
+                        <ActionButton onClick={handleEdit} disabled={isAnyActionInProgress} style={ghostBtn}>
+                            <LuPencil size={13} />Edit
+                        </ActionButton>
+
+                        {/* Regenerate */}
+                        <ActionButton
                             onClick={handleRegenerate}
-                            disabled={
-                                isRegenerating ||
-                                !prompt ||
-                                isAnyActionInProgress
-                            }
+                            disabled={isRegenerating || !prompt || isAnyActionInProgress}
+                            style={ghostBtn}
                         >
-                            {isRegenerating ? (
-                                <CircleLoader size="sm" />
-                            ) : (
-                                "Regenerate"
-                            )}
-                        </button>
+                            <LuRefreshCw size={13} className={isRegenerating ? "animate-spin" : ""} />
+                            {isRegenerating ? "..." : "Redo"}
+                        </ActionButton>
                     </>
                 ) : (
                     <>
-                        <button
-                            className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm cursor-pointer hover:opacity-60 flex-shrink-0 disabled:cursor-not-allowed"
-                            style={{
-                                borderColor: currentColors.border,
-                                backgroundColor: currentPalette.primary,
-                                color: "white",
-                            }}
+                        <ActionButton
                             onClick={handleEdit}
                             disabled={isAnyActionInProgress}
+                            primary
+                            primaryColor={currentPalette.primary}
                         >
-                            {actionInProgress === "saving" ? (
-                                <CircleLoader size="sm" />
-                            ) : (
-                                "Save Changes"
-                            )}
-                        </button>
-                        <button
-                            className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm cursor-pointer hover:opacity-60 flex-shrink-0 disabled:cursor-not-allowed"
-                            style={{
-                                borderColor: currentColors.border,
-                            }}
-                            onClick={cancelEdit}
-                            disabled={isAnyActionInProgress}
-                        >
-                            Cancel
-                        </button>
+                            {actionInProgress === "editing" ? <CircleLoader size="sm" /> : "Save"}
+                        </ActionButton>
+                        <ActionButton onClick={cancelEdit} disabled={isAnyActionInProgress} style={ghostBtn}>
+                            <MdOutlineCancel size={14} />Cancel
+                        </ActionButton>
                     </>
                 )}
-                <button
-                    className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm cursor-pointer hover:opacity-60 flex-shrink-0"
-                    style={{
-                        borderColor: currentColors.border,
-                    }}
-                    onClick={copy_to_clipboard}
-                >
-                    {copied ? (
-                        <GoCheck
-                            size={16}
-                            className="sm:w-[18px] sm:h-[18px]"
-                        />
-                    ) : (
-                        <GoCopy size={16} className="sm:w-[18px] sm:h-[18px]" />
-                    )}
-                </button>
-                <button
-                    className="border px-2 sm:px-3 py-1 rounded text-xs sm:text-sm shadow-sm cursor-not-allowed hover:opacity-60 flex-shrink-0"
-                    style={{
-                        borderColor: currentColors.border,
-                        color: currentColors.textSecondary,
-                    }}
-                    disabled={true}
-                >
-                    <GiSpeaker size={16} className="sm:w-[18px] sm:h-[18px]" />
-                </button>
+
+                {/* Spacer */}
+                <div className="flex-1" />
+
+                {/* Copy */}
+                <IconButton onClick={copy_to_clipboard} style={ghostBtn} title="Copy to clipboard">
+                    {copied ? <GoCheck size={15} className="text-green-500" /> : <GoCopy size={15} />}
+                </IconButton>
+
+                {/* Speaker (disabled) */}
+                <IconButton disabled style={ghostBtn} title="Text to speech (coming soon)">
+                    <GiSpeaker size={15} />
+                </IconButton>
             </div>
         </div>
     );
 };
+
+/* ── Small reusable button primitives ───────────────────────────────────── */
+
+type ABProps = {
+    children: React.ReactNode;
+    onClick?: () => void;
+    disabled?: boolean;
+    primary?: boolean;
+    primaryColor?: string;
+    style?: React.CSSProperties;
+};
+
+const ActionButton = ({ children, onClick, disabled, primary, primaryColor, style }: ABProps) => (
+    <button
+        onClick={onClick}
+        disabled={disabled}
+        className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg border text-sm font-medium transition-opacity hover:opacity-70 disabled:opacity-40 disabled:cursor-not-allowed select-none"
+        style={
+            primary
+                ? { backgroundColor: primaryColor, color: "#fff", borderColor: "transparent" }
+                : style
+        }
+    >
+        {children}
+    </button>
+);
+
+type IBProps = {
+    children: React.ReactNode;
+    onClick?: () => void;
+    disabled?: boolean;
+    style?: React.CSSProperties;
+    title?: string;
+};
+
+const IconButton = ({ children, onClick, disabled, style, title }: IBProps) => (
+    <button
+        onClick={onClick}
+        disabled={disabled}
+        title={title}
+        className="flex items-center justify-center w-7 h-7 rounded-lg border transition-opacity hover:opacity-70 disabled:opacity-30 disabled:cursor-not-allowed"
+        style={style}
+    >
+        {children}
+    </button>
+);
 
 export default EmailPreviewBox;
