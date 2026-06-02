@@ -6,27 +6,20 @@ import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
 
 import { FiHome, FiMenu, FiX } from "react-icons/fi";
-import { IoColorPaletteOutline } from "react-icons/io5"; // IoNotificationsOutline
+import { IoColorPaletteOutline } from "react-icons/io5";
 import { SlWrench } from "react-icons/sl";
 import { VscAccount } from "react-icons/vsc";
 import { LuLogs } from "react-icons/lu";
 import { MdDataObject, MdLogout } from "react-icons/md";
 
-// import EmailNotification from "../settings/EmailNotification";
 import Config from "../settings/Config";
 import Themes from "../settings/Themes";
 import Account from "../settings/account/Account";
 import Logs from "../settings/extra/Logs";
 import ExportData from "../settings/extra/ExportData";
 
-type State = {
-    activeTab: string;
-};
-
-type Action = {
-    type: "SET_ACTIVE_TAB";
-    payload: string;
-};
+type State = { activeTab: string };
+type Action = { type: "SET_ACTIVE_TAB"; payload: string };
 
 const reducer = (state: State, action: Action): State => {
     switch (action.type) {
@@ -37,9 +30,25 @@ const reducer = (state: State, action: Action): State => {
     }
 };
 
-const initialState: State = {
-    activeTab: "account",
-};
+const initialState: State = { activeTab: "account" };
+
+const mainNav = [
+    { key: "home", label: "Home", icon: FiHome, isLink: true },
+    { key: "account", label: "Account", icon: VscAccount, isLink: false },
+    { key: "config", label: "Configuration", icon: SlWrench, isLink: false },
+    { key: "env", label: "Variables", icon: null, isLink: false },
+    {
+        key: "theme",
+        label: "Customize Theme",
+        icon: IoColorPaletteOutline,
+        isLink: false,
+    },
+];
+
+const advancedNav = [
+    { key: "logs", label: "View Logs", icon: LuLogs },
+    { key: "export", label: "Export Data", icon: MdDataObject },
+];
 
 const Settings = () => {
     const [state, dispatch] = useReducer(reducer, initialState);
@@ -48,320 +57,344 @@ const Settings = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const { logout } = useAuth();
 
-    const getTabBg = (tabKey: string) => {
-        if (state.activeTab === tabKey || hoveredTab === tabKey) {
-            return currentColors.textSecondary + "30";
-        }
-        return "";
-    };
+    const isActive = (key: string) => state.activeTab === key;
+    const isHovered = (key: string) => hoveredTab === key;
 
-    const handleLogout = () => {
-        logout();
+    const navItemStyle = (key: string) => ({
+        backgroundColor: isActive(key)
+            ? currentColors.textSecondary + "22"
+            : isHovered(key)
+              ? currentColors.textSecondary + "12"
+              : "transparent",
+        color: isActive(key) ? currentColors.text : currentColors.textSecondary,
+        borderLeft: isActive(key)
+            ? `2px solid ${currentColors.textSecondary}`
+            : "2px solid transparent",
+        transition: "all 0.18s ease",
+    });
+
+    const setTab = (key: string) => {
+        dispatch({ type: "SET_ACTIVE_TAB", payload: key });
+        setSidebarOpen(false);
     };
 
     return (
-        <div className="flex h-screen relative">
-            {/* Mobile Header with Logo and Menu Button */}
+        <div
+            className="flex h-screen relative overflow-hidden"
+            style={{ backgroundColor: currentColors.bg }}
+        >
             <div
-                className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 shadow-md"
+                className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3"
                 style={{
-                    backgroundColor: currentColors.bg,
+                    backgroundColor: currentColors.bg + "f8",
                     borderBottom: `1px solid ${currentColors.border}`,
+                    backdropFilter: "blur(12px)",
                 }}
             >
-                <div className="text-3xl font-bold">
-                    m<span className="font-mono text-blue-600">AI</span>lAgent
-                </div>
+                <Logo />
                 <button
-                    className="p-3 rounded-xl shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95"
+                    className="p-2 rounded-lg"
                     style={{
-                        backgroundColor: currentColors.bg + "f0",
+                        backgroundColor: currentColors.textSecondary + "18",
                         color: currentColors.text,
-                        border: `2px solid ${currentColors.border}`,
-                        boxShadow: `0 8px 25px -5px ${currentColors.border}40, 0 10px 10px -5px ${currentColors.border}20`,
+                        border: `1px solid ${currentColors.border}`,
+                        transition: "background 0.15s",
                     }}
                     onClick={() => setSidebarOpen(!sidebarOpen)}
+                    aria-label="Toggle sidebar"
                 >
-                    <div className="relative w-5 h-5">
-                        {/* Animated hamburger to X transition */}
-                        <div
-                            className={`absolute inset-0 transition-all duration-300 ease-in-out ${
-                                sidebarOpen
-                                    ? "opacity-0 rotate-180"
-                                    : "opacity-100 rotate-0"
-                            }`}
+                    <div className="relative w-5 h-5 flex items-center justify-center">
+                        <span
+                            style={{
+                                position: "absolute",
+                                transition: "opacity 0.2s, transform 0.2s",
+                                opacity: sidebarOpen ? 0 : 1,
+                                transform: sidebarOpen
+                                    ? "rotate(90deg)"
+                                    : "rotate(0deg)",
+                            }}
                         >
-                            <FiMenu size={20} />
-                        </div>
-                        <div
-                            className={`absolute inset-0 transition-all duration-300 ease-in-out ${
-                                sidebarOpen
-                                    ? "opacity-100 rotate-0"
-                                    : "opacity-0 -rotate-180"
-                            }`}
+                            <FiMenu size={18} />
+                        </span>
+                        <span
+                            style={{
+                                position: "absolute",
+                                transition: "opacity 0.2s, transform 0.2s",
+                                opacity: sidebarOpen ? 1 : 0,
+                                transform: sidebarOpen
+                                    ? "rotate(0deg)"
+                                    : "rotate(-90deg)",
+                            }}
                         >
-                            <FiX size={20} />
-                        </div>
+                            <FiX size={18} />
+                        </span>
                     </div>
                 </button>
             </div>
 
-            {/* Overlay for mobile */}
             {sidebarOpen && (
                 <div
-                    className={`lg:hidden fixed inset-0 bg-black z-30 transition-opacity duration-300 ease-in-out ${
-                        sidebarOpen ? "bg-opacity-60" : "bg-opacity-0"
-                    }`}
+                    className="lg:hidden fixed inset-0 z-30"
                     style={{
-                        backdropFilter: "blur(4px)",
+                        backgroundColor: "rgba(0,0,0,0.45)",
+                        backdropFilter: "blur(3px)",
                     }}
                     onClick={() => setSidebarOpen(false)}
                 />
             )}
 
-            {/* Sidebar */}
-            <div
-                className={`${
-                    sidebarOpen ? "translate-x-0" : "-translate-x-full"
-                } 
-                    lg:translate-x-0 fixed lg:relative w-80 lg:w-1/5 h-full p-4 pt-20 lg:pt-4 select-none flex flex-col z-40 transition-transform duration-300 ease-in-out`}
-                style={{ backgroundColor: currentColors.bg }}
+            <aside
+                className={`sidebar-scrollbar
+                    ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+                    lg:translate-x-0 fixed lg:relative
+                    w-72 lg:w-[240px] xl:w-[260px]
+                    h-full flex flex-col z-40
+                    transition-transform duration-250 ease-in-out`}
+                style={{
+                    backgroundColor: currentColors.bg,
+                    borderRight: `1px solid ${currentColors.border}`,
+                    paddingTop: "0",
+                    overflow: "hidden auto",
+                }}
             >
-                <div className="text-3xl font-bold p-2 lg:block hidden">
-                    m<span className="font-mono text-blue-600">AI</span>lAgent
-                    <span className="text-xs sm:text-sm font-medium italic ml-2 self-end mb-1" style={{ color: currentColors.textSecondary }}>Settings</span>
+                {/* Logo area */}
+                <div
+                    className="hidden lg:flex items-end gap-2 px-5 pt-6 pb-5"
+                    style={{
+                        borderBottom: `1px solid ${currentColors.border}`,
+                    }}
+                >
+                    <Logo />
+                    <span
+                        className="text-xs font-medium italic mb-0.5"
+                        style={{ color: currentColors.textSecondary }}
+                    >
+                        / settings
+                    </span>
                 </div>
-                {/* Left Side Panel */}
-                <ul className="space-y-3 p-2 mt-4 flex-1 flex flex-col">
-                    <Link to="/email-form">
-                        <li
-                            className="flex items-center gap-2 text-lg font-semibold p-2 rounded cursor-pointer"
+
+                {/* Mobile top padding */}
+                <div className="lg:hidden" style={{ height: "60px" }} />
+
+                {/* Nav */}
+                <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
+                    {/* Main items */}
+                    {mainNav.map(({ key, label, icon: Icon, isLink }) => {
+                        const inner = (
+                            <div
+                                key={key}
+                                className="nav-item"
+                                style={navItemStyle(
+                                    key === "home" ? "home" : key,
+                                )}
+                                onMouseEnter={() => setHoveredTab(key)}
+                                onMouseLeave={() => setHoveredTab(null)}
+                                onClick={() => key !== "home" && setTab(key)}
+                            >
+                                {key === "env" ? (
+                                    <span
+                                        style={{
+                                            fontSize: "0.7rem",
+                                            fontWeight: 600,
+                                            padding: "1px 5px",
+                                            borderRadius: "4px",
+                                            border: `1px solid ${currentColors.border}`,
+                                            color: currentColors.textSecondary,
+                                            lineHeight: 1.4,
+                                        }}
+                                    >
+                                        .env
+                                    </span>
+                                ) : Icon ? (
+                                    <Icon size={17} />
+                                ) : null}
+                                {label}
+                                {isActive(key) && key !== "home" && (
+                                    <span
+                                        style={{
+                                            marginLeft: "auto",
+                                            width: 5,
+                                            height: 5,
+                                            borderRadius: "50%",
+                                            backgroundColor:
+                                                currentColors.textSecondary,
+                                            opacity: 0.7,
+                                        }}
+                                    />
+                                )}
+                            </div>
+                        );
+                        return isLink ? (
+                            <Link
+                                to="/email-form"
+                                key={key}
+                                style={{ textDecoration: "none" }}
+                            >
+                                {inner}
+                            </Link>
+                        ) : (
+                            inner
+                        );
+                    })}
+
+                    {/* Divider */}
+                    <div className="mx-1 mt-3 mb-1">
+                        <div
                             style={{
-                                backgroundColor: getTabBg("home"),
+                                borderTop: `1px solid ${currentColors.border}`,
                             }}
-                            onMouseEnter={() => setHoveredTab("home")}
-                            onMouseLeave={() => setHoveredTab(null)}
+                        />
+                        <p
+                            className="mt-2 px-2 text-xs font-semibold uppercase tracking-widest"
+                            style={{
+                                color: currentColors.textSecondary,
+                                opacity: 0.55,
+                            }}
                         >
-                            <FiHome size={24} />
-                            Home
-                        </li>
-                    </Link>
-                    <li
-                        className="flex items-center gap-2 text-lg font-semibold p-2 rounded cursor-pointer"
-                        style={{
-                            backgroundColor: getTabBg("account"),
-                        }}
-                        onMouseEnter={() => setHoveredTab("account")}
-                        onMouseLeave={() => setHoveredTab(null)}
-                        onClick={() => {
-                            dispatch({
-                                type: "SET_ACTIVE_TAB",
-                                payload: "account",
-                            });
-                            setSidebarOpen(false);
-                        }}
-                    >
-                        <VscAccount size={24} />
-                        Account
-                    </li>
-                    {/* <li
-                        className={`flex items-center gap-2 text-lg font-semibold p-2 rounded cursor-pointer`}
-                        style={{
-                            backgroundColor: getTabBg("notifications"),
-                        }}
-                        onMouseEnter={() => setHoveredTab("notifications")}
-                        onMouseLeave={() => setHoveredTab(null)}
-                        onClick={() => {
-                            dispatch({
-                                type: "SET_ACTIVE_TAB",
-                                payload: "notifications",
-                            });
-                            setSidebarOpen(false);
-                        }}
-                    >
-                        <IoNotificationsOutline size={24} />
-                        Email Notifications
-                    </li> */}
-                    <li
-                        className={`flex items-center gap-2 text-lg font-semibold p-2 rounded cursor-pointer`}
-                        style={{
-                            backgroundColor: getTabBg("config"),
-                        }}
-                        onMouseEnter={() => setHoveredTab("config")}
-                        onMouseLeave={() => setHoveredTab(null)}
-                        onClick={() => {
-                            dispatch({
-                                type: "SET_ACTIVE_TAB",
-                                payload: "config",
-                            });
-                            setSidebarOpen(false);
-                        }}
-                    >
-                        <SlWrench size={24} />
-                        Configuration
-                    </li>
-                    <li
-                        className={`flex items-center gap-2 text-lg font-semibold p-2 rounded cursor-pointer`}
-                        style={{
-                            backgroundColor: getTabBg("env"),
-                        }}
-                        onMouseEnter={() => setHoveredTab("env")}
-                        onMouseLeave={() => setHoveredTab(null)}
-                        onClick={() => {
-                            dispatch({
-                                type: "SET_ACTIVE_TAB",
-                                payload: "env",
-                            });
-                            setSidebarOpen(false);
-                        }}
-                    >
-                        <span className="font-mono text-xs">.env</span>
-                        Environment Variables
-                    </li>
-                    <li
-                        className={`flex items-center gap-2 text-lg font-semibold p-2 rounded cursor-pointer`}
-                        style={{
-                            backgroundColor: getTabBg("theme"),
-                        }}
-                        onMouseEnter={() => setHoveredTab("theme")}
-                        onMouseLeave={() => setHoveredTab(null)}
-                        onClick={() => {
-                            dispatch({
-                                type: "SET_ACTIVE_TAB",
-                                payload: "theme",
-                            });
-                            setSidebarOpen(false);
-                        }}
-                    >
-                        <IoColorPaletteOutline size={24} />
-                        Customize Theme
-                    </li>
-                    <div
-                        className="border-t my-4"
-                        style={{
-                            borderColor: currentColors.border,
-                        }}
-                    >
-                        <span
-                            className="font-bold p-2 text-xs uppercase"
-                            style={{ color: currentColors.textSecondary }}
-                        >
-                            Advanced Settings
-                        </span>
+                            Advanced
+                        </p>
                     </div>
-                    <li
-                        className={`flex items-center gap-2 text-lg font-semibold p-2 rounded cursor-pointer`}
-                        style={{
-                            backgroundColor: getTabBg("logs"),
-                        }}
-                        onMouseEnter={() => setHoveredTab("logs")}
-                        onMouseLeave={() => setHoveredTab(null)}
-                        onClick={() => {
-                            dispatch({
-                                type: "SET_ACTIVE_TAB",
-                                payload: "logs",
-                            });
-                            setSidebarOpen(false);
-                        }}
-                    >
-                        <LuLogs size={24} />
-                        View Logs
-                    </li>
-                    <li
-                        className={`flex items-center gap-2 text-lg font-semibold p-2 rounded cursor-pointer`}
-                        style={{
-                            backgroundColor: getTabBg("export"),
-                        }}
-                        onMouseEnter={() => setHoveredTab("export")}
-                        onMouseLeave={() => setHoveredTab(null)}
-                        onClick={() => {
-                            dispatch({
-                                type: "SET_ACTIVE_TAB",
-                                payload: "export",
-                            });
-                            setSidebarOpen(false);
-                        }}
-                    >
-                        <MdDataObject size={24} />
-                        Export Data
-                    </li>
+
+                    {/* Advanced items */}
+                    {advancedNav.map(({ key, label, icon: Icon }) => (
+                        <div
+                            key={key}
+                            className="nav-item"
+                            style={navItemStyle(key)}
+                            onMouseEnter={() => setHoveredTab(key)}
+                            onMouseLeave={() => setHoveredTab(null)}
+                            onClick={() => setTab(key)}
+                        >
+                            <Icon size={17} />
+                            {label}
+                            {isActive(key) && (
+                                <span
+                                    style={{
+                                        marginLeft: "auto",
+                                        width: 5,
+                                        height: 5,
+                                        borderRadius: "50%",
+                                        backgroundColor:
+                                            currentColors.textSecondary,
+                                        opacity: 0.7,
+                                    }}
+                                />
+                            )}
+                        </div>
+                    ))}
+
+                    {/* Spacer */}
+                    <div style={{ flex: 1, minHeight: 16 }} />
+
+                    {/* Logout */}
                     <div
-                        className="flex-1 border-b"
+                        className="nav-item"
                         style={{
-                            borderColor: currentColors.border,
-                        }}
-                    />
-                    <button
-                        className="flex items-center gap-2 text-lg font-semibold hover:text-red-400 p-2 rounded cursor-pointer"
-                        style={{
-                            backgroundColor: getTabBg("logout"),
+                            ...navItemStyle("logout"),
+                            color: isHovered("logout")
+                                ? "#f87171"
+                                : currentColors.textSecondary,
+                            marginBottom: 8,
                         }}
                         onMouseEnter={() => setHoveredTab("logout")}
                         onMouseLeave={() => setHoveredTab(null)}
-                        onClick={handleLogout}
+                        onClick={logout}
                     >
-                        <MdLogout size={24} />
+                        <MdLogout size={17} />
                         Logout
-                    </button>
-                </ul>
-            </div>
-            {/* Main Content Area */}
-            <div
-                className="flex-1 p-4 sm:p-6 lg:p-8 m-3 sm:m-4 lg:m-6 ml-3 lg:ml-4 mt-20 lg:mt-6 rounded-lg overflow-auto"
+                    </div>
+                </nav>
+            </aside>
+
+            <main
+                className="flex-1 overflow-auto"
                 style={{
+                    paddingTop: "0",
                     backgroundColor: currentColors.bg,
-                    border: `2px solid ${currentColors.border}`,
                 }}
             >
-                {/* Main Area - Keep all mounted but toggle display */}
+                {/* Mobile top spacing */}
+                <div className="lg:hidden" style={{ height: "60px" }} />
+
                 <div
+                    className="shadow-2xl"
                     style={{
-                        display:
-                            state.activeTab === "account" ? "block" : "none",
+                        margin: "20px",
+                        padding: "28px 32px",
+                        borderRadius: "14px",
+                        border: `1px solid ${currentColors.border}`,
+                        backgroundColor: currentColors.bg,
+                        minHeight: "calc(100% - 40px)",
                     }}
                 >
-                    <Account />
+                    <div
+                        style={{
+                            display:
+                                state.activeTab === "account"
+                                    ? "block"
+                                    : "none",
+                        }}
+                    >
+                        <Account />
+                    </div>
+                    <div
+                        style={{
+                            display:
+                                state.activeTab === "config" ? "block" : "none",
+                        }}
+                    >
+                        <Config />
+                    </div>
+                    <div
+                        style={{
+                            display:
+                                state.activeTab === "env" ? "block" : "none",
+                        }}
+                    >
+                        <Variables />
+                    </div>
+                    <div
+                        style={{
+                            display:
+                                state.activeTab === "theme" ? "block" : "none",
+                        }}
+                    >
+                        <Themes />
+                    </div>
+                    <div
+                        style={{
+                            display:
+                                state.activeTab === "logs" ? "block" : "none",
+                        }}
+                    >
+                        <Logs />
+                    </div>
+                    <div
+                        style={{
+                            display:
+                                state.activeTab === "export" ? "block" : "none",
+                        }}
+                    >
+                        <ExportData />
+                    </div>
                 </div>
-                <div
-                    style={{
-                        display:
-                            state.activeTab === "config" ? "block" : "none",
-                    }}
-                >
-                    <Config />
-                </div>
-                <div
-                    style={{
-                        display: state.activeTab === "env" ? "block" : "none",
-                    }}
-                >
-                    <Variables />
-                </div>
-                <div
-                    style={{
-                        display: state.activeTab === "theme" ? "block" : "none",
-                    }}
-                >
-                    <Themes />
-                </div>
-                <div
-                    style={{
-                        display: state.activeTab === "logs" ? "block" : "none",
-                    }}
-                >
-                    <Logs />
-                </div>
-                <div
-                    style={{
-                        display:
-                            state.activeTab === "export" ? "block" : "none",
-                    }}
-                >
-                    <ExportData />
-                </div>
-            </div>
+            </main>
         </div>
     );
 };
+
+
+const Logo = () => (
+    <div
+        style={{
+            fontWeight: 700,
+            fontSize: "1.35rem",
+            letterSpacing: "-0.02em",
+            lineHeight: 1,
+        }}
+    >
+        m<span style={{ color: "#3b82f6" }}>AI</span>lAgent
+    </div>
+);
 
 export default Settings;

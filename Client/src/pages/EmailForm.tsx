@@ -20,6 +20,8 @@ import {
     MdDrafts,
     MdAdd,
     MdClose,
+    MdKeyboardArrowLeft,
+    MdKeyboardArrowRight,
 } from "react-icons/md";
 import { Link } from "react-router-dom";
 import type { Message, CommandState, EmailData } from "../types";
@@ -395,7 +397,7 @@ const EmailForm = () => {
 
             // Add user message immediately
             await addMessage(
-                `${newData.prompt}\nGenerating email for: ${isBulkSend ? `**_${recipients.length} recipients_**` : `**_${recipients[0]}_**`}`,
+                `${newData.prompt}\nGenerate email for: ${isBulkSend ? `**_${recipients.length} recipients_**` : `**_${recipients[0]}_**`}`,
                 "user",
             );
 
@@ -627,13 +629,27 @@ const EmailForm = () => {
     };
 
     return (
-        <div className="flex h-screen overflow-hidden">
+        <div
+            className="relative flex h-screen overflow-hidden"
+            style={{ backgroundColor: currentColors.bg }}
+        >
+            <div
+                className="pointer-events-none absolute inset-0 opacity-80"
+                style={{
+                    background:
+                        `radial-gradient(circle at top left, ${currentColors.border}18 0%, transparent 34%),` +
+                        `radial-gradient(circle at bottom right, ${currentColors.chatBubble}14 0%, transparent 30%),` +
+                        `linear-gradient(180deg, ${currentColors.bg} 0%, ${currentColors.surface}12 100%)`,
+                }}
+            />
             {/* Main Chat Container */}
-            <div className="flex-1 flex flex-col relative mx-2">
+            <div className="relative z-10 flex flex-1 flex-col px-2 py-2 sm:px-3 lg:px-4 lg:py-4">
                 <div
-                    className="flex flex-col h-[calc(100vh-100px)] lg:h-full max-w-4xl w-full mx-auto border shadow-xl rounded-lg overflow-hidden my-3 mx-3 lg:my-4 lg:mx-auto"
+                    className="flex h-[calc(100vh-1rem)] w-full max-w-4xl mx-auto flex-col overflow-hidden rounded-[30px] border shadow-[0_30px_90px_rgba(0,0,0,0.18)] backdrop-blur-2xl sm:h-[calc(100vh-1.5rem)] lg:h-[calc(100vh-2rem)]"
                     style={{
                         borderColor: currentColors.border,
+                        background: `linear-gradient(180deg, ${currentColors.surface}F8 0%, ${currentColors.surface}EC 100%)`,
+                        boxShadow: `0 1px 0 ${currentColors.border}2A inset, 0 28px 80px ${currentColors.border}1F`,
                     }}
                 >
                     {/* Header */}
@@ -671,15 +687,16 @@ const EmailForm = () => {
                             )}
                             {/* Input Section */}
                             <div
-                                className="border-t p-4"
+                                className="border-t px-4 py-4 sm:px-5"
                                 style={{
                                     borderColor: currentColors.border,
+                                    background: `linear-gradient(180deg, ${currentColors.surface}A8 0%, ${currentColors.surface}E8 100%)`,
                                 }}
                             >
                                 <div className="flex items-end space-x-3">
                                     {/* Message Input */}
                                     <div
-                                        className="flex-1 border p-3 overflow-hidden rounded-lg"
+                                        className="flex-1 overflow-hidden rounded-2xl border px-3 py-3 shadow-inner transition-all duration-200"
                                         style={{
                                             borderColor:
                                                 commandState.isActive &&
@@ -692,6 +709,8 @@ const EmailForm = () => {
                                                       ? "#EF4444"
                                                       : currentColors.border,
                                             color: currentColors.text,
+                                            background: `linear-gradient(180deg, ${currentColors.surface}F6 0%, ${currentColors.bg}F2 100%)`,
+                                            boxShadow: `0 1px 0 ${currentColors.border}1A inset, 0 10px 30px ${currentColors.border}0F`,
                                         }}
                                         tabIndex={-1}
                                         onFocus={(e) => {
@@ -812,33 +831,60 @@ const EmailForm = () => {
             </div>
 
             {/* Desktop Side Action Bar */}
-            <div className="fixed right-4 top-1/5 z-20 hidden -translate-y-1/2 lg:block">
-                <div className="relative">
+            <div className="fixed right-4 top-1/2 z-20 hidden -translate-y-1/2 lg:block">
+                <div className="relative overflow-visible">
                     <button
                         type="button"
-                        className={`absolute right-0 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border shadow-2xl backdrop-blur-xl transition-all duration-300 ${
+                        className={`group absolute right-0 top-1/2 z-20 flex h-14 items-center gap-3 rounded-full border px-4 shadow-2xl backdrop-blur-xl transition-all duration-300 ease-out ${
                             isDesktopActionsCollapsed
-                                ? "opacity-100 scale-100"
-                                : "pointer-events-none opacity-0 scale-90"
+                                ? "translate-x-0 opacity-100 scale-100"
+                                : "pointer-events-none translate-x-5 opacity-0 scale-95"
                         }`}
                         style={{
-                            backgroundColor: `${currentColors.surface}F0`,
+                            backgroundColor: `${currentColors.surface}F2`,
                             borderColor: currentColors.border,
                             color: currentColors.text,
                             boxShadow: `0 24px 60px ${currentColors.border}24`,
                         }}
                         onClick={() => setIsDesktopActionsCollapsed(false)}
                         aria-label="Expand actions panel"
-                        title="Expand"
+                        title="Open actions panel"
                     >
-                        <span className="text-sm">▸</span>
+                        <span
+                            className="flex h-9 w-9 items-center justify-center rounded-full border transition-transform duration-300 group-hover:scale-105"
+                            style={{
+                                backgroundColor: `${currentColors.border}18`,
+                                borderColor: `${currentColors.border}30`,
+                            }}
+                        >
+                            <MdOutlineDesktopWindows size={18} />
+                        </span>
+
+                        <span className="flex min-w-0 flex-col items-start leading-none">
+                            <span
+                                className="text-[10px] font-semibold uppercase tracking-[0.24em]"
+                                style={{ color: currentColors.textSecondary }}
+                            >
+                                Expand
+                            </span>
+                        </span>
+
+                        <span
+                            className="flex h-7 w-7 items-center justify-center rounded-full border transition-transform duration-300 group-hover:translate-x-0.5"
+                            style={{
+                                backgroundColor: `${currentColors.border}12`,
+                                borderColor: `${currentColors.border}28`,
+                            }}
+                        >
+                            <MdKeyboardArrowLeft size={20} />
+                        </span>
                     </button>
 
                     <div
-                        className={`absolute right-0 top-1/2 w-[300px] -translate-y-1/2 origin-right overflow-hidden rounded-[28px] border px-3 py-4 shadow-2xl backdrop-blur-xl transition-all duration-300 ${
+                        className={`absolute right-0 top-1/2 w-[300px] -translate-y-1/2 origin-right overflow-hidden rounded-[28px] border px-3 py-4 shadow-2xl backdrop-blur-xl transition-all duration-300 ease-out ${
                             isDesktopActionsCollapsed
-                                ? "pointer-events-none opacity-0 scale-90"
-                                : "opacity-100 scale-100"
+                                ? "pointer-events-none translate-x-6 scale-[0.97] opacity-0"
+                                : "translate-x-0 scale-100 opacity-100"
                         }`}
                         style={{
                             backgroundColor: `${currentColors.surface}F0`,
@@ -865,11 +911,13 @@ const EmailForm = () => {
                                     borderColor: currentColors.border,
                                     color: currentColors.text,
                                 }}
-                                onClick={() => setIsDesktopActionsCollapsed(true)}
+                                onClick={() =>
+                                    setIsDesktopActionsCollapsed(true)
+                                }
                                 aria-label="Collapse actions panel"
-                                title="Collapse"
+                                title="Collapse actions panel"
                             >
-                                <span className="text-sm rotate-180">▸</span>
+                                <MdKeyboardArrowRight size={20} />
                             </button>
                         </div>
 
@@ -888,13 +936,16 @@ const EmailForm = () => {
                                 }}
                             >
                                 <div
-                                    className="flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-105"
+                                    className="flex h-10 w-10 items-center justify-center rounded-xl"
                                     style={{
                                         backgroundColor: `${currentColors.border}1E`,
                                         color: currentColors.text,
                                     }}
                                 >
-                                    <MdDrafts size={22} />
+                                    <MdDrafts
+                                        size={22}
+                                        className="transition-transform duration-200 group-hover:rotate-15"
+                                    />
                                 </div>
                                 <div className="min-w-0">
                                     <div
@@ -922,13 +973,16 @@ const EmailForm = () => {
                                 }}
                             >
                                 <div
-                                    className="flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-200 group-hover:rotate-90"
+                                    className="flex h-10 w-10 items-center justify-center rounded-xl"
                                     style={{
                                         backgroundColor: `${currentColors.border}1E`,
                                         color: currentColors.text,
                                     }}
                                 >
-                                    <IoSettingsOutline size={22} />
+                                    <IoSettingsOutline
+                                        size={22}
+                                        className="transition-transform duration-200 group-hover:rotate-90"
+                                    />
                                 </div>
                                 <div className="min-w-0">
                                     <div
