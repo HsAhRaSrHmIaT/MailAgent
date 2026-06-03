@@ -134,80 +134,135 @@ const Drafts = () => {
         >
             <DraftsHeader />
 
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-                <div className="max-w-4xl mx-auto">
-                    <div className="flex items-center justify-between mb-6">
+            <div className="flex-1 overflow-y-auto">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+                    {/* Page Title */}
+                    <div className="mb-8">
                         <h1
-                            className="text-2xl font-bold"
+                            className="text-xl font-semibold tracking-tight"
                             style={{ color: currentColors.text }}
                         >
                             Drafts
                         </h1>
+                        {!isLoading && drafts.length > 0 && (
+                            <p
+                                className="text-sm mt-1"
+                                style={{ color: currentColors.textSecondary }}
+                            >
+                                {drafts.length} saved{" "}
+                                {drafts.length === 1 ? "draft" : "drafts"}
+                            </p>
+                        )}
                     </div>
 
+                    {/* States */}
                     {isLoading ? (
-                        <div className="flex justify-center items-center h-64">
+                        <div className="flex justify-center items-center h-56">
                             <CircleLoader size="lg" />
                         </div>
                     ) : drafts.length === 0 ? (
                         <div
-                            className="text-center py-12 rounded-lg"
+                            className="flex flex-col items-center justify-center py-20 rounded-2xl"
                             style={{
                                 backgroundColor:
-                                    currentColors.textSecondary + "10",
-                                color: currentColors.textSecondary,
+                                    currentColors.textSecondary + "08",
+                                border: `1px dashed ${currentColors.border}`,
                             }}
                         >
-                            <p className="text-lg">No drafts found</p>
-                            <p className="text-sm mt-2">
-                                Generate an email and save it as draft to see it
-                                here
+                            <div
+                                className="w-12 h-12 rounded-full flex items-center justify-center mb-4"
+                                style={{
+                                    backgroundColor:
+                                        currentColors.textSecondary + "12",
+                                }}
+                            >
+                                <MdEdit
+                                    size={22}
+                                    style={{
+                                        color: currentColors.textSecondary,
+                                    }}
+                                />
+                            </div>
+                            <p
+                                className="font-medium text-sm"
+                                style={{ color: currentColors.text }}
+                            >
+                                No drafts yet
+                            </p>
+                            <p
+                                className="text-xs mt-1"
+                                style={{ color: currentColors.textSecondary }}
+                            >
+                                Generate an email and save it as a draft to see
+                                it here
                             </p>
                         </div>
                     ) : (
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             {drafts.map((draft) => (
                                 <div
                                     key={draft.id}
-                                    className="border rounded-lg p-4 shadow-sm"
+                                    className="rounded-2xl overflow-hidden transition-shadow duration-200"
                                     style={{
-                                        borderColor: currentColors.border,
-                                        backgroundColor:
-                                            currentColors.bg + "20",
+                                        backgroundColor: currentColors.bg,
+                                        border: `1px solid ${currentColors.border}`,
+                                        boxShadow:
+                                            expandedId === draft.id
+                                                ? `0 4px 20px ${currentColors.textSecondary}18`
+                                                : `0 1px 4px ${currentColors.textSecondary}0a`,
                                     }}
                                 >
-                                    <div className="flex items-start justify-between">
+                                    {/* Card Top Row */}
+                                    <div className="flex items-start gap-3 p-4">
+                                        {/* Avatar / Initials */}
                                         <div
-                                            className="flex-1 cursor-pointer"
+                                            className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-semibold mt-0.5"
+                                            style={{
+                                                backgroundColor:
+                                                    currentPalette.primary +
+                                                    "18",
+                                                color: currentPalette.primary,
+                                            }}
+                                        >
+                                            {draft.to_email
+                                                ? draft.to_email
+                                                      .charAt(0)
+                                                      .toUpperCase()
+                                                : "?"}
+                                        </div>
+
+                                        {/* Main info — clickable to expand */}
+                                        <div
+                                            className="flex-1 min-w-0 cursor-pointer"
                                             onClick={() =>
                                                 toggleExpand(draft.id)
                                             }
                                         >
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <h3
-                                                    className="font-semibold"
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                <span
+                                                    className="text-sm font-medium truncate"
                                                     style={{
                                                         color: currentColors.text,
                                                     }}
                                                 >
-                                                    To: {draft.to_email}
-                                                </h3>
+                                                    {draft.to_email}
+                                                </span>
                                                 {draft.tone && (
                                                     <span
-                                                        className="text-xs px-2 py-1 rounded"
+                                                        className="text-xs px-2 py-0.5 rounded-full font-medium"
                                                         style={{
                                                             backgroundColor:
-                                                                currentColors.textSecondary +
-                                                                "20",
-                                                            color: currentColors.text,
+                                                                currentPalette.primary +
+                                                                "15",
+                                                            color: currentPalette.primary,
                                                         }}
                                                     >
-                                                        #{draft.tone}
+                                                        {draft.tone}
                                                     </span>
                                                 )}
                                             </div>
                                             <p
-                                                className="font-medium mb-1"
+                                                className="text-sm font-medium mt-0.5 truncate"
                                                 style={{
                                                     color: currentColors.text,
                                                 }}
@@ -215,7 +270,7 @@ const Drafts = () => {
                                                 {draft.subject}
                                             </p>
                                             <p
-                                                className="text-sm line-clamp-2"
+                                                className="text-xs mt-1 line-clamp-1"
                                                 style={{
                                                     color: currentColors.textSecondary,
                                                 }}
@@ -223,21 +278,38 @@ const Drafts = () => {
                                                 {draft.body}
                                             </p>
                                             <p
-                                                className="text-xs mt-2"
+                                                className="text-xs mt-1.5"
                                                 style={{
-                                                    color: currentColors.textSecondary,
+                                                    color:
+                                                        currentColors.textSecondary +
+                                                        "99",
                                                 }}
                                             >
                                                 {new Date(
                                                     draft.timestamp,
-                                                ).toLocaleDateString()}{" "}
+                                                ).toLocaleDateString(
+                                                    undefined,
+                                                    {
+                                                        month: "short",
+                                                        day: "numeric",
+                                                        year: "numeric",
+                                                    },
+                                                )}{" "}
+                                                ·{" "}
                                                 {new Date(
                                                     draft.timestamp,
-                                                ).toLocaleTimeString()}
+                                                ).toLocaleTimeString(
+                                                    undefined,
+                                                    {
+                                                        hour: "2-digit",
+                                                        minute: "2-digit",
+                                                    },
+                                                )}
                                             </p>
                                         </div>
 
-                                        <div className="flex gap-2 ml-4">
+                                        {/* Action buttons */}
+                                        <div className="flex items-center gap-1.5 flex-shrink-0">
                                             <button
                                                 onClick={() =>
                                                     handleSend(draft)
@@ -245,34 +317,34 @@ const Drafts = () => {
                                                 disabled={
                                                     sendingId === draft.id
                                                 }
-                                                className="p-2 rounded hover:opacity-80 disabled:opacity-50"
+                                                title="Send"
+                                                className="w-8 h-8 rounded-xl flex items-center justify-center transition-opacity duration-150 disabled:opacity-50 hover:opacity-80"
                                                 style={{
                                                     backgroundColor:
                                                         currentPalette.primary,
                                                     color: "white",
                                                 }}
-                                                title="Send"
                                             >
                                                 {sendingId === draft.id ? (
                                                     <CircleLoader size="sm" />
                                                 ) : (
-                                                    <MdSend size={18} />
+                                                    <MdSend size={15} />
                                                 )}
                                             </button>
                                             <button
                                                 onClick={() =>
                                                     handleEdit(draft)
                                                 }
-                                                className="p-2 rounded hover:opacity-80"
+                                                title="Edit"
+                                                className="w-8 h-8 rounded-xl flex items-center justify-center transition-opacity duration-150 hover:opacity-80"
                                                 style={{
                                                     backgroundColor:
                                                         currentColors.textSecondary +
-                                                        "20",
-                                                    color: currentColors.text,
+                                                        "14",
+                                                    color: currentColors.textSecondary,
                                                 }}
-                                                title="Edit"
                                             >
-                                                <MdEdit size={18} />
+                                                <MdEdit size={15} />
                                             </button>
                                             <button
                                                 onClick={() =>
@@ -281,106 +353,110 @@ const Drafts = () => {
                                                 disabled={
                                                     deletingId === draft.id
                                                 }
-                                                className="p-2 rounded hover:opacity-80 disabled:opacity-50"
-                                                style={{
-                                                    backgroundColor: "#ef4444",
-                                                    color: "white",
-                                                }}
                                                 title="Delete"
+                                                className="w-8 h-8 rounded-xl flex items-center justify-center transition-opacity duration-150 disabled:opacity-50 hover:opacity-80"
+                                                style={{
+                                                    backgroundColor:
+                                                        "#ef444418",
+                                                    color: "#ef4444",
+                                                }}
                                             >
                                                 {deletingId === draft.id ? (
                                                     <CircleLoader size="sm" />
                                                 ) : (
-                                                    <MdDelete size={18} />
+                                                    <MdDelete size={15} />
                                                 )}
                                             </button>
                                         </div>
                                     </div>
 
+                                    {/* Expanded Panel */}
                                     {expandedId === draft.id && (
                                         <div
-                                            className="mt-4 pt-4 border-t"
+                                            className="px-4 pb-4"
                                             style={{
-                                                borderColor:
-                                                    currentColors.border,
+                                                borderTop: `1px solid ${currentColors.border}`,
                                             }}
                                         >
                                             {editingId === draft.id ? (
-                                                <div className="space-y-4">
+                                                /* ── Edit Mode ── */
+                                                <div className="space-y-4 pt-4">
+                                                    {[
+                                                        {
+                                                            label: "To",
+                                                            key: "to_email",
+                                                            type: "email",
+                                                            placeholder:
+                                                                "recipient@example.com",
+                                                            isTextarea: false,
+                                                        },
+                                                        {
+                                                            label: "Subject",
+                                                            key: "subject",
+                                                            type: "text",
+                                                            placeholder:
+                                                                "Email subject",
+                                                            isTextarea: false,
+                                                        },
+                                                    ].map(
+                                                        ({
+                                                            label,
+                                                            key,
+                                                            type,
+                                                            placeholder,
+                                                        }) => (
+                                                            <div key={key}>
+                                                                <label
+                                                                    className="text-xs font-medium uppercase tracking-wide block mb-1.5"
+                                                                    style={{
+                                                                        color: currentColors.textSecondary,
+                                                                    }}
+                                                                >
+                                                                    {label}
+                                                                </label>
+                                                                <input
+                                                                    type={type}
+                                                                    value={
+                                                                        editForm[
+                                                                            key as keyof typeof editForm
+                                                                        ]
+                                                                    }
+                                                                    onChange={(
+                                                                        e,
+                                                                    ) =>
+                                                                        setEditForm(
+                                                                            {
+                                                                                ...editForm,
+                                                                                [key]: e
+                                                                                    .target
+                                                                                    .value,
+                                                                            },
+                                                                        )
+                                                                    }
+                                                                    placeholder={
+                                                                        placeholder
+                                                                    }
+                                                                    className="w-full px-3 py-2 rounded-xl text-sm outline-none transition-colors duration-150"
+                                                                    style={{
+                                                                        backgroundColor:
+                                                                            currentColors.textSecondary +
+                                                                            "0c",
+                                                                        color: currentColors.text,
+                                                                        border: `1px solid ${currentColors.border}`,
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        ),
+                                                    )}
+
                                                     <div>
                                                         <label
-                                                            className="text-sm font-medium block mb-2"
+                                                            className="text-xs font-medium uppercase tracking-wide block mb-1.5"
                                                             style={{
-                                                                color: currentColors.text,
+                                                                color: currentColors.textSecondary,
                                                             }}
                                                         >
-                                                            To:
-                                                        </label>
-                                                        <input
-                                                            type="email"
-                                                            value={
-                                                                editForm.to_email
-                                                            }
-                                                            onChange={(e) =>
-                                                                setEditForm({
-                                                                    ...editForm,
-                                                                    to_email:
-                                                                        e.target
-                                                                            .value,
-                                                                })
-                                                            }
-                                                            className="w-full px-3 py-2 rounded border"
-                                                            style={{
-                                                                backgroundColor:
-                                                                    currentColors.bg,
-                                                                color: currentColors.text,
-                                                                borderColor:
-                                                                    currentColors.border,
-                                                            }}
-                                                            placeholder="recipient@example.com"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label
-                                                            className="text-sm font-medium block mb-2"
-                                                            style={{
-                                                                color: currentColors.text,
-                                                            }}
-                                                        >
-                                                            Subject:
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            value={
-                                                                editForm.subject
-                                                            }
-                                                            onChange={(e) =>
-                                                                setEditForm({
-                                                                    ...editForm,
-                                                                    subject:
-                                                                        e.target
-                                                                            .value,
-                                                                })
-                                                            }
-                                                            className="w-full px-3 py-2 rounded border"
-                                                            style={{
-                                                                backgroundColor:
-                                                                    currentColors.bg,
-                                                                color: currentColors.text,
-                                                                borderColor:
-                                                                    currentColors.border,
-                                                            }}
-                                                            placeholder="Email subject"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label
-                                                            className="text-sm font-medium block mb-2"
-                                                            style={{
-                                                                color: currentColors.text,
-                                                            }}
-                                                        >
-                                                            Body:
+                                                            Body
                                                         </label>
                                                         <textarea
                                                             value={
@@ -394,33 +470,34 @@ const Drafts = () => {
                                                                         .value,
                                                                 })
                                                             }
-                                                            rows={8}
-                                                            className="w-full px-3 py-2 rounded border resize-none"
+                                                            rows={7}
+                                                            placeholder="Email content"
+                                                            className="w-full px-3 py-2 rounded-xl text-sm resize-none outline-none transition-colors duration-150"
                                                             style={{
                                                                 backgroundColor:
-                                                                    currentColors.bg,
+                                                                    currentColors.textSecondary +
+                                                                    "0c",
                                                                 color: currentColors.text,
-                                                                borderColor:
-                                                                    currentColors.border,
+                                                                border: `1px solid ${currentColors.border}`,
                                                             }}
-                                                            placeholder="Email content"
                                                         />
                                                     </div>
-                                                    <div className="flex gap-2 justify-end">
+
+                                                    <div className="flex justify-end gap-2 pt-1">
                                                         <button
                                                             onClick={
                                                                 handleCancelEdit
                                                             }
-                                                            className="px-4 py-2 rounded flex items-center gap-2 hover:opacity-80"
+                                                            className="px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1.5 transition-opacity duration-150 hover:opacity-75"
                                                             style={{
                                                                 backgroundColor:
                                                                     currentColors.textSecondary +
-                                                                    "20",
+                                                                    "14",
                                                                 color: currentColors.text,
                                                             }}
                                                         >
                                                             <MdClose
-                                                                size={18}
+                                                                size={16}
                                                             />
                                                             Cancel
                                                         </button>
@@ -434,7 +511,7 @@ const Drafts = () => {
                                                                 savingId ===
                                                                 draft.id
                                                             }
-                                                            className="px-4 py-2 rounded flex items-center gap-2 hover:opacity-80 disabled:opacity-50"
+                                                            className="px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-1.5 transition-opacity duration-150 hover:opacity-80 disabled:opacity-50"
                                                             style={{
                                                                 backgroundColor:
                                                                     currentPalette.primary,
@@ -448,27 +525,29 @@ const Drafts = () => {
                                                                 <>
                                                                     <MdSave
                                                                         size={
-                                                                            18
+                                                                            16
                                                                         }
                                                                     />
-                                                                    Save Changes
+                                                                    Save
                                                                 </>
                                                             )}
                                                         </button>
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <div className="space-y-3">
+                                                /* ── Read Mode ── */
+                                                <div className="space-y-4 pt-4">
                                                     <div>
-                                                        <label
-                                                            className="text-sm font-medium block mb-1"
+                                                        <p
+                                                            className="text-xs font-medium uppercase tracking-wide mb-1"
                                                             style={{
                                                                 color: currentColors.textSecondary,
                                                             }}
                                                         >
-                                                            Subject:
-                                                        </label>
+                                                            Subject
+                                                        </p>
                                                         <p
+                                                            className="text-sm font-medium"
                                                             style={{
                                                                 color: currentColors.text,
                                                             }}
@@ -476,36 +555,42 @@ const Drafts = () => {
                                                             {draft.subject}
                                                         </p>
                                                     </div>
+
                                                     <div>
-                                                        <label
-                                                            className="text-sm font-medium block mb-1"
+                                                        <p
+                                                            className="text-xs font-medium uppercase tracking-wide mb-1"
                                                             style={{
                                                                 color: currentColors.textSecondary,
                                                             }}
                                                         >
-                                                            Body:
-                                                        </label>
-                                                        <p
-                                                            className="whitespace-pre-wrap"
+                                                            Body
+                                                        </p>
+                                                        <div
+                                                            className="rounded-xl px-4 py-3 text-sm whitespace-pre-wrap leading-relaxed"
                                                             style={{
+                                                                backgroundColor:
+                                                                    currentColors.textSecondary +
+                                                                    "08",
                                                                 color: currentColors.text,
+                                                                border: `1px solid ${currentColors.border}`,
                                                             }}
                                                         >
                                                             {draft.body}
-                                                        </p>
+                                                        </div>
                                                     </div>
+
                                                     {draft.prompt && (
                                                         <div>
-                                                            <label
-                                                                className="text-sm font-medium block mb-1"
+                                                            <p
+                                                                className="text-xs font-medium uppercase tracking-wide mb-1"
                                                                 style={{
                                                                     color: currentColors.textSecondary,
                                                                 }}
                                                             >
-                                                                Original Prompt:
-                                                            </label>
+                                                                Original Prompt
+                                                            </p>
                                                             <p
-                                                                className="text-sm"
+                                                                className="text-xs leading-relaxed"
                                                                 style={{
                                                                     color: currentColors.textSecondary,
                                                                 }}
