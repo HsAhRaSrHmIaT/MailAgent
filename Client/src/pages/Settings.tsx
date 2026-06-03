@@ -10,7 +10,7 @@ import { IoColorPaletteOutline } from "react-icons/io5";
 import { SlWrench } from "react-icons/sl";
 import { VscAccount } from "react-icons/vsc";
 import { LuLogs } from "react-icons/lu";
-import { MdDataObject, MdLogout } from "react-icons/md";
+import { MdDataObject, MdLogout, MdPrivacyTip, MdDescription  } from "react-icons/md";
 
 import Config from "../settings/Config";
 import Themes from "../settings/Themes";
@@ -46,8 +46,10 @@ const mainNav = [
 ];
 
 const advancedNav = [
-    { key: "logs", label: "View Logs", icon: LuLogs },
-    { key: "export", label: "Export Data", icon: MdDataObject },
+    { key: "logs", label: "View Logs", icon: LuLogs, isLink: false },
+    { key: "export", label: "Export Data", icon: MdDataObject, isLink: false },
+    { key: "terms", label: "Terms & Conditions", icon: MdDescription, isLink: true, path: "/terms-and-conditions" },
+    { key: "privacy", label: "Privacy Policy", icon: MdPrivacyTip, isLink: true, path: "/privacy-policy" },
 ];
 
 const Settings = () => {
@@ -169,7 +171,7 @@ const Settings = () => {
                         className="text-xs font-medium italic mb-0.5"
                         style={{ color: currentColors.textSecondary }}
                     >
-                        / settings
+                        / Settings
                     </span>
                 </div>
 
@@ -256,35 +258,48 @@ const Settings = () => {
                     </div>
 
                     {/* Advanced items */}
-                    {advancedNav.map(({ key, label, icon: Icon }) => (
-                        <div
-                            key={key}
-                            className="nav-item"
-                            style={navItemStyle(key)}
-                            onMouseEnter={() => setHoveredTab(key)}
-                            onMouseLeave={() => setHoveredTab(null)}
-                            onClick={() => setTab(key)}
-                        >
-                            <Icon size={17} />
-                            {label}
-                            {isActive(key) && (
-                                <span
-                                    style={{
-                                        marginLeft: "auto",
-                                        width: 5,
-                                        height: 5,
-                                        borderRadius: "50%",
-                                        backgroundColor:
-                                            currentColors.textSecondary,
-                                        opacity: 0.7,
-                                    }}
-                                />
-                            )}
-                        </div>
-                    ))}
+                    {advancedNav.map(({ key, label, icon: Icon, isLink, path }) => {
+                        const inner = (
+                            <div
+                                key={key}
+                                className="nav-item"
+                                style={navItemStyle(key)}
+                                onMouseEnter={() => setHoveredTab(key)}
+                                onMouseLeave={() => setHoveredTab(null)}
+                                onClick={() => !isLink && setTab(key)}
+                            >
+                                <Icon size={17} />
+                                {label}
+                                {!isLink && isActive(key) && (
+                                    <span
+                                        style={{
+                                            marginLeft: "auto",
+                                            width: 5,
+                                            height: 5,
+                                            borderRadius: "50%",
+                                            backgroundColor:
+                                                currentColors.textSecondary,
+                                            opacity: 0.7,
+                                        }}
+                                    />
+                                )}
+                            </div>
+                        );
+                        return isLink ? (
+                            <Link
+                                to={path || "/"}
+                                key={key}
+                                style={{ textDecoration: "none" }}
+                            >
+                                {inner}
+                            </Link>
+                        ) : (
+                            inner
+                        );
+                    })}
 
                     {/* Spacer */}
-                    <div style={{ flex: 1, minHeight: 16 }} />
+                    <div style={{ flex: 1, minHeight: 16, borderBottom: `1px solid ${currentColors.border}` }} />
 
                     {/* Logout */}
                     <div

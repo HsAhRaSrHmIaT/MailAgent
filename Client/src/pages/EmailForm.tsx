@@ -645,7 +645,7 @@ const EmailForm = () => {
             {/* Main Chat Container */}
             <div className="relative z-10 flex flex-1 flex-col px-2 py-2 sm:px-3 lg:px-4 lg:py-4">
                 <div
-                    className="flex h-[calc(100vh-1rem)] w-full max-w-4xl mx-auto flex-col overflow-hidden rounded-[30px] border shadow-[0_30px_90px_rgba(0,0,0,0.18)] backdrop-blur-2xl sm:h-[calc(100vh-1.5rem)] lg:h-[calc(100vh-2rem)]"
+                    className="flex h-[calc(100vh-1rem)] w-full max-w-4xl mx-auto flex-col overflow-hidden rounded-[30px] border shadow-xl backdrop-blur-2xl sm:h-[calc(100vh-1.5rem)] lg:h-[calc(100vh-2rem)]"
                     style={{
                         borderColor: currentColors.border,
                         background: `linear-gradient(180deg, ${currentColors.surface}F8 0%, ${currentColors.surface}EC 100%)`,

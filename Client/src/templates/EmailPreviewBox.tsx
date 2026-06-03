@@ -362,7 +362,7 @@ const ActionButton = ({ children, onClick, disabled, primary, primaryColor, styl
     <button
         onClick={onClick}
         disabled={disabled}
-        className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg border text-sm font-medium transition-opacity hover:opacity-70 disabled:opacity-40 disabled:cursor-not-allowed select-none"
+        className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg border text-sm font-medium transition-opacity hover:opacity-70 disabled:opacity-40 disabled:cursor-not-allowed select-none cursor-pointer"
         style={
             primary
                 ? { backgroundColor: primaryColor, color: "#fff", borderColor: "transparent" }
@@ -386,7 +386,7 @@ const IconButton = ({ children, onClick, disabled, style, title }: IBProps) => (
         onClick={onClick}
         disabled={disabled}
         title={title}
-        className="flex items-center justify-center w-7 h-7 rounded-lg border transition-opacity hover:opacity-70 disabled:opacity-30 disabled:cursor-not-allowed"
+        className="flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-lg border transition-opacity hover:opacity-70 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
         style={style}
     >
         {children}

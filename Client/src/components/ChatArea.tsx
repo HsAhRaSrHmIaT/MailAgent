@@ -90,12 +90,12 @@ const ChatArea = ({
                                 message.sender === "user"
                                     ? "justify-end"
                                     : "justify-start"
-                            } px-2 py-2 sm:px-4 sm:py-3`}
+                            } px-2 py-2 sm:px-4 sm:py-3 items-end`}
                         >
                             {message.sender === "assistant" &&
                                 message.type !== "email" && (
                                     <div
-                                        className="flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-full mr-2 mt-auto text-[0.6rem] font-semibold tracking-wider"
+                                        className="flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-full mr-2 mb-4 text-[0.6rem] font-semibold tracking-wider"
                                         style={{
                                             backgroundColor:
                                                 currentColors.surface,

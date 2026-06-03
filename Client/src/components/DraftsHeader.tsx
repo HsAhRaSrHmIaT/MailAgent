@@ -24,10 +24,10 @@ const DraftsHeader = () => {
                         lAgent
                     </h1>
                     <span
-                        className="text-xs sm:text-sm font-medium italic ml-2 self-end mb-1"
+                        className="text-xs font-medium italic self-end ml-2 mb-1"
                         style={{ color: currentColors.textSecondary }}
                     >
-                      Drafts
+                      / Drafts
                     </span>
                 </div>
             </div>
